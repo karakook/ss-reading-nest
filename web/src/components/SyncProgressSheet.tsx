@@ -1,23 +1,29 @@
 import { getActiveBatch } from "../features/reading-sync/job-state.js";
 import type { ReadingSyncJob } from "../features/reading-sync/types.js";
 import { Check, RefreshCw, Sparkles, X } from "lucide-react";
+import {
+  DEFAULT_READING_PARTNER_COPY,
+  type ReadingPartnerCopy
+} from "../features/reading-partner/config.js";
 
 export function SyncProgressSheet(props: {
   job: ReadingSyncJob;
   onConfirm: () => void;
   onRetry: () => void;
   onCancel: () => void;
+  partner?: ReadingPartnerCopy;
 }) {
+  const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const batch = getActiveBatch(props.job);
   const unit = "页";
   return (
     <div className="sheet-backdrop" role="presentation">
-      <section className="bottom-sheet sync-sheet" role="dialog" aria-modal="true" aria-label="星星补课进度">
+      <section className="bottom-sheet sync-sheet" role="dialog" aria-modal="true" aria-label={`${partner.companionName}补课进度`}>
         <div className="sheet-grip" />
         <header className="sheet-header">
           <div>
             <span className="sheet-kicker">共读同步</span>
-            <h2>星星补课中</h2>
+            <h2>{partner.companionName}补课中</h2>
             <p>已确认到 {props.job.confirmedThrough?.label ?? "起点"}</p>
           </div>
           <button type="button" className="icon-button sheet-close" aria-label="取消补课" onClick={props.onCancel}>
@@ -36,7 +42,7 @@ export function SyncProgressSheet(props: {
         {batch?.status === "sent-awaiting-confirmation" ? (
           <button className="action-primary" onClick={props.onConfirm}>
             <Check aria-hidden="true" strokeWidth={1.8} />
-            我看到星星回复“已读到第 {batch.rangeEnd} {unit}”，
+            我看到{partner.companionName}回复“已读到第 {batch.rangeEnd} {unit}”，
             {batch.isFinal ? "开始正式陪读" : "发送下一批"}
           </button>
         ) : null}

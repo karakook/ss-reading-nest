@@ -26,9 +26,39 @@ describe("App", () => {
 
   it("shows the novel-only reading entry and bookshelf section", () => {
     render(<App />);
-    expect(screen.getAllByText("冰冰和星星的小书房").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("小猫和巴巴的私人书房").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /小说共读/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "书架" })).toBeInTheDocument();
+  });
+
+  it("starts the book details page at the top after leaving a scrolled home page", async () => {
+    const bundle = bookshelfBundle(
+      "cover-scroll-reset-book",
+      "从首页滚动后仍从顶部打开的小说",
+      1,
+      "light_chat",
+      manifest("cover-scroll-reset-source", "r")
+    );
+    Object.defineProperty(window, "openai", {
+      configurable: true,
+      value: {
+        toolOutput: { bookshelfSessions: [bundle], recentSessions: [bundle] },
+        callTool: vi.fn(async () => ({
+          structuredContent: { bookshelfSessions: [bundle], recentSessions: [bundle] }
+        }))
+      }
+    });
+
+    render(<App />);
+    expect(await screen.findByText(bundle.session.title)).toBeInTheDocument();
+    document.documentElement.scrollTop = 640;
+    document.body.scrollTop = 640;
+
+    fireEvent.click(screen.getByRole("button", { name: `打开《${bundle.session.title}》的封面页` }));
+
+    expect(await screen.findByRole("heading", { name: bundle.session.title })).toBeInTheDocument();
+    expect(document.documentElement.scrollTop).toBe(0);
+    expect(document.body.scrollTop).toBe(0);
   });
 
   it("recovers the novel shelf when the opening result arrives late", async () => {
@@ -904,7 +934,8 @@ describe("App", () => {
     );
     expect(await screen.findByRole("button", { name: "全屏阅读" })).toBeInTheDocument();
     expect(screen.getByText("这是 GPT 必须看到的当前段落。")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "和星星共读" }));
+    fireEvent.click(screen.getByRole("button", { name: "叫巴巴来陪读" }));
+    fireEvent.click(screen.getByRole("button", { name: "巴巴，陪我读这一页" }));
 
     await waitFor(() => {
       expect(callTool).toHaveBeenCalledWith(
@@ -928,6 +959,8 @@ describe("App", () => {
         requestDisplayMode.mock.calls.filter(([input]) => input.mode === "pip")
       ).toHaveLength(1);
     });
+    expect(await screen.findByText("这一页已经发送给巴巴。你可以继续往下读。")).toBeInTheDocument();
+    expect(screen.queryByText("这一页和你的想法已经发送给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
   });
 
   it("sends the explicit page reply to ChatGPT without asking for a tool writeback", async () => {
@@ -1014,7 +1047,8 @@ describe("App", () => {
       target: { value: "不要写回 Dock。" }
     });
     fireEvent.click(screen.getByRole("button", { name: "进入阅读小窝" }));
-    fireEvent.click(await screen.findByRole("button", { name: "和星星共读" }));
+    fireEvent.click(await screen.findByRole("button", { name: "叫巴巴来陪读" }));
+    fireEvent.click(await screen.findByRole("button", { name: "巴巴，陪我读这一页" }));
 
     await waitFor(() => expect(sendFollowUpMessage).toHaveBeenCalled());
     expect(callTool).toHaveBeenCalledWith(
@@ -1098,9 +1132,10 @@ describe("App", () => {
       target: { value: "等一下。" }
     });
     fireEvent.click(screen.getByRole("button", { name: "进入阅读小窝" }));
-    const action = await screen.findByRole("button", { name: "和星星共读" });
+    const action = await screen.findByRole("button", { name: "叫巴巴来陪读" });
 
     fireEvent.click(action);
+    fireEvent.click(await screen.findByRole("button", { name: "巴巴，陪我读这一页" }));
     await waitFor(() => expect(action).toBeDisabled());
     fireEvent.click(action);
     expect(callTool.mock.calls.filter(([name]) => name === "send_current_context")).toHaveLength(1);
@@ -1164,12 +1199,12 @@ describe("App", () => {
       }
     });
     fireEvent.click(screen.getByRole("button", { name: "进入阅读小窝" }));
-    await screen.findByText(/星星确认读到：尚未同步/);
+    await screen.findByText(/巴巴确认读到：尚未同步/);
 
     for (let index = 0; index < 27; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "下一段" }));
     }
-    await screen.findByText(/冰冰读到：第 28 页/);
+    await screen.findByText(/小猫读到：第 28 页/);
     fireEvent.click(screen.getByRole("button", { name: "陪我看看这里" }));
 
     expect(await screen.findByText("中间有较多剧情，要怎么同步？")).toBeInTheDocument();
@@ -1180,7 +1215,7 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /完整补课后再陪读/ }));
     const confirmButton = await screen.findByRole("button", {
-      name: /我看到星星回复“已读到第 28 页”，开始正式陪读/
+      name: /我看到巴巴回复“已读到第 28 页”，开始正式陪读/
     });
     expect(callTool).not.toHaveBeenCalledWith(
       "confirm_assistant_synced_position",
@@ -1288,7 +1323,7 @@ describe("App", () => {
       target: { value: "值得保存的句子" }
     });
     fireEvent.click(screen.getByRole("button", { name: "进入阅读小窝" }));
-    await screen.findByRole("button", { name: "和星星共读" });
+    await screen.findByRole("button", { name: "叫巴巴来陪读" });
 
     fireEvent.mouseUp(screen.getByText("值得保存的句子"));
     fireEvent.click(screen.getByRole("button", { name: "写想法" }));
@@ -1984,9 +2019,11 @@ describe("App", () => {
 
     render(<App />);
     await continueBook(bundle.session.title);
-    fireEvent.click(await screen.findByRole("button", { name: "和星星共读" }));
+    fireEvent.click(await screen.findByRole("button", { name: "叫巴巴来陪读" }));
+    fireEvent.click(await screen.findByRole("button", { name: "巴巴，陪我读这一页" }));
 
     await waitFor(() => expect(sendFollowUpMessage).toHaveBeenCalled());
+    expect(await screen.findByText("这一页和你的想法已经发送给巴巴。你可以继续往下读。")).toBeInTheDocument();
     const prompt = String(sendFollowUpMessage.mock.calls.at(-1)?.[0]?.prompt ?? "");
     expect(prompt).toContain("这是我真正划线的句子");
     expect(prompt).toContain("我觉得这里说中了行动比等待更重要。");
@@ -2053,7 +2090,7 @@ describe("App", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "针对划线的问题" }), {
       target: { value: "这里为什么这样说？" }
     });
-    fireEvent.click(screen.getByRole("button", { name: "立即问星星" }));
+    fireEvent.click(screen.getByRole("button", { name: "立即问巴巴" }));
 
     await waitFor(() => {
       expect(callTool).toHaveBeenCalledWith(
@@ -2548,20 +2585,22 @@ describe("no-host (pure browser local reading)", () => {
     await screen.findByText(/第 1 页 \/ 共 \d+ 页/);
     // Wait for the import flow to fully settle (local-mode prompt) so that
     // later action toasts are not overwritten by the import-completion toast.
-    await screen.findByText("已进入本地阅读模式；星星陪读与云端同步需在 ChatGPT 内使用。");
+    await screen.findByText("已进入本地阅读模式；巴巴陪读与云端同步需在 ChatGPT 内使用。");
   }
 
   it("enters local reading mode on import and shows the local-mode prompt", async () => {
     await importLocal("这是一本只能在本地读的小说正文。");
     expect(screen.getByText(/这是一本只能在本地读的小说正文。/)).toBeInTheDocument();
-    expect(await screen.findByText("已进入本地阅读模式；星星陪读与云端同步需在 ChatGPT 内使用。")).toBeInTheDocument();
+    expect(await screen.findByText("已进入本地阅读模式；巴巴陪读与云端同步需在 ChatGPT 内使用。")).toBeInTheDocument();
   });
 
   it("shows NO_HOST_MESSAGE when sharing the page and does not report a successful send", async () => {
     await importLocal("分享这页的正文内容。");
-    fireEvent.click(screen.getByRole("button", { name: "和星星共读" }));
+    fireEvent.click(screen.getByRole("button", { name: "叫巴巴来陪读" }));
+    fireEvent.click(screen.getByRole("button", { name: "巴巴，陪我读这一页" }));
     expect(await screen.findByText(NO_HOST_MESSAGE)).toBeInTheDocument();
-    expect(screen.queryByText("这一页和你的想法已经发给星星。你可以继续往下读。")).not.toBeInTheDocument();
+    expect(screen.queryByText("这一页已经发送给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
+    expect(screen.queryByText("这一页和你的想法已经发送给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
   });
 
   it("shows NO_HOST_MESSAGE when saving a thought on a selection", async () => {
@@ -2581,9 +2620,9 @@ describe("no-host (pure browser local reading)", () => {
     fireEvent.mouseUp(document.querySelector("article.novel-paper")!);
     fireEvent.click(await screen.findByRole("button", { name: "直接提问" }));
     fireEvent.change(screen.getByLabelText("针对划线的问题"), { target: { value: "为什么这样写？" } });
-    fireEvent.click(screen.getByRole("button", { name: "立即问星星" }));
+    fireEvent.click(screen.getByRole("button", { name: "立即问巴巴" }));
     expect(await screen.findByText(NO_HOST_MESSAGE)).toBeInTheDocument();
-    expect(screen.queryByText("只把这句和你的问题发给了星星。")).not.toBeInTheDocument();
+    expect(screen.queryByText("只把这句和你的问题发给了巴巴。")).not.toBeInTheDocument();
   });
 
 });

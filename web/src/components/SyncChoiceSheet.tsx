@@ -1,4 +1,8 @@
 import { BookOpen, Clock3, Send, Sparkles, X } from "lucide-react";
+import {
+  DEFAULT_READING_PARTNER_COPY,
+  type ReadingPartnerCopy
+} from "../features/reading-partner/config.js";
 
 export function SyncChoiceSheet(props: {
   assistantLabel: string;
@@ -8,7 +12,9 @@ export function SyncChoiceSheet(props: {
   onCurrent: () => void;
   onRecent: () => void;
   onCancel: () => void;
+  partner?: ReadingPartnerCopy;
 }) {
+  const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   return (
     <div className="sheet-backdrop" role="presentation" onClick={props.onCancel}>
       <section
@@ -23,7 +29,7 @@ export function SyncChoiceSheet(props: {
           <div>
             <span className="sheet-kicker">共读同步</span>
             <h2>从哪里接上剧情？</h2>
-            <p>星星停在{props.assistantLabel}，你已经读到{props.userLabel}。</p>
+            <p>{partner.companionName}停在{props.assistantLabel}，你已经读到{props.userLabel}。</p>
           </div>
           <button type="button" className="icon-button sheet-close" aria-label="取消同步" onClick={props.onCancel}>
             <X aria-hidden="true" strokeWidth={1.8} />

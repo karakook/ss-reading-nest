@@ -9,6 +9,10 @@ import {
 } from "lucide-react";
 import type { ReadingPosition } from "@ss/shared";
 import type { BookshelfItem } from "./Home.js";
+import {
+  DEFAULT_READING_PARTNER_COPY,
+  type ReadingPartnerCopy
+} from "../features/reading-partner/config.js";
 
 type ArchiveKind = "thought" | "clarity" | "minutes" | "afterword";
 
@@ -44,7 +48,7 @@ const ARCHIVE_COPY: Record<
   clarity: {
     label: "清思",
     measure: "记",
-    description: "你从星星回复里保存下来的片段"
+    description: "你从共读回复里保存下来的片段"
   },
   minutes: {
     label: "纪要",
@@ -69,7 +73,9 @@ export function BookCover(props: {
     item: BookshelfItem,
     target: ArchiveDeleteTarget
   ) => Promise<boolean> | boolean;
+  partner?: ReadingPartnerCopy;
 }) {
+  const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const archive = useMemo(() => buildBookArchive(props.item), [props.item]);
   const availableKinds = (Object.keys(ARCHIVE_COPY) as ArchiveKind[]).filter(
     (kind) => archive[kind].length > 0
@@ -107,7 +113,7 @@ export function BookCover(props: {
         <button type="button" className="cover-back" onClick={props.onBack} aria-label="返回书架">
           <ArrowLeft className="cover-toolbar-icon" aria-hidden="true" strokeWidth={1.8} />
         </button>
-        <span>冰冰和星星的小书房</span>
+        <span>{partner.roomName}</span>
         {availableKinds.length > 0 ? (
           <button
             type="button"
@@ -135,7 +141,7 @@ export function BookCover(props: {
             }
           >
             <span className="cover-book-edge" aria-hidden="true" />
-            <span className="cover-book-kicker">冰冰和星星的小书房</span>
+            <span className="cover-book-kicker">{partner.appName}</span>
             <strong title={fullTitle}>{displayTitle}</strong>
             <span className="cover-book-rule" aria-hidden="true" />
             <small>{props.item.session.status === "completed" ? "阅毕" : "正在共读"}</small>
@@ -152,6 +158,16 @@ export function BookCover(props: {
               ? ` · 共读到 ${props.item.session.assistantSyncedPosition.label}`
               : ""}
           </p>
+
+          <div className="cover-companion-memory" aria-label="共同阅读记忆">
+            <strong>
+              {props.item.session.assistantSyncedPosition
+                ? `${partner.companionName}陪${partner.viewerName}读到${props.item.session.assistantSyncedPosition.label}`
+                : `${partner.companionName}还没有同步到这里`}
+            </strong>
+            <span>我们在这本书里留下了 {thoughtCount(archive)} 条想法</span>
+            <small>上次共读：{formatLastSession(props.item.session.lastReadAt)}</small>
+          </div>
 
           {availableKinds.length > 0 ? (
             <div className="cover-memory-summary" aria-label="书内记录概览">
@@ -451,6 +467,23 @@ function sourceAction(item: BookshelfItem): {
 
 function stripPrefix(value: string, pattern: RegExp) {
   return value.replace(pattern, "").trim() || "保存下来的片段";
+}
+
+function thoughtCount(archive: Record<ArchiveKind, ArchiveEntry[]>): number {
+  return Object.values(archive).reduce((total, entries) => total + entries.length, 0);
+}
+
+function formatLastSession(value?: string): string {
+  if (!value) return "还没有记录";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "最近一次打开";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(date);
 }
 
 function addUnique(target: ArchiveEntry[], entry: ArchiveEntry) {

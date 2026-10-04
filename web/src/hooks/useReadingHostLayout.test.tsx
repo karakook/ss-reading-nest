@@ -25,6 +25,26 @@ describe("useReadingHostLayout", () => {
     expect(result.current.layout).toBe("compact");
   });
 
+  it("uses the visual viewport after browser chrome changes", () => {
+    const visualViewport = new EventTarget() as VisualViewport;
+    Object.defineProperty(visualViewport, "width", { configurable: true, value: 834, writable: true });
+    Object.defineProperty(visualViewport, "height", { configurable: true, value: 1024, writable: true });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: visualViewport });
+
+    const { result } = renderHook(() => useReadingHostLayout());
+    expect(result.current.layout).toBe("compact");
+    expect(document.documentElement.style.getPropertyValue("--viewport-height")).toBe("1024px");
+
+    act(() => {
+      Object.defineProperty(visualViewport, "width", { configurable: true, value: 1194, writable: true });
+      Object.defineProperty(visualViewport, "height", { configurable: true, value: 834, writable: true });
+      visualViewport.dispatchEvent(new Event("resize"));
+    });
+
+    expect(result.current.layout).toBe("wide");
+    expect(document.documentElement.style.getPropertyValue("--viewport-height")).toBe("834px");
+  });
+
   it("does not infer PiP support from the generic display-mode function", () => {
     const { result } = renderHook(() => useReadingHostLayout());
 

@@ -26,6 +26,34 @@ function renderHome(overrides: Partial<Parameters<typeof Home>[0]> = {}) {
 }
 
 describe("Home novel bookshelf", () => {
+  it("uses the actual last-read time in the greeting", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-20T12:00:00.000Z"));
+    const yesterdayEvening = {
+      ...items[0]!,
+      session: {
+        ...items[0]!.session,
+        lastReadAt: "2026-07-19T20:30:00.000Z"
+      }
+    };
+
+    renderHome({ bookshelf: [yesterdayEvening] });
+
+    expect(screen.getByRole("heading", { name: /小猫，昨晚停在第 8 段/ })).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it("falls back to an honest previous-position greeting when time is missing", () => {
+    const missingTime = {
+      ...items[0]!,
+      session: { ...items[0]!.session, lastReadAt: "" }
+    };
+
+    renderHome({ bookshelf: [missingTime] });
+
+    expect(screen.getByRole("heading", { name: /小猫，上次停在第 8 段/ })).toBeInTheDocument();
+  });
+
   it("renders the novel shelf", () => {
     renderHome();
 
@@ -79,6 +107,14 @@ describe("Home novel bookshelf", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "打开《缺少正文》的封面页" }));
     expect(onOpen).toHaveBeenLastCalledWith(items[1]);
+  });
+
+  it("keeps the continue action connected to the saved reading position", () => {
+    const onContinue = vi.fn();
+    renderHome({ onContinue });
+
+    fireEvent.click(screen.getByRole("button", { name: "继续阅读" }));
+    expect(onContinue).toHaveBeenCalledWith(items[0]);
   });
 
   it("renders and opens a 24-book shelf without truncating older books", () => {

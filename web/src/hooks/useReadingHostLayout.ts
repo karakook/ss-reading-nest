@@ -11,14 +11,19 @@ export function useReadingHostLayout() {
     () => window.openai?.hostContext ?? {}
   );
   const [viewport, setViewport] = useState(() => ({
-    width: window.innerWidth,
-    height: window.innerHeight
+    width: window.visualViewport?.width ?? window.innerWidth,
+    height: window.visualViewport?.height ?? window.innerHeight
   }));
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
+    const visualViewport = window.visualViewport;
     const measure = () => {
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
+      const width = visualViewport?.width ?? window.innerWidth;
+      const height = visualViewport?.height ?? window.innerHeight;
+      setViewport({ width, height });
+      document.documentElement.style.setProperty("--viewport-width", `${width}px`);
+      document.documentElement.style.setProperty("--viewport-height", `${height}px`);
       setRevision((value) => value + 1);
     };
     const unsubscribe = subscribeHostContext((next) => {
@@ -27,10 +32,15 @@ export function useReadingHostLayout() {
     });
     window.addEventListener("resize", measure);
     window.addEventListener("orientationchange", measure);
+    visualViewport?.addEventListener("resize", measure);
+    measure();
     return () => {
       unsubscribe();
       window.removeEventListener("resize", measure);
       window.removeEventListener("orientationchange", measure);
+      visualViewport?.removeEventListener("resize", measure);
+      document.documentElement.style.removeProperty("--viewport-width");
+      document.documentElement.style.removeProperty("--viewport-height");
     };
   }, []);
 

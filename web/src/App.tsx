@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState
@@ -9,6 +10,7 @@ import { ArrowLeft, BookOpen, LoaderCircle } from "lucide-react";
 import type {
   NovelLocalCache,
   Quote,
+  ReadingCommentMode,
   ReadingPosition,
   ReadingRecord,
   ReadingSession,
@@ -68,6 +70,10 @@ import { useReadingHostLayout } from "./hooks/useReadingHostLayout.js";
 import { BookCover, type ArchiveDeleteTarget } from "./pages/BookCover.js";
 import { Home, type BookshelfItem, type LibrarySkin } from "./pages/Home.js";
 import { NovelReader } from "./pages/NovelReader.js";
+import {
+  resolveReadingPartnerCopy,
+  type ReadingPartnerCopy
+} from "./features/reading-partner/config.js";
 import { IndexedDbReadingCache } from "./storage/indexeddb-cache.js";
 import type { ToolCallResult } from "./types/openai.js";
 import { createClientId } from "./utils/client-id.js";
@@ -145,7 +151,11 @@ const MAX_EPUB_FILE_SIZE = 50 * 1024 * 1024;
 const LARGE_NOVEL_TEXTAREA_PREVIEW_BYTES = 2 * 1024 * 1024;
 const LARGE_NOVEL_TEXTAREA_PREVIEW_CHARS = 1200;
 
-export function App() {
+export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}) {
+  const readingPartner = useMemo(
+    () => resolveReadingPartnerCopy(props.readingPartner),
+    [props.readingPartner]
+  );
   const [openOutput, setOpenOutput] = useState<OpenOutput | undefined>(() =>
     normalizeOpenOutput(initialToolOutput<OpenOutput>())
   );
@@ -419,6 +429,18 @@ export function App() {
     const timer = window.setTimeout(() => setToast(""), 2600);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useLayoutEffect(() => {
+    if (screen !== "cover") return;
+    const scrollingElement = document.scrollingElement ?? document.documentElement;
+    scrollingElement.scrollTop = 0;
+    scrollingElement.scrollLeft = 0;
+    document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
+    if (typeof scrollingElement.scrollTo === "function") {
+      scrollingElement.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [screen, selectedBook?.session.id]);
 
 
 
@@ -1065,7 +1087,7 @@ export function App() {
         return;
       }
       if (startUnavailable) {
-        setToast("已进入本地阅读模式；星星陪读与云端同步需在 ChatGPT 内使用。");
+        setToast(`已进入本地阅读模式；${readingPartner.companionName}陪读与云端同步需在 ChatGPT 内使用。`);
       } else if (cloudUploadFailed) {
         setToast(`云端同步失败：${cloudUploadError}；已保留本设备正文。`);
       }
@@ -1250,7 +1272,7 @@ export function App() {
       });
       setToast(
         mode === "context"
-          ? `已同步${sessionBundle.session.userCurrentPosition.label}，星星正在看这里。`
+          ? `已同步${sessionBundle.session.userCurrentPosition.label}，${readingPartner.companionName}正在看这里。`
           : "已用兼容模式发送当前页。"
       );
     } finally {
@@ -1258,7 +1280,10 @@ export function App() {
     }
   }
 
-  async function shareNovelPage(currentText: string) {
+  async function shareNovelPage(
+    currentText: string,
+    coReadMode: ReadingCommentMode = "light_chat"
+  ) {
     if (!sessionBundle || syncRequestInFlight) return;
     const currentPosition = sessionBundle.session.userCurrentPosition;
     const savedThoughts = formatPageThoughts(
@@ -1275,7 +1300,14 @@ export function App() {
       savedThoughts
         ? "请先读取我刚分享的这一页和保存的想法，直接回应我的想法，再聊你最有共鸣的 1-2 个点。"
         : "请先读取我刚分享的这一页，挑最有意思的 1-3 个点自然地和我聊。",
-      "不要复述正文、逐条转抄想法，也不要概括前面的内容。"
+      "不要复述正文、逐条转抄想法，也不要概括前面的内容。",
+      coReadMode === "cp_talk"
+        ? "这次重点聊人物关系里最值得一起嗑的地方。"
+        : coReadMode === "plot_guess"
+          ? "这次重点猜测伏笔和后续走向，并明确标出猜测。"
+          : coReadMode === "deep_analysis"
+            ? "这次可以认真拆解剧情、人物变化和表达方式。"
+            : "这次保持轻松贴着聊，像熟悉的共读伙伴一样回应。"
     ].join("\n");
     setSyncRequestInFlight(true);
     try {
@@ -1284,7 +1316,7 @@ export function App() {
         currentPosition,
         mode: "current_only",
         currentText,
-        readingCommentMode: "light_chat",
+        readingCommentMode: coReadMode,
         commentLength: "normal",
         ...(savedThoughts ? { userNote: savedThoughts.slice(0, 4_000) } : {}),
         ...(sourceContext ? { sourceContext } : {})
@@ -1310,7 +1342,11 @@ export function App() {
         sendMessage: askChatGpt,
         scrollToBottom: true
       });
-      setToast("这一页和你的想法已经发给星星。你可以继续往下读。");
+      setToast(
+        savedThoughts
+          ? `这一页和你的想法已经发送给${readingPartner.companionName}。你可以继续往下读。`
+          : `这一页已经发送给${readingPartner.companionName}。你可以继续往下读。`
+      );
     } finally {
       setSyncRequestInFlight(false);
     }
@@ -1318,7 +1354,6 @@ export function App() {
 
   async function askAboutNovelSelection(selectedText: string, question: string) {
     if (!sessionBundle || syncRequestInFlight || !selectedText.trim() || !question.trim()) return;
-    await saveQuoteThought(selectedText, `提问：${question.trim()}`);
     const currentPosition = sessionBundle.session.userCurrentPosition;
     const sourceContext = getSourceContext(sessionBundle.session.sourceManifest);
     const prompt = [
@@ -1358,7 +1393,7 @@ export function App() {
         sendMessage: askChatGpt,
         scrollToBottom: true
       });
-      setToast("只把这句和你的问题发给了星星。");
+      setToast(`只把这句和你的问题发给了${readingPartner.companionName}。`);
     } finally {
       setSyncRequestInFlight(false);
     }
@@ -1465,7 +1500,7 @@ export function App() {
       if (confirmed.mode === "live_reading") {
         clearSyncJobState();
         await cache.removeSyncJob(syncJob.sessionId).catch(() => undefined);
-        setToast(`已确认星星读到第 ${batch.rangeEnd} 页。`);
+        setToast(`已确认${readingPartner.companionName}读到第 ${batch.rangeEnd} 页。`);
         return;
       }
       const formalMode = sessionBundle.session.sessionPreferences.readingCommentMode;
@@ -1496,7 +1531,7 @@ export function App() {
       });
       clearSyncJobState();
       await cache.removeSyncJob(syncJob.sessionId).catch(() => undefined);
-      setToast("星星追上你啦，可以正式陪读了。");
+      setToast(`${readingPartner.companionName}追上你啦，可以正式陪读了。`);
       return;
     }
     storeSyncJob(confirmed);
@@ -1929,9 +1964,15 @@ export function App() {
             setReaderCollapsed(false);
             openBookCover(item);
           }}
+          onContinue={(item) => {
+            setReaderCollapsed(false);
+            setReaderReturnScreen("home");
+            void continueReading(item);
+          }}
           onReimport={prepareReimport}
           onManage={(item) => void openBookManagement(item)}
           onExpand={() => void requestReaderFullscreen()}
+          partner={readingPartner}
         />
       ) : null}
       {screen === "cover" && selectedBook ? (
@@ -1954,6 +1995,7 @@ export function App() {
             void continueReading(item, targetPosition);
           }}
           onDeleteEntry={deleteArchiveEntry}
+          partner={readingPartner}
         />
       ) : null}
       {screen === "setup" ? (
@@ -2009,7 +2051,7 @@ export function App() {
             </div>
           <label className="remember-row"><input type="checkbox" checked={remembered} onChange={(e) => setRemembered(e.target.checked)} />在本设备记住这本书</label>
           <p className="privacy-note">
-            正文会保存到你的私人云端，供手机和电脑续读；不会自动发给 ChatGPT。只有点“问星星”或“和星星一起看这页”时，选中句子或当前页才会发送。
+            正文会保存到你的私人云端，供手机和电脑续读；不会自动发给 ChatGPT。只有点“问{readingPartner.companionName}”或“叫{readingPartner.companionName}来陪读”时，选中句子或当前页才会发送。
           </p>
           <button
             className="action-primary wide-button"
@@ -2054,6 +2096,8 @@ export function App() {
           onCollapse={() => setReaderCollapsed(true)}
           initialScrollTop={readerScrollTop}
           onScrollPosition={setReaderScrollTop}
+          partner={readingPartner}
+          layout={hostLayout.layout}
           {...readerProps}
         />
       ) : null}
@@ -2073,6 +2117,7 @@ export function App() {
         <SyncChoiceSheet
           assistantLabel={sessionBundle.session.assistantSyncedPosition?.label ?? "开头"}
           userLabel={sessionBundle.session.userCurrentPosition.label}
+          partner={readingPartner}
           recentLabel="补最近 5 页"
           onFull={() => void startFullCatchUp()}
           onCurrent={() => {
@@ -2089,6 +2134,7 @@ export function App() {
       {syncJob ? (
         <SyncProgressSheet
           job={syncJob}
+          partner={readingPartner}
           onConfirm={() => void confirmSyncBatch()}
           onRetry={() => void sendSyncBatch(syncJob)}
           onCancel={() => void cancelCurrentSync()}
