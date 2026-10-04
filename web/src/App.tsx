@@ -1329,7 +1329,11 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
         sendMessage: askChatGpt,
         scrollToBottom: true
       });
-      setToast(`这一页和你的想法已经发给${readingPartner.companionName}。你可以继续往下读。`);
+      setToast(
+        savedThoughts
+          ? `这一页和你的想法已经发送给${readingPartner.companionName}。你可以继续往下读。`
+          : `这一页已经发送给${readingPartner.companionName}。你可以继续往下读。`
+      );
     } finally {
       setSyncRequestInFlight(false);
     }

@@ -929,6 +929,8 @@ describe("App", () => {
         requestDisplayMode.mock.calls.filter(([input]) => input.mode === "pip")
       ).toHaveLength(1);
     });
+    expect(await screen.findByText("这一页已经发送给巴巴。你可以继续往下读。")).toBeInTheDocument();
+    expect(screen.queryByText("这一页和你的想法已经发送给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
   });
 
   it("sends the explicit page reply to ChatGPT without asking for a tool writeback", async () => {
@@ -1991,6 +1993,7 @@ describe("App", () => {
     fireEvent.click(await screen.findByRole("button", { name: "巴巴，陪我读这一页" }));
 
     await waitFor(() => expect(sendFollowUpMessage).toHaveBeenCalled());
+    expect(await screen.findByText("这一页和你的想法已经发送给巴巴。你可以继续往下读。")).toBeInTheDocument();
     const prompt = String(sendFollowUpMessage.mock.calls.at(-1)?.[0]?.prompt ?? "");
     expect(prompt).toContain("这是我真正划线的句子");
     expect(prompt).toContain("我觉得这里说中了行动比等待更重要。");
@@ -2566,7 +2569,8 @@ describe("no-host (pure browser local reading)", () => {
     fireEvent.click(screen.getByRole("button", { name: "叫巴巴来陪读" }));
     fireEvent.click(screen.getByRole("button", { name: "巴巴，陪我读这一页" }));
     expect(await screen.findByText(NO_HOST_MESSAGE)).toBeInTheDocument();
-    expect(screen.queryByText("这一页和你的想法已经发给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
+    expect(screen.queryByText("这一页已经发送给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
+    expect(screen.queryByText("这一页和你的想法已经发送给巴巴。你可以继续往下读。")).not.toBeInTheDocument();
   });
 
   it("shows NO_HOST_MESSAGE when saving a thought on a selection", async () => {

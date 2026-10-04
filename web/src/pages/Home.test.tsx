@@ -26,6 +26,34 @@ function renderHome(overrides: Partial<Parameters<typeof Home>[0]> = {}) {
 }
 
 describe("Home novel bookshelf", () => {
+  it("uses the actual last-read time in the greeting", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-20T12:00:00.000Z"));
+    const yesterdayEvening = {
+      ...items[0]!,
+      session: {
+        ...items[0]!.session,
+        lastReadAt: "2026-07-19T20:30:00.000Z"
+      }
+    };
+
+    renderHome({ bookshelf: [yesterdayEvening] });
+
+    expect(screen.getByRole("heading", { name: /小猫，昨晚停在第 8 段/ })).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it("falls back to an honest previous-position greeting when time is missing", () => {
+    const missingTime = {
+      ...items[0]!,
+      session: { ...items[0]!.session, lastReadAt: "" }
+    };
+
+    renderHome({ bookshelf: [missingTime] });
+
+    expect(screen.getByRole("heading", { name: /小猫，上次停在第 8 段/ })).toBeInTheDocument();
+  });
+
   it("renders the novel shelf", () => {
     renderHome();
 

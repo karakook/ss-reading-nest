@@ -75,7 +75,10 @@ export function CoReadPanel(props: {
 
         <p className="co-read-scope">
           <MessageCircle aria-hidden="true" strokeWidth={1.8} />
-          只分享当前页、选中文字和本页想法
+          <span>
+            <strong>只分享当前页和本页已保存的想法</strong>
+            <small>选中文字请单独使用“问{partner.companionName}”</small>
+          </span>
         </p>
 
         <button

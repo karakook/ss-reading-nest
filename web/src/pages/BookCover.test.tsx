@@ -65,6 +65,18 @@ describe("BookCover", () => {
     expect(onRead).toHaveBeenCalledWith(item);
   });
 
+  it("does not use the reader position as a companion position", () => {
+    const unsyncedItem = {
+      ...item,
+      session: { ...item.session, assistantSyncedPosition: null }
+    };
+
+    renderCover({ item: unsyncedItem });
+
+    expect(screen.getByText("巴巴还没有同步到这里")).toBeInTheDocument();
+    expect(screen.queryByText("巴巴陪小猫读到第 8 页")).not.toBeInTheDocument();
+  });
+
   it("keeps a long full title in the profile while shortening the physical cover", () => {
     const longTitle =
       "雾灯书店：在雨停之前读完一封很长很长的信，然后从下一页继续出发";

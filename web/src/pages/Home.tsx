@@ -131,7 +131,7 @@ export function Home(props: {
         }
       : {
           title: continueItem
-            ? `${partner.viewerName}，昨晚停在${continueItem.session.userCurrentPosition.label}。${partner.companionName}还记得。`
+            ? continueReadingHeading(continueItem, partner)
             : `${partner.viewerName}的私人书房`,
           subtitle: "继续翻开上次停下的地方，书页和想法都还在。"
         };
@@ -249,7 +249,7 @@ export function Home(props: {
               />
             ) : null}
 
-            {filter === "all" && continueItem ? (
+            {filter === "all" && continueItem && hasSharedMemory(continueItem) ? (
               <section className="shared-memory-note" aria-label="我们上次聊到这里">
                 <span className="shared-memory-kicker">我们上次聊到这里</span>
                 <p>{latestSharedMemory(continueItem, partner)}</p>
@@ -517,7 +517,44 @@ function latestSharedMemory(item: BookshelfItem, partner: ReadingPartnerCopy): s
     .map((quote) => quote.note?.trim())
     .find(Boolean);
   if (latestNote) return latestNote;
-  return `${partner.viewerName}停在${item.session.userCurrentPosition.label}，${partner.companionName}还在等你继续。`;
+  if (item.session.assistantSyncedPosition) {
+    return `${partner.companionName}已经同步到${item.session.assistantSyncedPosition.label}，你们可以从这里接着聊。`;
+  }
+  return `${partner.viewerName}停在${item.session.userCurrentPosition.label}，这里还没有留下共同想法。`;
+}
+
+function hasSharedMemory(item: BookshelfItem): boolean {
+  return Boolean(
+    item.session.assistantSyncedPosition ||
+      item.quotes.some((quote) => quote.note?.trim() || quote.clearThought?.trim())
+  );
+}
+
+function continueReadingHeading(item: BookshelfItem, partner: ReadingPartnerCopy): string {
+  const position = item.session.userCurrentPosition.label;
+  const timePhrase = readingTimePhrase(item.session.lastReadAt);
+  const companionPhrase = hasSharedMemory(item)
+    ? `${partner.companionName}还记得。`
+    : `${partner.companionName}等你继续。`;
+  return `${partner.viewerName}，${timePhrase}停在${position}。${companionPhrase}`;
+}
+
+function readingTimePhrase(value: string | undefined, now = new Date()): string {
+  if (!value) return "上次";
+  const date = new Date(value);
+  if (!isValidDate(date)) return "上次";
+  if (dateKey(date) === dateKey(now)) return "今天";
+
+  const yesterday = offsetDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -1);
+  if (dateKey(date) === dateKey(yesterday)) {
+    if (date.getHours() >= 18) return "昨晚";
+    return `昨天${formatClock(date)}，`;
+  }
+  return `${date.getMonth() + 1}月${date.getDate()}日${formatClock(date)}，`;
+}
+
+function formatClock(date: Date): string {
+  return ` ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 
 function LibraryBookCard(props: {

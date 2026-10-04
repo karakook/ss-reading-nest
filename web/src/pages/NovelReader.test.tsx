@@ -336,6 +336,8 @@ describe("NovelReader", () => {
     fireEvent.click(screen.getByRole("button", { name: "叫巴巴来陪读" }));
     expect(screen.getByRole("dialog", { name: "巴巴来陪小猫读" })).toBeInTheDocument();
     expect(screen.getByText("这页我也觉得不对劲。小猫想先听我猜，还是先说你的？")).toBeInTheDocument();
+    expect(screen.getByText("只分享当前页和本页已保存的想法")).toBeInTheDocument();
+    expect(screen.getByText("选中文字请单独使用“问巴巴”")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /巴巴来猜/ }));
     fireEvent.click(screen.getByRole("button", { name: "巴巴，陪我读这一页" }));
 

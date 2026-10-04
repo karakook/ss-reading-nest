@@ -160,9 +160,13 @@ export function BookCover(props: {
           </p>
 
           <div className="cover-companion-memory" aria-label="共同阅读记忆">
-            <strong>{partner.companionName}陪{partner.viewerName}读到{props.item.session.userCurrentPosition.label}</strong>
+            <strong>
+              {props.item.session.assistantSyncedPosition
+                ? `${partner.companionName}陪${partner.viewerName}读到${props.item.session.assistantSyncedPosition.label}`
+                : `${partner.companionName}还没有同步到这里`}
+            </strong>
             <span>我们在这本书里留下了 {thoughtCount(archive)} 条想法</span>
-            <small>上次共读：{formatLastSession(props.item.session.updatedAt)}</small>
+            <small>上次共读：{formatLastSession(props.item.session.lastReadAt)}</small>
           </div>
 
           {availableKinds.length > 0 ? (
