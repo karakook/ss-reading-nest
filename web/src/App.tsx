@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState
@@ -428,6 +429,18 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     const timer = window.setTimeout(() => setToast(""), 2600);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useLayoutEffect(() => {
+    if (screen !== "cover") return;
+    const scrollingElement = document.scrollingElement ?? document.documentElement;
+    scrollingElement.scrollTop = 0;
+    scrollingElement.scrollLeft = 0;
+    document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
+    if (typeof scrollingElement.scrollTo === "function") {
+      scrollingElement.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [screen, selectedBook?.session.id]);
 
 
 

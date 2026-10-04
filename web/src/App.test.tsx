@@ -31,6 +31,36 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "书架" })).toBeInTheDocument();
   });
 
+  it("starts the book details page at the top after leaving a scrolled home page", async () => {
+    const bundle = bookshelfBundle(
+      "cover-scroll-reset-book",
+      "从首页滚动后仍从顶部打开的小说",
+      1,
+      "light_chat",
+      manifest("cover-scroll-reset-source", "r")
+    );
+    Object.defineProperty(window, "openai", {
+      configurable: true,
+      value: {
+        toolOutput: { bookshelfSessions: [bundle], recentSessions: [bundle] },
+        callTool: vi.fn(async () => ({
+          structuredContent: { bookshelfSessions: [bundle], recentSessions: [bundle] }
+        }))
+      }
+    });
+
+    render(<App />);
+    expect(await screen.findByText(bundle.session.title)).toBeInTheDocument();
+    document.documentElement.scrollTop = 640;
+    document.body.scrollTop = 640;
+
+    fireEvent.click(screen.getByRole("button", { name: `打开《${bundle.session.title}》的封面页` }));
+
+    expect(await screen.findByRole("heading", { name: bundle.session.title })).toBeInTheDocument();
+    expect(document.documentElement.scrollTop).toBe(0);
+    expect(document.body.scrollTop).toBe(0);
+  });
+
   it("recovers the novel shelf when the opening result arrives late", async () => {
     const bundle = bookshelfBundle("late-output-book", "后来找回的小说", 2, "light_chat", manifest("late-output", "a"));
     const callTool = vi.fn(async (name: string) => {

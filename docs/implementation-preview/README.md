@@ -16,6 +16,8 @@
 
 ![书籍详情页](./iphone-detail.png)
 
+![从页面顶部开始的书籍详情页](./iphone-detail-top.png)
+
 ![阅读页](./iphone-reader.png)
 
 ![共读底部面板](./iphone-co-read.png)
