@@ -11,11 +11,16 @@ import {
   Sparkles,
   X
 } from "lucide-react";
-import type { Quote, ReadingSession } from "@ss/shared";
+import type { Quote, ReadingCommentMode, ReadingSession } from "@ss/shared";
 import { useHorizontalPaging } from "../hooks/useHorizontalPaging.js";
 import { ReaderHeader } from "../components/ReaderHeader.js";
 import { ReaderActions } from "../components/ReaderActions.js";
 import { ReadingSyncStatus } from "../components/ReadingSyncStatus.js";
+import { CoReadPanel } from "../components/CoReadPanel.js";
+import {
+  DEFAULT_READING_PARTNER_COPY,
+  type ReadingPartnerCopy
+} from "../features/reading-partner/config.js";
 
 type SelectionMode = "thought" | "question" | null;
 
@@ -24,7 +29,7 @@ export function NovelReader(props: {
   chunks: string[];
   savedQuotes: Quote[];
   onPosition: (index: number) => void;
-  onSharePage: (currentText: string) => Promise<void> | void;
+  onSharePage: (currentText: string, mode?: ReadingCommentMode) => Promise<void> | void;
   onAskSelection: (selectedText: string, question: string) => Promise<void> | void;
   onSaveThought: (content: string, note: string) => Promise<void> | void;
   onSaveClearThought: (
@@ -47,7 +52,10 @@ export function NovelReader(props: {
   onCollapse?: () => void;
   initialScrollTop: number;
   onScrollPosition: (scrollTop: number) => void;
+  partner?: ReadingPartnerCopy;
+  layout?: "wide" | "compact";
 }) {
+  const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const index = Math.max(
     0,
     Math.min(props.chunks.length - 1, props.session.userCurrentPosition.index - 1)
@@ -82,6 +90,7 @@ export function NovelReader(props: {
   const [clearThoughtSaving, setClearThoughtSaving] = useState(false);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const [coReadOpen, setCoReadOpen] = useState(false);
   const [jumpPage, setJumpPage] = useState(String(index + 1));
   const [jumpError, setJumpError] = useState("");
   const previous = () => props.onPosition(Math.max(1, index));
@@ -100,6 +109,7 @@ export function NovelReader(props: {
     setClearThoughtDraft("");
     setClearThoughtEditing(false);
     setThoughtsCardOpen(false);
+    setCoReadOpen(false);
   }, [index]);
 
   useEffect(() => {
@@ -286,7 +296,7 @@ export function NovelReader(props: {
 
   return (
     <main
-      className={`reader-shell reader-novel${props.immersive ? " reader-immersive" : ""}`}
+      className={`reader-shell reader-novel ${props.layout === "wide" ? "reader-layout-wide" : "reader-layout-compact"}${props.immersive ? " reader-immersive" : ""}${coReadOpen ? " reader-co-read-open" : ""}`}
     >
       <ReaderHeader
         title={props.session.title}
@@ -300,7 +310,7 @@ export function NovelReader(props: {
         onCollapse={props.onCollapse}
         onOpenNavigation={openNavigation}
       />
-      <ReadingSyncStatus session={props.session} />
+      <ReadingSyncStatus session={props.session} partner={partner} />
       <div className="reader-workspace novel-workspace">
         <div className="novel-reading-column">
           <section
@@ -319,6 +329,7 @@ export function NovelReader(props: {
               <p key={lineIndex}>{highlightLine(line, currentQuotes, openQuoteDetail)}</p>
             ))}
           </article>
+          <p className="reader-selection-hint">长按选中文字，写想法或叫{partner.companionName}。</p>
 
           <div className="page-buttons">
             <button type="button" onClick={previous} disabled={index === 0}>
@@ -371,7 +382,7 @@ export function NovelReader(props: {
             ) : (
               <div className="selection-composer">
                 <label htmlFor="selection-draft">
-                  {selectionMode === "thought" ? "我的想法" : "我想问星星"}
+                  {selectionMode === "thought" ? "我的想法" : `我想问${partner.companionName}`}
                 </label>
                 <textarea
                   id="selection-draft"
@@ -401,7 +412,7 @@ export function NovelReader(props: {
                     onClick={() => void submitQuestion()}
                   >
                     <Send aria-hidden="true" strokeWidth={1.8} />
-                    {submitting ? "正在处理…" : "立即问星星"}
+                    {submitting ? "正在处理…" : `立即问${partner.companionName}`}
                   </button>
                 </div>
               </div>
@@ -435,18 +446,20 @@ export function NovelReader(props: {
                   </button>
                 </header>
                 <div className="thoughts-card-scroll">
-                  {currentThoughts.map((quote, thoughtIndex) => (
+                  {currentThoughts.length === 0 ? (
+                    <p className="thoughts-card-empty">这一页还没有留下想法，读到哪一句，随时都可以叫巴巴一起聊。</p>
+                  ) : currentThoughts.map((quote, thoughtIndex) => (
                     <article key={quote.id} className="thoughts-card-entry">
                       <p className="thoughts-card-kicker">
                         {String(thoughtIndex + 1).padStart(2, "0")} · 原文
                       </p>
                       <blockquote>“{normalizeQuote(quote.content)}”</blockquote>
                       <div className="thoughts-card-section">
-                        <strong>意绪</strong>
+                        <strong>{partner.viewerName}的批注</strong>
                         <p>{quote.note}</p>
                       </div>
                       <div className="thoughts-card-section thoughts-card-clear">
-                        <strong>清思</strong>
+                        <strong>{partner.companionName}留下的话</strong>
                         <p>{quote.clearThought?.trim() || "还没有清思。"}</p>
                       </div>
                       <button
@@ -489,14 +502,14 @@ export function NovelReader(props: {
                 </blockquote>
                 <section className="quote-detail-section">
                   <div className="quote-detail-section-heading">
-                    <strong>意绪</strong>
+                    <strong>{partner.viewerName}的批注</strong>
                     <button type="button" onClick={editActiveThought}>修改意绪</button>
                   </div>
                   <p>{activeQuote.note || "这里还没有写下第一反应。"}</p>
                 </section>
                 <section className="quote-detail-section quote-clear-thought">
                   <div className="quote-detail-section-heading">
-                    <strong>清思</strong>
+                    <strong>{partner.companionName}留下的话</strong>
                     {activeQuote.clearThought?.trim() || clearThoughtDraft.trim() ? (
                       <span className="quote-detail-heading-actions">
                         <button
@@ -520,7 +533,7 @@ export function NovelReader(props: {
                     <textarea
                       value={clearThoughtDraft}
                       onChange={(event) => setClearThoughtDraft(event.target.value)}
-                      placeholder="粘贴星星说得好的地方，或写下聊完之后真正想清楚的内容…"
+                      placeholder={`粘贴${partner.companionName}说得好的地方，或写下聊完之后真正想清楚的内容…`}
                     />
                   ) : (
                     <p className="quote-clear-thought-body">
@@ -646,10 +659,27 @@ export function NovelReader(props: {
           ) : null}
         </div>
       </div>
+      <CoReadPanel
+        open={coReadOpen}
+        title={props.session.title}
+        pageLabel={`第 ${index + 1} 页`}
+        thoughtCount={currentThoughts.length}
+        actionInFlight={props.actionInFlight}
+        partner={partner}
+        onClose={() => setCoReadOpen(false)}
+        onShare={(mode) => {
+          setCoReadOpen(false);
+          void props.onSharePage(current, mode);
+        }}
+        onShowThoughts={() => {
+          setCoReadOpen(false);
+          setThoughtsCardOpen(true);
+        }}
+      />
       <ReaderActions
-        primaryLabel="和星星共读"
+        primaryLabel={`叫${partner.companionName}来陪读`}
         pageLabel={`${index + 1} / ${props.chunks.length}`}
-        onPrimary={() => props.onSharePage(current)}
+        onPrimary={() => setCoReadOpen(true)}
         primaryDisabled={props.actionInFlight}
         onPage={openNavigation}
         onFinish={props.onFinish}
@@ -711,7 +741,8 @@ function highlightLine(line: string, quotes: Quote[], onOpenQuote: (quote: Quote
     return quote ? (
       <mark
         key={`${index}-${part}`}
-        className="quote-highlight"
+        className={`quote-highlight ${quote.clearThought?.trim() ? "companion-annotation" : "user-annotation"}`}
+        data-annotation-role={quote.clearThought?.trim() ? "巴巴留下的话" : "小猫的批注"}
         role="button"
         tabIndex={0}
         title={quote.note ?? "已保存的划线"}

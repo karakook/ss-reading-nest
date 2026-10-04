@@ -18,6 +18,10 @@ import type {
   SessionBundle,
   SourceAvailability
 } from "@ss/shared";
+import {
+  DEFAULT_READING_PARTNER_COPY,
+  type ReadingPartnerCopy
+} from "../features/reading-partner/config.js";
 
 export type BookshelfItem = SessionBundle & {
   sourceAvailability: SourceAvailability;
@@ -76,12 +80,15 @@ export function Home(props: {
   onRefresh?: () => void;
   onNew: () => void;
   onOpen: (item: BookshelfItem) => void;
+  onContinue?: (item: BookshelfItem) => void;
   onReimport: (item: BookshelfItem) => void;
   onManage: (item: BookshelfItem) => void;
   onExpand?: () => void;
   skin: LibrarySkin;
   onSkinChange: (skin: LibrarySkin) => void;
+  partner?: ReadingPartnerCopy;
 }) {
+  const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const [filter, setFilter] = useState<Filter>("all");
   const [view, setView] = useState<LibraryView>("library");
   const novels = useMemo(
@@ -123,14 +130,16 @@ export function Home(props: {
           subtitle: "看见每一次停在书页里的时间。"
         }
       : {
-          title: "我的书房",
-          subtitle: "挑一本书，回到上次停下的地方。"
+          title: continueItem
+            ? `${partner.viewerName}，昨晚停在${continueItem.session.userCurrentPosition.label}。${partner.companionName}还记得。`
+            : `${partner.viewerName}的私人书房`,
+          subtitle: "继续翻开上次停下的地方，书页和想法都还在。"
         };
 
   return (
     <main className="library-app-shell">
       <aside className="library-rail" aria-label="小书房导航">
-        <strong>冰冰和星星的小书房</strong>
+        <strong>{partner.roomName}</strong>
         <nav>
           {LIBRARY_NAV.map((item) => {
             const Icon = item.icon;
@@ -153,8 +162,8 @@ export function Home(props: {
       <section className="home-shell">
         <header className="library-header">
           <div>
-            <span className="visually-hidden">冰冰和星星的小书房</span>
-            <span className="library-kicker">冰冰和星星的小书房</span>
+            <span className="visually-hidden">{partner.roomName}</span>
+            <span className="library-kicker">{partner.roomName}</span>
             <h1>{headerCopy.title}</h1>
             <p>{headerCopy.subtitle}</p>
           </div>
@@ -234,8 +243,18 @@ export function Home(props: {
               <ContinueReadingCard
                 item={continueItem}
                 onOpen={props.onOpen}
+                onContinue={props.onContinue}
                 onManage={props.onManage}
+                partner={partner}
               />
+            ) : null}
+
+            {filter === "all" && continueItem ? (
+              <section className="shared-memory-note" aria-label="我们上次聊到这里">
+                <span className="shared-memory-kicker">我们上次聊到这里</span>
+                <p>{latestSharedMemory(continueItem, partner)}</p>
+                <small>{partner.companionName}会记得这句，等你下次翻到这里。</small>
+              </section>
             ) : null}
 
             <section className="bookshelf-section" aria-label="小说书架">
@@ -439,8 +458,11 @@ function RecordMetric(props: { label: string; value: string; detail: string }) {
 function ContinueReadingCard(props: {
   item: BookshelfItem;
   onOpen: (item: BookshelfItem) => void;
+  onContinue?: (item: BookshelfItem) => void;
   onManage: (item: BookshelfItem) => void;
+  partner?: ReadingPartnerCopy;
 }) {
+  const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const progress = progressInfo(props.item);
   const thoughtTotal = thoughtCount(props.item);
   const missing = needsSource(props.item);
@@ -462,16 +484,19 @@ function ContinueReadingCard(props: {
         <div className="continue-progress-track" aria-hidden="true">
           <span style={{ width: `${progress.percent}%` }} />
         </div>
-        <p>意绪与清思 {thoughtTotal} 条</p>
+        <p>{partner.viewerName}和{partner.companionName}留下了 {thoughtTotal} 条想法</p>
       </div>
       <div className="continue-card-actions">
         <button
           type="button"
           className="action-primary"
-          onClick={() => props.onOpen(props.item)}
+          onClick={() => {
+            if (props.onContinue) props.onContinue(props.item);
+            else props.onOpen(props.item);
+          }}
         >
           <Eye aria-hidden="true" strokeWidth={1.8} />
-          查看详情
+          继续阅读
         </button>
         <button
           type="button"
@@ -484,6 +509,15 @@ function ContinueReadingCard(props: {
       </div>
     </section>
   );
+}
+
+function latestSharedMemory(item: BookshelfItem, partner: ReadingPartnerCopy): string {
+  const latestNote = [...item.quotes]
+    .reverse()
+    .map((quote) => quote.note?.trim())
+    .find(Boolean);
+  if (latestNote) return latestNote;
+  return `${partner.viewerName}停在${item.session.userCurrentPosition.label}，${partner.companionName}还在等你继续。`;
 }
 
 function LibraryBookCard(props: {

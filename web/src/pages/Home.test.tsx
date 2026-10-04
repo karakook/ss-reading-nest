@@ -81,6 +81,14 @@ describe("Home novel bookshelf", () => {
     expect(onOpen).toHaveBeenLastCalledWith(items[1]);
   });
 
+  it("keeps the continue action connected to the saved reading position", () => {
+    const onContinue = vi.fn();
+    renderHome({ onContinue });
+
+    fireEvent.click(screen.getByRole("button", { name: "继续阅读" }));
+    expect(onContinue).toHaveBeenCalledWith(items[0]);
+  });
+
   it("renders and opens a 24-book shelf without truncating older books", () => {
     const manyBooks = Array.from({ length: 24 }, (_, index) =>
       makeItem(
