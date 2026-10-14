@@ -54,6 +54,15 @@ type DailyReading = {
   seconds: number;
 };
 
+type ReadingReward = {
+  pawCount: number;
+  unlockedLetters: number;
+  cycleProgress: number;
+  todaySeconds: number;
+  todayPages: number;
+  todayQualified: boolean;
+};
+
 type BarStyle = CSSProperties & { "--bar-height": string };
 
 const FILTERS: Array<{ value: Filter; label: string }> = [
@@ -122,6 +131,10 @@ export function Home(props: {
   const records = useMemo(
     () => buildReadingRecords(props.readingRecords ?? [], novels),
     [props.readingRecords, novels]
+  );
+  const reward = useMemo(
+    () => buildReadingReward(props.readingRecords ?? []),
+    [props.readingRecords]
   );
   const headerCopy =
     view === "records"
@@ -249,6 +262,10 @@ export function Home(props: {
               />
             ) : null}
 
+            {filter === "all" ? (
+              <ReadingRewardCard reward={reward} partner={partner} />
+            ) : null}
+
             {filter === "all" && continueItem && hasSharedMemory(continueItem) ? (
               <section className="shared-memory-note" aria-label="我们上次聊到这里">
                 <span className="shared-memory-kicker">我们上次聊到这里</span>
@@ -314,6 +331,74 @@ export function Home(props: {
         )}
       </section>
     </main>
+  );
+}
+
+function ReadingRewardCard(props: {
+  reward: ReadingReward;
+  partner: ReadingPartnerCopy;
+}) {
+  const { reward, partner } = props;
+  const remainingMinutes = Math.max(0, Math.ceil((5 * 60 - reward.todaySeconds) / 60));
+  const remainingPages = Math.max(0, 3 - reward.todayPages);
+  const remainingPaws = reward.cycleProgress === 7 ? 0 : 7 - reward.cycleProgress;
+  const latestLetter = reward.unlockedLetters > 0
+    ? rewardLetter(reward.unlockedLetters, partner)
+    : null;
+
+  return (
+    <section className="reading-reward-card" aria-label={`${partner.viewerName}的阅读奖励`}>
+      <div className="reading-reward-summary">
+        <span className="reading-reward-kicker">轻轻读，也会被记住</span>
+        <div className="reading-reward-total">
+          <span className="reading-reward-paw" aria-hidden="true">🐾</span>
+          <strong>{reward.pawCount} 枚猫爪</strong>
+        </div>
+        <p>
+          {reward.todayQualified
+            ? "今天的猫爪已经盖好啦。"
+            : `再读 ${remainingMinutes} 分钟，或者再翻 ${remainingPages} 页，就能盖下今天的猫爪。`}
+        </p>
+        <small>
+          今天已读 {formatRewardMinutes(reward.todaySeconds)} · {reward.todayPages} 页
+        </small>
+      </div>
+
+      <div className="reading-reward-progress">
+        <div className="reading-reward-progress-heading">
+          <span>
+            {reward.unlockedLetters > 0 && reward.cycleProgress < 7
+              ? "下一张小纸条"
+              : `${partner.companionName}的小纸条`}
+          </span>
+          <strong>{reward.cycleProgress} / 7</strong>
+        </div>
+        <div
+          className="reading-reward-paw-row"
+          aria-label={`本轮已经收集 ${reward.cycleProgress} 枚猫爪，共需 7 枚`}
+        >
+          {Array.from({ length: 7 }, (_, index) => (
+            <span
+              key={index}
+              className={index < reward.cycleProgress ? "is-collected" : undefined}
+              aria-hidden="true"
+            >
+              🐾
+            </span>
+          ))}
+        </div>
+        {latestLetter ? (
+          <blockquote className="reading-reward-letter">
+            <span>{partner.companionName}的小纸条 · 第 {reward.unlockedLetters} 封</span>
+            <p>{latestLetter}</p>
+          </blockquote>
+        ) : (
+          <p className="reading-reward-hint">
+            再收集 {remainingPaws} 枚，{partner.companionName}就留一张小纸条。
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -683,6 +768,51 @@ function buildDailyReading(records: ReadingRecordView[]): DailyReading[] {
       seconds: secondsByDate.get(dateKey(date)) ?? 0
     };
   });
+}
+
+function buildReadingReward(records: StoredReadingRecord[], now = new Date()): ReadingReward {
+  const totalsByDate = new Map<string, { seconds: number; pages: number }>();
+  for (const record of records) {
+    const ended = new Date(record.endedAt);
+    if (!isValidDate(ended)) continue;
+    const recordDateKey = dateKey(ended);
+    const current = totalsByDate.get(recordDateKey) ?? { seconds: 0, pages: 0 };
+    current.seconds += Math.max(0, Math.round(record.durationSeconds));
+    current.pages += Math.max(0, Math.round(record.pagesRead));
+    totalsByDate.set(recordDateKey, current);
+  }
+
+  const todayKey = dateKey(now);
+  const today = totalsByDate.get(todayKey) ?? { seconds: 0, pages: 0 };
+  const qualifyingDays = [...totalsByDate.entries()].filter(
+    ([key, total]) => key <= todayKey && (total.seconds >= 5 * 60 || total.pages >= 3)
+  );
+  const pawCount = qualifyingDays.length;
+  const unlockedLetters = Math.floor(pawCount / 7);
+  const cycleProgress = pawCount === 0 ? 0 : ((pawCount - 1) % 7) + 1;
+
+  return {
+    pawCount,
+    unlockedLetters,
+    cycleProgress,
+    todaySeconds: today.seconds,
+    todayPages: today.pages,
+    todayQualified: today.seconds >= 5 * 60 || today.pages >= 3
+  };
+}
+
+function formatRewardMinutes(seconds: number): string {
+  if (seconds < 60) return seconds > 0 ? "不到 1 分钟" : "0 分钟";
+  return `${Math.floor(seconds / 60)} 分钟`;
+}
+
+function rewardLetter(index: number, partner: ReadingPartnerCopy): string {
+  const letters = [
+    `${partner.viewerName}不是靠一口气读到这里的，是一次次愿意回来。${partner.companionName}把这七枚猫爪好好收起来了。`,
+    `书页没有催${partner.viewerName}，可${partner.viewerName}还是又回来了。慢慢读也很好，${partner.companionName}一直在这一页旁边。`,
+    `${partner.viewerName}已经把“偶尔翻开”读成了一条自己的路。今天这枚猫爪，也算我们共同留下的。`
+  ];
+  return letters[(index - 1) % letters.length] ?? letters[0]!;
 }
 
 function totalPagesForRecord(

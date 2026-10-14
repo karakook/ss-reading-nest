@@ -2218,6 +2218,130 @@ textarea:focus {
   background: var(--wine);
 }
 
+.reading-reward-card {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(300px, 1.2fr);
+  gap: 22px;
+  margin: -8px 0 26px;
+  padding: 20px 22px;
+  border: 1px solid color-mix(in srgb, var(--rose-gold, #b98575) 42%, var(--line));
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--blush) 44%, transparent), transparent 14rem),
+    color-mix(in srgb, var(--paper) 94%, transparent);
+  box-shadow: 0 18px 46px color-mix(in srgb, var(--rose-shadow) 8%, transparent);
+}
+
+.reading-reward-summary,
+.reading-reward-progress {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+}
+
+.reading-reward-kicker,
+.reading-reward-progress-heading span,
+.reading-reward-letter span {
+  color: var(--wine, var(--blue-strong));
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reading-reward-total {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reading-reward-total strong {
+  color: var(--wine-dark, var(--ink));
+  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+  font-size: 25px;
+}
+
+.reading-reward-paw {
+  font-size: 24px;
+  filter: saturate(.72);
+}
+
+.reading-reward-summary p,
+.reading-reward-summary small,
+.reading-reward-hint,
+.reading-reward-letter p {
+  margin: 0;
+}
+
+.reading-reward-summary p {
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.reading-reward-summary small,
+.reading-reward-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.reading-reward-progress {
+  padding-left: 22px;
+  border-left: 1px solid color-mix(in srgb, var(--rose-gold, #b98575) 28%, var(--line));
+}
+
+.reading-reward-progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reading-reward-progress-heading strong {
+  color: var(--wine-dark, var(--ink));
+  font-size: 13px;
+}
+
+.reading-reward-paw-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(26px, 1fr));
+  gap: 7px;
+}
+
+.reading-reward-paw-row span {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  border: 1px dashed color-mix(in srgb, var(--line) 86%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  font-size: 15px;
+  opacity: .23;
+  filter: grayscale(1);
+}
+
+.reading-reward-paw-row span.is-collected {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--rose-gold, #b98575) 48%, var(--line));
+  background: var(--rose-pale, var(--blue-soft));
+  opacity: 1;
+  filter: none;
+}
+
+.reading-reward-letter {
+  display: grid;
+  gap: 5px;
+  margin: 3px 0 0;
+  padding: 12px 14px;
+  border-radius: 4px 13px 13px 4px;
+  background: color-mix(in srgb, var(--rose-pale, #ebd6ce) 62%, var(--paper));
+}
+
+.reading-reward-letter p {
+  color: var(--ink);
+  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
 .shared-memory-note {
   display: grid;
   gap: 7px;
@@ -2493,6 +2617,9 @@ textarea:focus {
   .library-app-shell,
   .cover-shell { width: 100%; }
   .library-header h1 { font-size: clamp(1.9rem, 9vw, 2.35rem); }
+  .reading-reward-card { grid-template-columns: 1fr; gap: 16px; margin-inline: 0; padding: 18px; }
+  .reading-reward-progress { padding: 15px 0 0; border-top: 1px solid color-mix(in srgb, var(--rose-gold, #b98575) 28%, var(--line)); border-left: 0; }
+  .reading-reward-paw-row { gap: 5px; }
   .shared-memory-note { margin-inline: 0; }
   .reader-shell { width: 100%; }
   .reader-scroll { padding-inline: max(16px, var(--safe-left)) max(16px, var(--safe-right)); }
