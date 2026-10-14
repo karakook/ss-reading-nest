@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { DEFAULT_SESSION_PREFERENCES } from "@ss/shared";
+import { DEFAULT_SESSION_PREFERENCES, type ReadingRecord } from "@ss/shared";
 import { Home, type BookshelfItem } from "./Home.js";
 
 const items: BookshelfItem[] = [
@@ -176,6 +176,45 @@ describe("Home novel bookshelf", () => {
     expect(screen.queryByText(/演示数据/)).not.toBeInTheDocument();
   });
 
+  it("collects one paw per qualifying day and combines sessions from the same day", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-28T12:00:00.000Z"));
+
+    renderHome({
+      readingRecords: [
+        makeReadingRecord("today-a", "2026-07-28T08:00:00.000Z", 180, 1),
+        makeReadingRecord("today-b", "2026-07-28T09:00:00.000Z", 121, 1),
+        makeReadingRecord("yesterday", "2026-07-27T09:00:00.000Z", 30, 3),
+        makeReadingRecord("short-day", "2026-07-26T09:00:00.000Z", 60, 1)
+      ]
+    });
+
+    expect(screen.getByRole("region", { name: "小猫的阅读奖励" })).toBeInTheDocument();
+    expect(screen.getByText("2 枚猫爪")).toBeInTheDocument();
+    expect(screen.getByText("2 / 7")).toBeInTheDocument();
+    expect(screen.getByText("今天的猫爪已经盖好啦。")).toBeInTheDocument();
+    expect(screen.getByText("今天已读 5 分钟 · 2 页")).toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+
+  it("unlocks a companion letter after seven qualifying reading days", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-28T12:00:00.000Z"));
+    const records = Array.from({ length: 7 }, (_, index) => {
+      const day = String(28 - index).padStart(2, "0");
+      return makeReadingRecord(`reward-${index}`, `2026-07-${day}T09:00:00.000Z`, 60, 3);
+    });
+
+    renderHome({ readingRecords: records });
+
+    expect(screen.getByText("7 枚猫爪")).toBeInTheDocument();
+    expect(screen.getByText("巴巴的小纸条 · 第 1 封")).toBeInTheDocument();
+    expect(screen.getByText(/一次次愿意回来/)).toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+
   it("renders real reading records instead of prototype data", () => {
     renderHome({
       readingRecords: [
@@ -271,5 +310,28 @@ function makeItem(
     bookmarks: [],
     sourceAvailability,
     ...(latestComment ? { latestComment } : {})
+  };
+}
+
+function makeReadingRecord(
+  id: string,
+  endedAt: string,
+  durationSeconds: number,
+  pagesRead: number
+): ReadingRecord {
+  const ended = new Date(endedAt);
+  const started = new Date(ended.getTime() - durationSeconds * 1000);
+  return {
+    id,
+    sessionId: "a",
+    bookTitle: "可继续的小说",
+    startedAt: started.toISOString(),
+    endedAt: ended.toISOString(),
+    durationSeconds,
+    startPosition: { kind: "paragraph", index: 1, total: 30, label: "第 1 页" },
+    endPosition: { kind: "paragraph", index: Math.max(1, pagesRead), total: 30, label: `第 ${Math.max(1, pagesRead)} 页` },
+    pagesRead,
+    operationId: `${id}-operation`,
+    createdAt: ended.toISOString()
   };
 }
