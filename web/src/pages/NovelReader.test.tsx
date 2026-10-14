@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SESSION_PREFERENCES } from "@ss/shared";
 import type { Quote } from "@ss/shared";
 import { NovelReader } from "./NovelReader.js";
@@ -54,6 +54,34 @@ function selectText(text: string, anchorNode: Node) {
 }
 
 describe("NovelReader", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("adjusts, bolds, and remembers the reading font", () => {
+    const props = makeProps();
+    const firstRender = render(<NovelReader {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "字体设置" }));
+    expect(screen.getByRole("dialog", { name: "字体设置" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "放大字号" }));
+    fireEvent.click(screen.getByRole("button", { name: "正文加粗" }));
+
+    const article = firstRender.container.querySelector<HTMLElement>(".novel-paper")!;
+    expect(article.style.getPropertyValue("--reader-font-size")).toBe("19px");
+    expect(article.style.getPropertyValue("--reader-font-weight")).toBe("700");
+    expect(JSON.parse(localStorage.getItem("reading-nest-reader-typography") ?? "{}")).toEqual({
+      fontSize: 19,
+      bold: true
+    });
+
+    firstRender.unmount();
+    const secondRender = render(<NovelReader {...props} />);
+    const restoredArticle = secondRender.container.querySelector<HTMLElement>(".novel-paper")!;
+    expect(restoredArticle.style.getPropertyValue("--reader-font-size")).toBe("19px");
+    expect(restoredArticle.style.getPropertyValue("--reader-font-weight")).toBe("700");
+  });
+
   it("keeps the page number in the bottom action bar without a more-actions entry", () => {
     render(<NovelReader {...makeProps()} />);
 
