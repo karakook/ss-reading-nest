@@ -89,6 +89,13 @@ html[data-display-mode="fullscreen"] .app {
   --muted: #71828b;
   --line: #d8e3e5;
   --danger: #ad5b55;
+  --wine: #4d7891;
+  --wine-dark: #365f73;
+  --rose-gold: #c8ae7b;
+  --rose-pale: #e9f4f7;
+  --peach: #f3e5e9;
+  --peach-strong: #b98575;
+  --blue-pale: #f3f7f7;
   --accent-gradient: linear-gradient(135deg, #577f98 0%, #7facc0 76%, #c8ae7b 150%);
 }
 .library-theme-pink {
@@ -108,6 +115,13 @@ html[data-display-mode="fullscreen"] .app {
   --muted: #8d7b77;
   --line: #eaded5;
   --danger: #af5d65;
+  --wine: #b9767c;
+  --wine-dark: #91585e;
+  --rose-gold: #d8b66f;
+  --rose-pale: #fae9e7;
+  --peach: #f4dadd;
+  --peach-strong: #bd7b82;
+  --blue-pale: #fff8f5;
   --accent-gradient: linear-gradient(135deg, #bd7b82, #d8b66f);
 }
 .library-theme-beige {
@@ -127,6 +141,13 @@ html[data-display-mode="fullscreen"] .app {
   --muted: #8d8475;
   --line: #ded2bf;
   --danger: #ad5b55;
+  --wine: #7e6a4b;
+  --wine-dark: #5f4f38;
+  --rose-gold: #c9a86a;
+  --rose-pale: #f5ecdb;
+  --peach: #efe1d4;
+  --peach-strong: #9c855f;
+  --blue-pale: #f3eee5;
   --accent-gradient: linear-gradient(135deg, #8c7552, #c7a568);
 }
 .library-theme-green {
@@ -146,6 +167,13 @@ html[data-display-mode="fullscreen"] .app {
   --muted: #70827b;
   --line: #d2ded7;
   --danger: #a65f62;
+  --wine: #365f53;
+  --wine-dark: #28493f;
+  --rose-gold: #c7aa74;
+  --rose-pale: #e2eee7;
+  --peach: #eee2e5;
+  --peach-strong: #6f9487;
+  --blue-pale: #edf2ee;
   --accent-gradient: linear-gradient(135deg, #31584e 0%, #6f9487 76%, #c7aa74 150%);
 }
 
@@ -1041,6 +1069,7 @@ html[data-display-mode="fullscreen"] .app {
 }
 .reader-dock-button,
 .reader-collapse-button,
+.reader-typography-button,
 .reader-toc-button,
 .reader-display-button {
   display: inline-flex;
@@ -1103,7 +1132,8 @@ html[data-display-mode="fullscreen"] .app {
   padding: 18px 8px 26px;
   color: var(--ink);
   font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
-  font-size: 18px;
+  font-size: var(--reader-font-size, 18px);
+  font-weight: var(--reader-font-weight, 400);
   line-height: 1.95;
   text-wrap: pretty;
 }
@@ -1474,6 +1504,82 @@ html[data-display-mode="fullscreen"] .app {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.reader-typography-backdrop { z-index: 25; }
+.reader-typography-sheet { display: grid; gap: 18px; }
+.reader-typography-controls { display: grid; gap: 12px; }
+.reader-typography-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--blue-pale, var(--surface)) 45%, var(--surface));
+}
+.reader-typography-row > div:first-child { display: grid; gap: 3px; }
+.reader-typography-row strong,
+.reader-bold-toggle strong { font-size: 14px; }
+.reader-typography-row span,
+.reader-bold-toggle small { color: var(--muted); font-size: 11px; }
+.reader-font-size-controls {
+  display: grid;
+  grid-template-columns: 40px 58px 40px;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.reader-font-size-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+.reader-font-size-controls button svg { width: 17px; height: 17px; }
+.reader-font-size-controls output { text-align: center; font-size: 14px; font-weight: 820; }
+.reader-bold-toggle {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-align: left;
+}
+.reader-bold-toggle > span:first-child {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--wine-dark, var(--blue-strong));
+  font-family: Georgia, serif;
+  font-size: 21px;
+  font-weight: 800;
+}
+.reader-bold-toggle > span:last-child { display: grid; gap: 3px; }
+.reader-bold-toggle[aria-pressed="true"] {
+  border-color: var(--wine, var(--blue-strong));
+  background: color-mix(in srgb, var(--rose-pale, var(--blue-soft)) 64%, var(--surface));
+}
+.reader-typography-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 13px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.reader-typography-reset svg { width: 15px; height: 15px; }
 .sheet-kicker {
   color: var(--blue-strong);
   font-size: 11px;
@@ -1886,7 +1992,7 @@ html[data-display-mode="fullscreen"] .app {
   .cover-actions { justify-content: center; }
   .reader-shell { width: 100%; }
   .reader-scroll { padding: 30px 42px calc(48px + var(--safe-bottom)); }
-  .novel-paper { width: min(100%, 680px); font-size: 19px; line-height: 1.95; }
+  .novel-paper { width: min(100%, 680px); font-size: var(--reader-font-size, 19px); line-height: 1.95; }
 }
 
 @media (max-width: 699px) {
@@ -1943,7 +2049,7 @@ html[data-display-mode="fullscreen"] .app {
     font-size: 10px;
   }
   .reader-scroll { padding: 18px 16px calc(36px + var(--safe-bottom)); }
-  .novel-paper { padding-inline: 4px; font-size: 17px; line-height: 1.92; }
+  .novel-paper { padding-inline: 4px; font-size: var(--reader-font-size, 17px); line-height: 1.92; }
   .page-buttons { grid-template-columns: minmax(82px, 1fr) auto minmax(82px, 1fr); gap: 8px; }
   .page-buttons button { padding-inline: 10px; font-size: 14px; }
   .reader-actions { gap: 8px; padding-inline: 10px; }
@@ -1982,11 +2088,7 @@ html[data-display-mode="fullscreen"] .app {
 }
 
 /* Shared reading room visual language and content-width responsive layout. */
-:root,
-.library-theme-blue,
-.library-theme-pink,
-.library-theme-beige,
-.library-theme-green {
+:root {
   --cream: #f5ece5;
   --paper: #fffaf5;
   --surface: #fffdf9;
@@ -2197,6 +2299,7 @@ textarea:focus {
 .reader-header-action,
 .reader-dock-button,
 .reader-collapse-button,
+.reader-typography-button,
 .reader-toc-button,
 .reader-display-button {
   color: var(--wine-dark, var(--blue-strong));
@@ -2225,7 +2328,8 @@ textarea:focus {
   min-height: 0;
   padding: clamp(24px, 4vh, 48px) clamp(4px, 1vw, 14px) 32px;
   color: var(--ink);
-  font-size: clamp(17px, 1.6vw, 20px);
+  font-size: var(--reader-font-size, clamp(17px, 1.6vw, 20px));
+  font-weight: var(--reader-font-weight, 400);
   line-height: 1.95;
   overflow-wrap: anywhere;
 }
@@ -2392,6 +2496,6 @@ textarea:focus {
   .shared-memory-note { margin-inline: 0; }
   .reader-shell { width: 100%; }
   .reader-scroll { padding-inline: max(16px, var(--safe-left)) max(16px, var(--safe-right)); }
-  .novel-paper { font-size: 17px; line-height: 1.92; }
+  .novel-paper { font-size: var(--reader-font-size, 17px); line-height: 1.92; }
   .co-read-panel { border-radius: 24px 24px 12px 12px; }
 }

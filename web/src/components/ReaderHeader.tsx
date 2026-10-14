@@ -4,7 +4,8 @@ import {
   Maximize2,
   Minimize2,
   PanelTopClose,
-  PictureInPicture2
+  PictureInPicture2,
+  Type
 } from "lucide-react";
 
 export function ReaderHeader(props: {
@@ -17,6 +18,7 @@ export function ReaderHeader(props: {
   onDock?: () => void;
   canCollapse?: boolean;
   onCollapse?: () => void;
+  onOpenTypography?: () => void;
   onOpenNavigation?: () => void;
 }) {
   const fullscreenLabel = props.fullscreenLabel ?? "全屏阅读";
@@ -60,6 +62,18 @@ export function ReaderHeader(props: {
           >
             <PanelTopClose className="reader-header-action-icon" aria-hidden="true" strokeWidth={1.8} />
             <span>收起</span>
+          </button>
+        ) : null}
+        {props.onOpenTypography ? (
+          <button
+            type="button"
+            className="reader-header-action reader-typography-button"
+            onClick={props.onOpenTypography}
+            aria-label="字体设置"
+            title="字体设置"
+          >
+            <Type className="reader-header-action-icon" aria-hidden="true" strokeWidth={1.8} />
+            <span>字体</span>
           </button>
         ) : null}
         {props.onOpenNavigation ? (

@@ -31,6 +31,19 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "书架" })).toBeInTheDocument();
   });
 
+  it("applies and remembers the selected bookshelf color theme", () => {
+    const { container, unmount } = render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "墨绿" }));
+
+    const app = container.querySelector<HTMLElement>(".app")!;
+    expect(app).toHaveClass("library-theme-green");
+    expect(localStorage.getItem("reading-nest-library-skin")).toBe("green");
+
+    unmount();
+    const restored = render(<App />);
+    expect(restored.container.querySelector(".app")).toHaveClass("library-theme-green");
+  });
+
   it("starts the book details page at the top after leaving a scrolled home page", async () => {
     const bundle = bookshelfBundle(
       "cover-scroll-reset-book",

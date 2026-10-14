@@ -1,11 +1,14 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
   MessageCircleQuestion,
+  Minus,
   PencilLine,
+  Plus,
+  RotateCcw,
   Save,
   Send,
   Sparkles,
@@ -23,6 +26,16 @@ import {
 } from "../features/reading-partner/config.js";
 
 type SelectionMode = "thought" | "question" | null;
+
+type ReaderTypography = {
+  fontSize: number;
+  bold: boolean;
+};
+
+const READER_TYPOGRAPHY_STORAGE_KEY = "reading-nest-reader-typography";
+const DEFAULT_READER_TYPOGRAPHY: ReaderTypography = { fontSize: 18, bold: false };
+const MIN_READER_FONT_SIZE = 15;
+const MAX_READER_FONT_SIZE = 26;
 
 export function NovelReader(props: {
   session: ReadingSession;
@@ -90,6 +103,8 @@ export function NovelReader(props: {
   const [clearThoughtSaving, setClearThoughtSaving] = useState(false);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const [typographyOpen, setTypographyOpen] = useState(false);
+  const [readerTypography, setReaderTypography] = useState<ReaderTypography>(readReaderTypography);
   const [coReadOpen, setCoReadOpen] = useState(false);
   const [jumpPage, setJumpPage] = useState(String(index + 1));
   const [jumpError, setJumpError] = useState("");
@@ -126,6 +141,20 @@ export function NovelReader(props: {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [navigationOpen]);
+
+  useEffect(() => {
+    if (!typographyOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setTypographyOpen(false);
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [typographyOpen]);
+
+  const readerTypographyStyle = {
+    "--reader-font-size": `${readerTypography.fontSize}px`,
+    "--reader-font-weight": readerTypography.bold ? "700" : "400"
+  } as CSSProperties;
 
   function clearSelection() {
     setSelected("");
@@ -174,6 +203,19 @@ export function NovelReader(props: {
     setJumpPage(String(index + 1));
     setJumpError("");
     setNavigationOpen(true);
+  }
+
+  function updateReaderTypography(next: ReaderTypography) {
+    const normalized = {
+      fontSize: clampReaderFontSize(next.fontSize),
+      bold: next.bold
+    };
+    setReaderTypography(normalized);
+    try {
+      window.localStorage.setItem(READER_TYPOGRAPHY_STORAGE_KEY, JSON.stringify(normalized));
+    } catch {
+      // Embedded hosts may disable storage; the setting still works for this session.
+    }
   }
 
   function goToPage(page: number) {
@@ -308,6 +350,7 @@ export function NovelReader(props: {
         onDock={props.onRequestPip}
         canCollapse={props.canCollapse}
         onCollapse={props.onCollapse}
+        onOpenTypography={() => setTypographyOpen(true)}
         onOpenNavigation={openNavigation}
       />
       <ReadingSyncStatus session={props.session} partner={partner} />
@@ -324,7 +367,7 @@ export function NovelReader(props: {
               window.setTimeout(captureSelection, 0);
             }}
           >
-          <article ref={articleRef} className="novel-paper">
+          <article ref={articleRef} className="novel-paper" style={readerTypographyStyle}>
             {current.split("\n").map((line, lineIndex) => (
               <p key={lineIndex}>{highlightLine(line, currentQuotes, openQuoteDetail)}</p>
             ))}
@@ -571,6 +614,98 @@ export function NovelReader(props: {
               </section>
             </div>
           ) : null}
+          {typographyOpen ? (
+            <div
+              className="sheet-backdrop reader-typography-backdrop"
+              role="presentation"
+              onClick={() => setTypographyOpen(false)}
+            >
+              <section
+                className="bottom-sheet reader-typography-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-label="字体设置"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="sheet-grip" />
+                <header className="sheet-header">
+                  <div>
+                    <span className="sheet-kicker">阅读显示</span>
+                    <h2>字体设置</h2>
+                    <p>调整会立即生效，并记在这台设备上。</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="sheet-close"
+                    aria-label="关闭字体设置"
+                    onClick={() => setTypographyOpen(false)}
+                  >
+                    <X className="dialog-close-icon" aria-hidden="true" strokeWidth={1.8} />
+                  </button>
+                </header>
+
+                <div className="reader-typography-controls">
+                  <section className="reader-typography-row">
+                    <div>
+                      <strong>字号</strong>
+                      <span>可在 {MIN_READER_FONT_SIZE}–{MAX_READER_FONT_SIZE}px 之间调整</span>
+                    </div>
+                    <div className="reader-font-size-controls">
+                      <button
+                        type="button"
+                        aria-label="缩小字号"
+                        disabled={readerTypography.fontSize <= MIN_READER_FONT_SIZE}
+                        onClick={() => updateReaderTypography({
+                          ...readerTypography,
+                          fontSize: readerTypography.fontSize - 1
+                        })}
+                      >
+                        <Minus aria-hidden="true" strokeWidth={2} />
+                      </button>
+                      <output aria-label="当前字号">{readerTypography.fontSize}px</output>
+                      <button
+                        type="button"
+                        aria-label="放大字号"
+                        disabled={readerTypography.fontSize >= MAX_READER_FONT_SIZE}
+                        onClick={() => updateReaderTypography({
+                          ...readerTypography,
+                          fontSize: readerTypography.fontSize + 1
+                        })}
+                      >
+                        <Plus aria-hidden="true" strokeWidth={2} />
+                      </button>
+                    </div>
+                  </section>
+
+                  <button
+                    type="button"
+                    className="reader-bold-toggle"
+                    aria-label="正文加粗"
+                    aria-pressed={readerTypography.bold}
+                    onClick={() => updateReaderTypography({
+                      ...readerTypography,
+                      bold: !readerTypography.bold
+                    })}
+                  >
+                    <span aria-hidden="true">B</span>
+                    <span>
+                      <strong>正文加粗</strong>
+                      <small>{readerTypography.bold ? "已开启" : "未开启"}</small>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="reader-typography-reset"
+                    onClick={() => updateReaderTypography(DEFAULT_READER_TYPOGRAPHY)}
+                  >
+                    <RotateCcw aria-hidden="true" strokeWidth={1.8} />
+                    恢复默认
+                  </button>
+                </div>
+              </section>
+            </div>
+          ) : null}
           {navigationOpen ? (
             <div
               className="toc-drawer-backdrop"
@@ -727,6 +862,26 @@ function normalizePageNumber(value: string) {
   return value
     .trim()
     .replace(/[０-９]/g, (char) => String(char.charCodeAt(0) - 0xff10));
+}
+
+function clampReaderFontSize(value: number) {
+  return Math.min(MAX_READER_FONT_SIZE, Math.max(MIN_READER_FONT_SIZE, Math.round(value)));
+}
+
+function readReaderTypography(): ReaderTypography {
+  try {
+    const stored = window.localStorage.getItem(READER_TYPOGRAPHY_STORAGE_KEY);
+    if (!stored) return DEFAULT_READER_TYPOGRAPHY;
+    const parsed = JSON.parse(stored) as Partial<ReaderTypography>;
+    return {
+      fontSize: clampReaderFontSize(
+        typeof parsed.fontSize === "number" ? parsed.fontSize : DEFAULT_READER_TYPOGRAPHY.fontSize
+      ),
+      bold: parsed.bold === true
+    };
+  } catch {
+    return DEFAULT_READER_TYPOGRAPHY;
+  }
 }
 
 function highlightLine(line: string, quotes: Quote[], onOpenQuote: (quote: Quote) => void) {
