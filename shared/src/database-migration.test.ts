@@ -323,6 +323,41 @@ describe("migrateReadingDatabase v5", () => {
     expect(migrated.readingRecords).toEqual([readingRecord]);
   });
 
+  it("keeps valid drawer notes while dropping malformed notes", () => {
+    const migrated = migrateReadingDatabase({
+      schemaVersion: 5,
+      sessions: [],
+      quotes: [],
+      reactions: [],
+      bookmarks: [],
+      drawerItems: [
+        {
+          id: "drawer-1",
+          content: "留给以后再看的话。",
+          createdAt: NOW,
+          seen: false,
+          operationId: "drawer-op-1"
+        },
+        {
+          id: "drawer-bad",
+          content: 42,
+          createdAt: NOW,
+          seen: false
+        }
+      ]
+    });
+
+    expect(migrated.drawerItems).toEqual([
+      {
+        id: "drawer-1",
+        content: "留给以后再看的话。",
+        createdAt: NOW,
+        seen: false,
+        operationId: "drawer-op-1"
+      }
+    ]);
+  });
+
   it("does not introduce forbidden source or chat fields into serialized state", () => {
     const migrated = migrateReadingDatabase({
       schemaVersion: 3,

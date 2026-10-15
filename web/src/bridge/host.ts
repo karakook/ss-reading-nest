@@ -88,15 +88,18 @@ function connectApp() {
       nextApp.ontoolresult = (result) => {
         const structuredContent = result.structuredContent;
         const privateBookshelf = result._meta?.privateBookshelf;
+        const drawerItems = result._meta?.drawerItems;
         if (
           (!structuredContent || typeof structuredContent !== "object") &&
-          (!privateBookshelf || typeof privateBookshelf !== "object")
+          (!privateBookshelf || typeof privateBookshelf !== "object") &&
+          !Array.isArray(drawerItems)
         ) {
           return;
         }
         latestToolOutput = mergeHostOutput(latestToolOutput, {
           ...(structuredContent && typeof structuredContent === "object" ? structuredContent : {}),
-          ...(privateBookshelf && typeof privateBookshelf === "object" ? privateBookshelf : {})
+          ...(privateBookshelf && typeof privateBookshelf === "object" ? privateBookshelf : {}),
+          ...(Array.isArray(drawerItems) ? { drawerItems } : {})
         });
         for (const listener of toolOutputListeners) listener(latestToolOutput);
       };

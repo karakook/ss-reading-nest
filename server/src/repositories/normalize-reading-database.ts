@@ -1,6 +1,7 @@
 import {
   migrateReadingDatabase,
   type Bookmark,
+  type DrawerItem,
   type Quote,
   type Reaction,
   type ReadingDatabase,
@@ -17,7 +18,8 @@ export function normalizeReadingDatabase(input: unknown): ReadingDatabase {
     quotes: database.quotes.map(copyQuote),
     reactions: database.reactions.map(copyReaction),
     bookmarks: database.bookmarks.map(copyBookmark),
-    readingRecords: database.readingRecords.map(copyReadingRecord)
+    readingRecords: database.readingRecords.map(copyReadingRecord),
+    ...(database.drawerItems ? { drawerItems: database.drawerItems.map(copyDrawerItem) } : {})
   };
 }
 
@@ -122,5 +124,15 @@ function copyReadingRecord(record: ReadingRecord): ReadingRecord {
     pagesRead: record.pagesRead,
     ...(record.operationId ? { operationId: record.operationId } : {}),
     createdAt: record.createdAt
+  };
+}
+
+function copyDrawerItem(item: DrawerItem): DrawerItem {
+  return {
+    id: item.id,
+    content: item.content,
+    createdAt: item.createdAt,
+    seen: item.seen,
+    ...(item.operationId ? { operationId: item.operationId } : {})
   };
 }

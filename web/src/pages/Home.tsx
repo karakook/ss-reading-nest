@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import {
+  Archive,
   BookOpen,
   Eye,
   Ellipsis,
@@ -14,6 +15,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import type {
+  DrawerItem,
   ReadingRecord as StoredReadingRecord,
   SessionBundle,
   SourceAvailability
@@ -28,7 +30,7 @@ export type BookshelfItem = SessionBundle & {
 };
 
 type Filter = "all" | "active" | "completed" | "missing";
-type LibraryView = "library" | "records";
+type LibraryView = "library" | "records" | "drawer";
 export type LibrarySkin = "blue" | "pink" | "beige" | "green";
 
 type ReadingRecordView = {
@@ -78,7 +80,8 @@ const LIBRARY_NAV: Array<{
   view: LibraryView;
 }> = [
   { label: "我的书房", icon: BookOpen, view: "library" },
-  { label: "阅读记录", icon: History, view: "records" }
+  { label: "阅读记录", icon: History, view: "records" },
+  { label: "小抽屉", icon: Archive, view: "drawer" }
 ];
 
 export function Home(props: {
@@ -93,6 +96,8 @@ export function Home(props: {
   onReimport: (item: BookshelfItem) => void;
   onManage: (item: BookshelfItem) => void;
   onExpand?: () => void;
+  drawerItems?: DrawerItem[];
+  onDrawerOpen?: () => void;
   skin: LibrarySkin;
   onSkinChange: (skin: LibrarySkin) => void;
   partner?: ReadingPartnerCopy;
@@ -136,8 +141,14 @@ export function Home(props: {
     () => buildReadingReward(props.readingRecords ?? []),
     [props.readingRecords]
   );
+  const hasUnseenDrawer = props.drawerItems?.some((item) => !item.seen) ?? false;
   const headerCopy =
-    view === "records"
+    view === "drawer"
+      ? {
+          title: "小抽屉",
+          subtitle: "有些话不急着当下说，想起来的时候再来看看。"
+        }
+      : view === "records"
       ? {
           title: "阅读记录",
           subtitle: "看见每一次停在书页里的时间。"
@@ -162,9 +173,16 @@ export function Home(props: {
                 type="button"
                 className="library-rail-item"
                 aria-current={item.view === view ? "page" : undefined}
-                onClick={() => setView(item.view)}
+                onClick={() => {
+                  setView(item.view);
+                  if (item.view === "drawer") props.onDrawerOpen?.();
+                }}
               >
-                <Icon className="library-rail-icon" aria-hidden="true" strokeWidth={1.75} />
+                <Icon
+                  className={`library-rail-icon${item.view === "drawer" && hasUnseenDrawer ? " drawer-icon-has-unseen" : ""}`}
+                  aria-hidden="true"
+                  strokeWidth={1.75}
+                />
                 <span>{item.label}</span>
               </button>
             );
@@ -248,6 +266,16 @@ export function Home(props: {
           >
             阅读记录
           </button>
+          <button
+            type="button"
+            aria-pressed={view === "drawer"}
+            onClick={() => {
+              setView("drawer");
+              props.onDrawerOpen?.();
+            }}
+          >
+            小抽屉
+          </button>
         </div>
 
         {view === "library" ? (
@@ -326,12 +354,63 @@ export function Home(props: {
               )}
             </section>
           </>
+        ) : view === "drawer" ? (
+          <DrawerView items={props.drawerItems ?? []} />
         ) : (
           <ReadingRecordsView records={records} />
         )}
       </section>
     </main>
   );
+}
+
+function DrawerView(props: { items: DrawerItem[] }) {
+  const items = [...props.items].sort((left, right) => {
+    const created = right.createdAt.localeCompare(left.createdAt);
+    return created || right.id.localeCompare(left.id);
+  });
+
+  return (
+    <section className="drawer-view" aria-label="小抽屉">
+      <div className="drawer-intro">
+        <span className="drawer-kicker">留给以后打开</span>
+        <p>有些话不急着在当下说，想起来的时候再来看看。</p>
+        <small>这里不会弹通知，也不会催你。</small>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="empty-nest drawer-empty">
+          抽屉还是空的。巴巴有想留的话，会安静放在这里。
+        </div>
+      ) : (
+        <div className="drawer-list">
+          {items.map((item) => (
+            <article
+              key={item.id}
+              className={`drawer-note${item.seen ? "" : " drawer-note-new"}`}
+            >
+              <div className="drawer-note-top">
+                <span className="drawer-note-mark" aria-hidden="true">♡</span>
+                <time dateTime={item.createdAt}>{formatDrawerTime(item.createdAt)}</time>
+              </div>
+              <p>{item.content}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function formatDrawerTime(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
 }
 
 function ReadingRewardCard(props: {

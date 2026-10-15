@@ -33,6 +33,31 @@ describe("ReadingService", () => {
     expect(session.sourceManifest).toBeNull();
   });
 
+  it("stores drawer notes idempotently and marks selected notes as seen", async () => {
+    let id = 0;
+    const drawerService = new ReadingService(repository, {
+      now: () => new Date("2026-06-22T10:00:00.000Z"),
+      id: () => `drawer-${++id}`
+    });
+
+    const first = await drawerService.putDrawerNote({
+      content: "今天也有好好走到这里。",
+      operationId: "drawer-op-1"
+    });
+    const duplicate = await drawerService.putDrawerNote({
+      content: "这条不会重复保存。",
+      operationId: "drawer-op-1"
+    });
+    const second = await drawerService.putDrawerNote({ content: "另一句留给以后。" });
+
+    expect(duplicate.id).toBe(first.id);
+    expect(await drawerService.listDrawerItems()).toHaveLength(2);
+
+    const updated = await drawerService.markDrawerSeen([first.id]);
+    expect(updated.find((item) => item.id === first.id)?.seen).toBe(true);
+    expect(updated.find((item) => item.id === second.id)?.seen).toBe(false);
+  });
+
   it("lists every session for the bookshelf with active sessions first", async () => {
     let id = 0;
     const bookshelfService = new ReadingService(repository, {

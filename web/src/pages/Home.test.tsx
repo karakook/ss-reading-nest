@@ -70,12 +70,35 @@ describe("Home novel bookshelf", () => {
 
     expect(screen.getAllByRole("button", { name: "我的书房" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: "阅读记录" }).length).toBeGreaterThan(0);
-    expect(container.querySelectorAll("svg.library-rail-icon")).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "小抽屉" }).length).toBeGreaterThan(0);
+    expect(container.querySelectorAll("svg.library-rail-icon")).toHaveLength(3);
     expect(container).not.toHaveTextContent("▣");
     expect(container).not.toHaveTextContent("◷");
     expect(screen.queryByRole("button", { name: "书摘笔记" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "书单收藏" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "回收站" })).not.toBeInTheDocument();
+  });
+
+  it("opens the quiet drawer and shows unseen notes without adding a popup", () => {
+    const onDrawerOpen = vi.fn();
+    renderHome({
+      drawerItems: [
+        {
+          id: "drawer-1",
+          content: "留给以后再看的话。",
+          createdAt: "2026-07-20T10:00:00.000Z",
+          seen: false
+        }
+      ],
+      onDrawerOpen
+    });
+
+    fireEvent.click(screen.getAllByRole("button", { name: "小抽屉" })[0]!);
+
+    expect(onDrawerOpen).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("heading", { name: "小抽屉" })).toBeInTheDocument();
+    expect(screen.getByText("留给以后再看的话。")).toBeInTheDocument();
+    expect(document.querySelector("svg.drawer-icon-has-unseen")).toBeInTheDocument();
   });
 
   it("supports novel status filters", () => {

@@ -8,6 +8,7 @@ import {
 } from "react";
 import { ArrowLeft, BookOpen, LoaderCircle } from "lucide-react";
 import type {
+  DrawerItem,
   NovelLocalCache,
   Quote,
   ReadingCommentMode,
@@ -121,6 +122,7 @@ type OpenOutput = {
   bookshelfSessions?: Array<SessionBundle & { cacheState?: string }>;
   recentSessions?: Array<SessionBundle & { cacheState?: string }>;
   readingRecords?: ReadingRecord[];
+  drawerItems?: DrawerItem[];
   sourceEndpointBase?: string;
 };
 
@@ -188,6 +190,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
   const [readingRecords, setReadingRecords] = useState<ReadingRecord[]>(() =>
     sortReadingRecords(openOutput?.readingRecords ?? [])
   );
+  const [drawerItems, setDrawerItems] = useState<DrawerItem[]>(() => openOutput?.drawerItems ?? []);
   const [sessionBundle, setSessionBundle] = useState<SessionBundle | null>(null);
   const [selectedBook, setSelectedBook] = useState<BookshelfItem | null>(null);
   const [readerReturnScreen, setReaderReturnScreen] = useState<"home" | "cover">("home");
@@ -288,6 +291,31 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     }
   }, [cloudSourceClient, sourceEndpointBase]);
 
+  const markDrawerSeen = useCallback(async (ids: string[]) => {
+    const uniqueIds = [...new Set(ids)];
+    if (uniqueIds.length === 0) return;
+    try {
+      const result = await callTool("mark_drawer_seen", { ids: uniqueIds });
+      const nextItems = result._meta?.drawerItems;
+      if (Array.isArray(nextItems)) {
+        setDrawerItems(nextItems as DrawerItem[]);
+        setOpenOutput((current) =>
+          current ? { ...current, drawerItems: nextItems as DrawerItem[] } : current
+        );
+        return;
+      }
+      setDrawerItems((current) =>
+        current.map((item) => (uniqueIds.includes(item.id) ? { ...item, seen: true } : item))
+      );
+    } catch {
+      setToast("小抽屉的已读状态没有保存成功，请重试。");
+    }
+  }, []);
+
+  const openDrawer = useCallback(() => {
+    void markDrawerSeen(drawerItems.filter((item) => !item.seen).map((item) => item.id));
+  }, [drawerItems, markDrawerSeen]);
+
   useEffect(() => {
     void refreshNovelBookshelf();
   }, [refreshNovelBookshelf]);
@@ -316,6 +344,10 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
       setReadingRecords(sortReadingRecords(openOutput.readingRecords));
     }
   }, [openOutput?.readingRecords]);
+
+  useEffect(() => {
+    if (Array.isArray(openOutput?.drawerItems)) setDrawerItems(openOutput.drawerItems);
+  }, [openOutput?.drawerItems]);
 
   useEffect(() => {
     if (screen !== "novel" || !sessionBundle) return;
@@ -1978,6 +2010,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
         <Home
           bookshelf={recent}
           readingRecords={readingRecords}
+          drawerItems={drawerItems}
           loading={bookshelfState === "loading"}
           loadError={bookshelfState === "failed"}
           skin={librarySkin}
@@ -1996,6 +2029,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
           onReimport={prepareReimport}
           onManage={(item) => void openBookManagement(item)}
           onExpand={() => void requestReaderFullscreen()}
+          onDrawerOpen={openDrawer}
           partner={readingPartner}
         />
       ) : null}

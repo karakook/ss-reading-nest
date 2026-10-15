@@ -1,6 +1,7 @@
 import {
   DEFAULT_SESSION_PREFERENCES,
   type Bookmark,
+  type DrawerItem,
   type Quote,
   type Reaction,
   type ReadingDatabase,
@@ -71,6 +72,7 @@ interface NormalizedV4Database {
 interface RepairableV5Database extends Omit<RepairableV4Database, "schemaVersion"> {
   schemaVersion: 5;
   readingRecords?: ReadingRecord[];
+  drawerItems?: DrawerItem[];
 }
 
 type RepairableSourceManifest = Omit<SourceManifest, "cloudSync"> & {
@@ -180,11 +182,45 @@ function normalizeV5(database: RepairableV5Database): ReadingDatabase {
     ...database,
     schemaVersion: 4
   });
+  const normalizedDrawerItems = normalizeDrawerItems(database.drawerItems);
   return {
     ...normalizedV4,
     schemaVersion: 5,
-    readingRecords: normalizeReadingRecords(database.readingRecords)
+    readingRecords: normalizeReadingRecords(database.readingRecords),
+    ...(Array.isArray(database.drawerItems) ? { drawerItems: normalizedDrawerItems } : {})
   };
+}
+
+function normalizeDrawerItems(items: unknown): DrawerItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const value = item as Record<string, unknown>;
+    if (
+      typeof value.id !== "string" ||
+      !value.id.trim() ||
+      typeof value.content !== "string" ||
+      !value.content.trim() ||
+      typeof value.createdAt !== "string" ||
+      !value.createdAt.trim() ||
+      typeof value.seen !== "boolean"
+    ) {
+      return [];
+    }
+    const operationId =
+      typeof value.operationId === "string" && value.operationId.trim()
+        ? value.operationId
+        : undefined;
+    return [
+      {
+        id: value.id,
+        content: value.content,
+        createdAt: value.createdAt,
+        seen: value.seen,
+        ...(operationId ? { operationId } : {})
+      }
+    ];
+  });
 }
 
 function assertDatabaseCollections(input: unknown): asserts input is

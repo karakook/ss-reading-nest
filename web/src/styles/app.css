@@ -2734,3 +2734,119 @@ textarea:focus {
   .novel-paper { font-size: var(--reader-font-size, 17px); line-height: var(--reader-line-height, 1.92); }
   .co-read-panel { border-radius: 24px 24px 12px 12px; }
 }
+
+.drawer-icon-has-unseen {
+  animation: drawer-breathe 2.8s ease-in-out infinite;
+}
+
+.drawer-view {
+  display: grid;
+  gap: 18px;
+}
+
+.drawer-intro {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--blue-strong) 18%, var(--line));
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--blue-soft) 60%, var(--surface)), var(--surface));
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--rose-shadow) 7%, transparent);
+}
+
+.drawer-kicker {
+  color: var(--blue-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.drawer-intro p,
+.drawer-intro small {
+  margin: 0;
+}
+
+.drawer-intro p {
+  color: var(--ink);
+  font-family: "Songti SC", "STSong", "PingFang SC", serif;
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.drawer-intro small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.drawer-list {
+  display: grid;
+  gap: 12px;
+}
+
+.drawer-note {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--rose-shadow) 6%, transparent);
+}
+
+.drawer-note-new {
+  border-color: color-mix(in srgb, var(--blue-strong) 34%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 34%, var(--surface));
+}
+
+.drawer-note-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.drawer-note-mark {
+  color: var(--blue-strong);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.drawer-note p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.drawer-empty {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+}
+
+@keyframes drawer-breathe {
+  0%,
+  100% {
+    opacity: .68;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 900px) {
+  .library-mobile-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-icon-has-unseen {
+    animation: none;
+  }
+}

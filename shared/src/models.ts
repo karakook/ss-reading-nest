@@ -162,6 +162,14 @@ export interface ReadingRecord {
   createdAt: string;
 }
 
+export interface DrawerItem {
+  id: string;
+  content: string;
+  createdAt: string;
+  seen: boolean;
+  operationId?: string;
+}
+
 export interface ReadingDatabase {
   schemaVersion: 5;
   sessions: ReadingSession[];
@@ -169,6 +177,7 @@ export interface ReadingDatabase {
   reactions: Reaction[];
   bookmarks: Bookmark[];
   readingRecords: ReadingRecord[];
+  drawerItems?: DrawerItem[];
 }
 
 export type ReadingSyncMode =
