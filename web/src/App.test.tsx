@@ -479,7 +479,7 @@ describe("App", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
 
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
       target: { files: [new File([content], name, { type: "text/plain" })] }
     });
 
@@ -494,7 +494,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
     fireEvent.change(screen.getByLabelText("作品名"), { target: { value: "我的标题" } });
 
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
       target: { files: [new File(["正文内容。"], "文件标题.markdown", { type: "text/markdown" })] }
     });
 
@@ -508,11 +508,11 @@ describe("App", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
 
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
-      target: { files: [new File(["内容"], "小说.pdf", { type: "application/pdf" })] }
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
+      target: { files: [new File(["内容"], "小说.docx", { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" })] }
     });
 
-    expect(await screen.findByText("目前支持 EPUB、TXT 和 Markdown 文档。")).toBeInTheDocument();
+    expect(await screen.findByText("目前支持 PDF、EPUB、TXT 和 Markdown 文档。")).toBeInTheDocument();
     expect(screen.getByLabelText("小说正文")).toHaveValue("");
   });
 
@@ -521,7 +521,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
     const content = "x".repeat(2 * 1024 * 1024 + 1);
 
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
       target: { files: [new File([content], "长篇.txt", { type: "text/plain" })] }
     });
 
@@ -586,7 +586,7 @@ describe("App", () => {
 
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
       target: { files: [new File([content], "大文件导入.txt", { type: "text/plain" })] }
     });
 
@@ -699,7 +699,7 @@ describe("App", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
 
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
       target: { files: [new File(["   \n\t"], "空文件.txt", { type: "text/plain" })] }
     });
 
@@ -714,7 +714,7 @@ describe("App", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /小说共读/ }));
 
-    fireEvent.change(screen.getByLabelText("上传 TXT / Markdown"), {
+    fireEvent.change(screen.getByLabelText("上传 PDF / EPUB / TXT / Markdown"), {
       target: {
         files: [new File([new Uint8Array(5 * 1024 * 1024 + 1)], "太长了.txt", { type: "text/plain" })]
       }

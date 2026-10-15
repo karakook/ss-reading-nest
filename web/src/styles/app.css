@@ -1070,6 +1070,7 @@ html[data-display-mode="fullscreen"] .app {
 .reader-dock-button,
 .reader-collapse-button,
 .reader-typography-button,
+.reader-search-button,
 .reader-toc-button,
 .reader-display-button {
   display: inline-flex;
@@ -1580,6 +1581,92 @@ html[data-display-mode="fullscreen"] .app {
   font-size: 12px;
 }
 .reader-typography-reset svg { width: 15px; height: 15px; }
+.reader-page-width-setting {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--blue-pale, var(--surface)) 45%, var(--surface));
+}
+.reader-page-width-setting > div:first-child { display: grid; gap: 3px; }
+.reader-page-width-setting strong { font-size: 14px; }
+.reader-page-width-setting span { color: var(--muted); font-size: 11px; }
+.reader-page-width-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.reader-page-width-options button {
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 760;
+}
+.reader-page-width-options button[aria-pressed="true"] {
+  border-color: var(--wine, var(--blue-strong));
+  background: color-mix(in srgb, var(--rose-pale, var(--blue-soft)) 70%, var(--surface));
+  color: var(--wine-dark, var(--blue-strong));
+}
+.reader-night-toggle > span:first-child svg { width: 20px; height: 20px; }
+.reader-search-backdrop { z-index: 26; }
+.reader-search-sheet {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 16px;
+  max-height: min(82dvh, 720px);
+}
+.reader-search-field {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+}
+.reader-search-field:focus-within {
+  border-color: var(--wine, var(--blue-strong));
+  outline: 3px solid color-mix(in srgb, var(--rose-gold, var(--blue)) 25%, transparent);
+}
+.reader-search-field svg { width: 18px; height: 18px; }
+.reader-search-field input {
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline: 0;
+}
+.reader-search-results { min-height: 180px; overflow-y: auto; }
+.reader-search-empty {
+  padding: 36px 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+}
+.reader-search-count { margin-bottom: 8px; color: var(--muted); font-size: 11px; }
+.reader-search-results ol { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.reader-search-results li button {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  min-height: 0;
+  padding: 12px 13px;
+  border-radius: 10px;
+  text-align: left;
+}
+.reader-search-results li button > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.reader-search-results strong { color: var(--wine-dark, var(--blue-strong)); font-size: 11px; }
+.reader-search-results small { color: var(--muted); font-size: 10px; }
+.reader-search-results li p { margin: 0; color: var(--ink); font-size: 13px; line-height: 1.65; }
 .sheet-kicker {
   color: var(--blue-strong);
   font-size: 11px;
@@ -2424,6 +2511,7 @@ textarea:focus {
 .reader-dock-button,
 .reader-collapse-button,
 .reader-typography-button,
+.reader-search-button,
 .reader-toc-button,
 .reader-display-button {
   color: var(--wine-dark, var(--blue-strong));
@@ -2448,15 +2536,35 @@ textarea:focus {
 }
 
 .novel-paper {
-  width: min(100%, 700px);
+  width: min(100%, var(--reader-page-width, 700px));
   min-height: 0;
   padding: clamp(24px, 4vh, 48px) clamp(4px, 1vw, 14px) 32px;
   color: var(--ink);
   font-size: var(--reader-font-size, clamp(17px, 1.6vw, 20px));
   font-weight: var(--reader-font-weight, 400);
-  line-height: 1.95;
+  line-height: var(--reader-line-height, 1.95);
   overflow-wrap: anywhere;
 }
+
+.reader-shell.reader-night-mode {
+  --paper: #17191d;
+  --surface: #21242a;
+  --cream: #121418;
+  --ink: #e6e0d6;
+  --muted: #aaa49c;
+  --line: #3b3e45;
+  --blue-soft: #292c33;
+  --blue-strong: #d0aa9d;
+  --blush: #241e21;
+  --champagne: #8f7658;
+  --rose-pale: #30262a;
+  --rose-gold: #b98575;
+  --wine: #c89b8c;
+  --wine-dark: #e0b4a6;
+  color-scheme: dark;
+  background: linear-gradient(180deg, #211b1e, #15171b 38%);
+}
+.reader-night-mode .reader-scroll { background: #17191d; }
 
 .novel-paper mark,
 .quote-highlight {
@@ -2623,6 +2731,6 @@ textarea:focus {
   .shared-memory-note { margin-inline: 0; }
   .reader-shell { width: 100%; }
   .reader-scroll { padding-inline: max(16px, var(--safe-left)) max(16px, var(--safe-right)); }
-  .novel-paper { font-size: var(--reader-font-size, 17px); line-height: 1.92; }
+  .novel-paper { font-size: var(--reader-font-size, 17px); line-height: var(--reader-line-height, 1.92); }
   .co-read-panel { border-radius: 24px 24px 12px 12px; }
 }

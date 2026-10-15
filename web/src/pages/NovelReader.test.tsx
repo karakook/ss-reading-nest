@@ -63,23 +63,79 @@ describe("NovelReader", () => {
     const firstRender = render(<NovelReader {...props} />);
 
     fireEvent.click(screen.getByRole("button", { name: "字体设置" }));
-    expect(screen.getByRole("dialog", { name: "字体设置" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "阅读显示设置" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "放大字号" }));
     fireEvent.click(screen.getByRole("button", { name: "正文加粗" }));
+    fireEvent.click(screen.getByRole("button", { name: "放大行距" }));
+    fireEvent.click(screen.getByRole("button", { name: "宽" }));
+    fireEvent.click(screen.getByRole("button", { name: "夜间模式" }));
 
-    const article = firstRender.container.querySelector<HTMLElement>(".novel-paper")!;
-    expect(article.style.getPropertyValue("--reader-font-size")).toBe("19px");
-    expect(article.style.getPropertyValue("--reader-font-weight")).toBe("700");
+    const reader = firstRender.container.querySelector<HTMLElement>(".reader-shell")!;
+    expect(reader.style.getPropertyValue("--reader-font-size")).toBe("19px");
+    expect(reader.style.getPropertyValue("--reader-font-weight")).toBe("700");
+    expect(reader.style.getPropertyValue("--reader-line-height")).toBe("2.1");
+    expect(reader.style.getPropertyValue("--reader-page-width")).toBe("880px");
+    expect(reader).toHaveClass("reader-night-mode");
     expect(JSON.parse(localStorage.getItem("reading-nest-reader-typography") ?? "{}")).toEqual({
       fontSize: 19,
-      bold: true
+      bold: true,
+      lineHeight: 2.1,
+      pageWidth: "wide",
+      darkMode: true
     });
 
     firstRender.unmount();
     const secondRender = render(<NovelReader {...props} />);
-    const restoredArticle = secondRender.container.querySelector<HTMLElement>(".novel-paper")!;
-    expect(restoredArticle.style.getPropertyValue("--reader-font-size")).toBe("19px");
-    expect(restoredArticle.style.getPropertyValue("--reader-font-weight")).toBe("700");
+    const restoredReader = secondRender.container.querySelector<HTMLElement>(".reader-shell")!;
+    expect(restoredReader.style.getPropertyValue("--reader-font-size")).toBe("19px");
+    expect(restoredReader.style.getPropertyValue("--reader-font-weight")).toBe("700");
+    expect(restoredReader.style.getPropertyValue("--reader-line-height")).toBe("2.1");
+    expect(restoredReader.style.getPropertyValue("--reader-page-width")).toBe("880px");
+    expect(restoredReader).toHaveClass("reader-night-mode");
+  });
+
+  it("migrates older saved font preferences to the new display defaults", () => {
+    localStorage.setItem("reading-nest-reader-typography", JSON.stringify({
+      fontSize: 21,
+      bold: true
+    }));
+
+    const { container } = render(<NovelReader {...makeProps()} />);
+    const reader = container.querySelector<HTMLElement>(".reader-shell")!;
+    expect(reader.style.getPropertyValue("--reader-font-size")).toBe("21px");
+    expect(reader.style.getPropertyValue("--reader-line-height")).toBe("2");
+    expect(reader.style.getPropertyValue("--reader-page-width")).toBe("700px");
+    expect(reader).not.toHaveClass("reader-night-mode");
+  });
+
+  it("searches body text, saved highlights, and clear thoughts and jumps to a result", () => {
+    const props = {
+      ...makeProps(),
+      chunks: ["第一页留下共同秘密。", "第二页也提到共同秘密。"],
+      savedQuotes: [{
+        id: "quote-search",
+        sessionId: "novel-session",
+        content: "划线里的共同秘密",
+        note: "一条批注",
+        clearThought: "清思里重新理解共同秘密",
+        position: { kind: "paragraph" as const, index: 2, label: "第 2 页" },
+        createdAt: "2026-06-22T00:00:00.000Z"
+      }]
+    };
+    render(<NovelReader {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "全文搜索" }));
+    fireEvent.change(screen.getByRole("searchbox", { name: "搜索书内文字、划线和清思" }), {
+      target: { value: "共同秘密" }
+    });
+
+    expect(screen.getByText("找到 4 处")).toBeInTheDocument();
+    expect(screen.getByText("划线")).toBeInTheDocument();
+    expect(screen.getByText("清思")).toBeInTheDocument();
+    const secondPageLabels = screen.getAllByText("第 2 页");
+    fireEvent.click(secondPageLabels[0]!.closest("button")!);
+    expect(props.onPosition).toHaveBeenCalledWith(2);
+    expect(screen.queryByRole("dialog", { name: "全文搜索" })).not.toBeInTheDocument();
   });
 
   it("keeps the page number in the bottom action bar without a more-actions entry", () => {
