@@ -5,6 +5,7 @@ import {
   Minimize2,
   PanelTopClose,
   PictureInPicture2,
+  Search,
   Type
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ export function ReaderHeader(props: {
   canCollapse?: boolean;
   onCollapse?: () => void;
   onOpenTypography?: () => void;
+  onOpenSearch?: () => void;
   onOpenNavigation?: () => void;
 }) {
   const fullscreenLabel = props.fullscreenLabel ?? "全屏阅读";
@@ -74,6 +76,18 @@ export function ReaderHeader(props: {
           >
             <Type className="reader-header-action-icon" aria-hidden="true" strokeWidth={1.8} />
             <span>字体</span>
+          </button>
+        ) : null}
+        {props.onOpenSearch ? (
+          <button
+            type="button"
+            className="reader-header-action reader-search-button"
+            onClick={props.onOpenSearch}
+            aria-label="全文搜索"
+            title="全文搜索"
+          >
+            <Search className="reader-header-action-icon" aria-hidden="true" strokeWidth={1.8} />
+            <span>搜索</span>
           </button>
         ) : null}
         {props.onOpenNavigation ? (

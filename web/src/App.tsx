@@ -39,6 +39,7 @@ import { BookManagementSheet } from "./components/BookManagementSheet.js";
 import { SyncChoiceSheet } from "./components/SyncChoiceSheet.js";
 import { SyncProgressSheet } from "./components/SyncProgressSheet.js";
 import { readEpub } from "./features/import/read-epub.js";
+import { readPdf, ScannedPdfError } from "./features/import/read-pdf.js";
 import { splitNovelText, splitNovelTextForVersion } from "./features/novel/split-text.js";
 import { CloudSourceClient } from "./features/source-cloud/cloud-source-client.js";
 import type { CloudUploadDiagnostics } from "./features/source-cloud/cloud-source-client.js";
@@ -749,9 +750,10 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
   async function importNovelFile(file: File | undefined) {
     if (!file) return;
     const isEpub = /\.epub$/i.test(file.name) || file.type === "application/epub+zip";
+    const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
     const isText = /\.(txt|md|markdown)$/i.test(file.name);
-    if (!isEpub && !isText) {
-      setToast("目前支持 EPUB、TXT 和 Markdown 文档。");
+    if (!isEpub && !isPdf && !isText) {
+      setToast("目前支持 PDF、EPUB、TXT 和 Markdown 文档。");
       setImportProgress({
         stage: "failed",
         fileName: file.name,
@@ -762,16 +764,20 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
       });
       return;
     }
-    const sizeLimit = isEpub ? MAX_EPUB_FILE_SIZE : MAX_NOVEL_FILE_SIZE;
+    const sizeLimit = isEpub || isPdf ? MAX_EPUB_FILE_SIZE : MAX_NOVEL_FILE_SIZE;
     if (file.size > sizeLimit) {
-      setToast(isEpub ? "EPUB 超过 50 MB，请换一个较小版本。" : "文档超过 5 MB，请拆分后再导入。");
+      setToast(
+        isEpub || isPdf
+          ? `${isPdf ? "PDF" : "EPUB"} 超过 50 MB，请换一个较小版本。`
+          : "文档超过 5 MB，请拆分后再导入。"
+      );
       setImportProgress({
         stage: "failed",
         fileName: file.name,
         fileSize: file.size,
         sourceEndpointBasePresent: Boolean(sourceEndpointBase),
         screen,
-        message: `文件超过 ${isEpub ? "50" : "5"} MB`
+        message: `文件超过 ${isEpub || isPdf ? "50" : "5"} MB`
       });
       return;
     }
@@ -787,7 +793,9 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     try {
       const parsed = isEpub
         ? await readEpub(file)
-        : { title: "", text: await readTextFile(file) };
+        : isPdf
+          ? await readPdf(file)
+          : { title: "", text: await readTextFile(file) };
       const result = parsed.text;
       if (!result.trim()) {
         setSourceText("");
@@ -804,7 +812,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
       setSourceText(result);
       setTitle(
         (current) =>
-          current.trim() || parsed.title || file.name.replace(/\.(epub|txt|md|markdown)$/i, "")
+          current.trim() || parsed.title || file.name.replace(/\.(pdf|epub|txt|md|markdown)$/i, "")
       );
       setImportProgress((current) => ({
         ...current,
@@ -814,18 +822,34 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
         screen,
         message: file.size > LARGE_NOVEL_TEXTAREA_PREVIEW_BYTES ? "大文件已读取，准备分段" : "文档已读取"
       }));
-      setToast(isEpub ? "EPUB 已导入并提取正文。" : "文档已导入，你仍然可以继续编辑正文。");
-    } catch {
       setToast(
-        isEpub
-          ? "EPUB 读取失败；它可能带有加密或特殊压缩，可以先转成 TXT。"
-          : "读取失败，请确认文件是 UTF-8 文本，或改用复制粘贴。"
+        isPdf
+          ? "PDF 已导入并提取可选文字。"
+          : isEpub
+            ? "EPUB 已导入并提取正文。"
+            : "文档已导入，你仍然可以继续编辑正文。"
+      );
+    } catch (error) {
+      setToast(
+        error instanceof ScannedPdfError
+          ? "这份 PDF 像是扫描图片，暂时还不能识别；OCR 会放到下一版。"
+          : isPdf
+            ? "PDF 读取失败；它可能带有密码或格式特殊，可以先转成 TXT。"
+            : isEpub
+              ? "EPUB 读取失败；它可能带有加密或特殊压缩，可以先转成 TXT。"
+              : "读取失败，请确认文件是 UTF-8 文本，或改用复制粘贴。"
       );
       setImportProgress((current) => ({
         ...current,
         stage: "failed",
         screen,
-        message: isEpub ? "EPUB 解析失败" : "读取失败"
+        message: error instanceof ScannedPdfError
+          ? "扫描版 PDF 暂不支持"
+          : isPdf
+            ? "PDF 解析失败"
+            : isEpub
+              ? "EPUB 解析失败"
+              : "读取失败"
       }));
     }
   }
@@ -2034,18 +2058,18 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
               ) : null}
               <div className="source-import-row">
                 <label className="source-import-button">
-                  上传 EPUB / TXT / Markdown
+                  上传 PDF / EPUB / TXT / Markdown
                   <input
-                    aria-label="上传 TXT / Markdown"
+                    aria-label="上传 PDF / EPUB / TXT / Markdown"
                     type="file"
-                    accept=".epub,.txt,.md,.markdown,application/epub+zip,text/plain,text/markdown"
+                    accept=".pdf,.epub,.txt,.md,.markdown,application/pdf,application/epub+zip,text/plain,text/markdown"
                     onChange={(event) => {
                       void importNovelFile(event.target.files?.[0]);
                       event.target.value = "";
                     }}
                   />
                 </label>
-                <span>支持 EPUB、TXT 和 Markdown；EPUB 会自动提取章节正文。</span>
+                <span>支持文字版 PDF、EPUB、TXT 和 Markdown；扫描版 PDF 暂不支持。</span>
               </div>
               <ImportProgressPanel progress={importProgress} />
             </div>

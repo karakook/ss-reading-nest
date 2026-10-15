@@ -6,12 +6,15 @@ import {
   ChevronRight,
   MessageCircleQuestion,
   Minus,
+  Moon,
   PencilLine,
   Plus,
   RotateCcw,
   Save,
+  Search,
   Send,
   Sparkles,
+  Sun,
   X
 } from "lucide-react";
 import type { Quote, ReadingCommentMode, ReadingSession } from "@ss/shared";
@@ -30,12 +33,23 @@ type SelectionMode = "thought" | "question" | null;
 type ReaderTypography = {
   fontSize: number;
   bold: boolean;
+  lineHeight: number;
+  pageWidth: "narrow" | "standard" | "wide";
+  darkMode: boolean;
 };
 
 const READER_TYPOGRAPHY_STORAGE_KEY = "reading-nest-reader-typography";
-const DEFAULT_READER_TYPOGRAPHY: ReaderTypography = { fontSize: 18, bold: false };
+const DEFAULT_READER_TYPOGRAPHY: ReaderTypography = {
+  fontSize: 18,
+  bold: false,
+  lineHeight: 2,
+  pageWidth: "standard",
+  darkMode: false
+};
 const MIN_READER_FONT_SIZE = 15;
 const MAX_READER_FONT_SIZE = 26;
+const MIN_READER_LINE_HEIGHT = 1.5;
+const MAX_READER_LINE_HEIGHT = 2.4;
 
 export function NovelReader(props: {
   session: ReadingSession;
@@ -104,6 +118,8 @@ export function NovelReader(props: {
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [typographyOpen, setTypographyOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [readerTypography, setReaderTypography] = useState<ReaderTypography>(readReaderTypography);
   const [coReadOpen, setCoReadOpen] = useState(false);
   const [jumpPage, setJumpPage] = useState(String(index + 1));
@@ -151,9 +167,25 @@ export function NovelReader(props: {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [typographyOpen]);
 
+  useEffect(() => {
+    if (!searchOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setSearchOpen(false);
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [searchOpen]);
+
+  const searchResults = useMemo(
+    () => buildSearchResults(props.chunks, props.savedQuotes, searchQuery),
+    [props.chunks, props.savedQuotes, searchQuery]
+  );
+
   const readerTypographyStyle = {
     "--reader-font-size": `${readerTypography.fontSize}px`,
-    "--reader-font-weight": readerTypography.bold ? "700" : "400"
+    "--reader-font-weight": readerTypography.bold ? "700" : "400",
+    "--reader-line-height": String(readerTypography.lineHeight),
+    "--reader-page-width": readerPageWidth(readerTypography.pageWidth)
   } as CSSProperties;
 
   function clearSelection() {
@@ -208,7 +240,10 @@ export function NovelReader(props: {
   function updateReaderTypography(next: ReaderTypography) {
     const normalized = {
       fontSize: clampReaderFontSize(next.fontSize),
-      bold: next.bold
+      bold: next.bold,
+      lineHeight: clampReaderLineHeight(next.lineHeight),
+      pageWidth: normalizeReaderPageWidth(next.pageWidth),
+      darkMode: next.darkMode
     };
     setReaderTypography(normalized);
     try {
@@ -338,7 +373,8 @@ export function NovelReader(props: {
 
   return (
     <main
-      className={`reader-shell reader-novel ${props.layout === "wide" ? "reader-layout-wide" : "reader-layout-compact"}${props.immersive ? " reader-immersive" : ""}${coReadOpen ? " reader-co-read-open" : ""}`}
+      className={`reader-shell reader-novel ${props.layout === "wide" ? "reader-layout-wide" : "reader-layout-compact"}${props.immersive ? " reader-immersive" : ""}${coReadOpen ? " reader-co-read-open" : ""}${readerTypography.darkMode ? " reader-night-mode" : ""}`}
+      style={readerTypographyStyle}
     >
       <ReaderHeader
         title={props.session.title}
@@ -351,6 +387,7 @@ export function NovelReader(props: {
         canCollapse={props.canCollapse}
         onCollapse={props.onCollapse}
         onOpenTypography={() => setTypographyOpen(true)}
+        onOpenSearch={() => setSearchOpen(true)}
         onOpenNavigation={openNavigation}
       />
       <ReadingSyncStatus session={props.session} partner={partner} />
@@ -367,7 +404,7 @@ export function NovelReader(props: {
               window.setTimeout(captureSelection, 0);
             }}
           >
-          <article ref={articleRef} className="novel-paper" style={readerTypographyStyle}>
+          <article ref={articleRef} className="novel-paper">
             {current.split("\n").map((line, lineIndex) => (
               <p key={lineIndex}>{highlightLine(line, currentQuotes, openQuoteDetail)}</p>
             ))}
@@ -614,6 +651,81 @@ export function NovelReader(props: {
               </section>
             </div>
           ) : null}
+          {searchOpen ? (
+            <div
+              className="sheet-backdrop reader-search-backdrop"
+              role="presentation"
+              onClick={() => setSearchOpen(false)}
+            >
+              <section
+                className="bottom-sheet reader-search-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-label="全文搜索"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="sheet-grip" />
+                <header className="sheet-header">
+                  <div>
+                    <span className="sheet-kicker">这本书里</span>
+                    <h2>全文搜索</h2>
+                    <p>同时寻找正文、保存的划线和清思。</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="sheet-close"
+                    aria-label="关闭全文搜索"
+                    onClick={() => setSearchOpen(false)}
+                  >
+                    <X className="dialog-close-icon" aria-hidden="true" strokeWidth={1.8} />
+                  </button>
+                </header>
+
+                <label className="reader-search-field">
+                  <Search aria-hidden="true" strokeWidth={1.8} />
+                  <input
+                    autoFocus
+                    type="search"
+                    value={searchQuery}
+                    aria-label="搜索书内文字、划线和清思"
+                    placeholder="输入想找的词或句子"
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                  />
+                </label>
+
+                <div className="reader-search-results" aria-live="polite">
+                  {!searchQuery.trim() ? (
+                    <p className="reader-search-empty">输入关键词，就能把散落在书里的句子重新找回来。</p>
+                  ) : searchResults.length === 0 ? (
+                    <p className="reader-search-empty">没有找到“{searchQuery.trim()}”。</p>
+                  ) : (
+                    <>
+                      <p className="reader-search-count">找到 {searchResults.length} 处</p>
+                      <ol>
+                        {searchResults.map((result) => (
+                          <li key={result.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                props.onPosition(result.page);
+                                setSearchOpen(false);
+                              }}
+                            >
+                              <span>
+                                <strong>{result.kind}</strong>
+                                <small>第 {result.page} 页</small>
+                              </span>
+                              <p>{result.snippet}</p>
+                            </button>
+                          </li>
+                        ))}
+                      </ol>
+                    </>
+                  )}
+                </div>
+              </section>
+            </div>
+          ) : null}
           {typographyOpen ? (
             <div
               className="sheet-backdrop reader-typography-backdrop"
@@ -624,20 +736,20 @@ export function NovelReader(props: {
                 className="bottom-sheet reader-typography-sheet"
                 role="dialog"
                 aria-modal="true"
-                aria-label="字体设置"
+                aria-label="阅读显示设置"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="sheet-grip" />
                 <header className="sheet-header">
                   <div>
                     <span className="sheet-kicker">阅读显示</span>
-                    <h2>字体设置</h2>
+                    <h2>阅读显示设置</h2>
                     <p>调整会立即生效，并记在这台设备上。</p>
                   </div>
                   <button
                     type="button"
                     className="sheet-close"
-                    aria-label="关闭字体设置"
+                    aria-label="关闭阅读显示设置"
                     onClick={() => setTypographyOpen(false)}
                   >
                     <X className="dialog-close-icon" aria-hidden="true" strokeWidth={1.8} />
@@ -691,6 +803,76 @@ export function NovelReader(props: {
                     <span>
                       <strong>正文加粗</strong>
                       <small>{readerTypography.bold ? "已开启" : "未开启"}</small>
+                    </span>
+                  </button>
+
+                  <section className="reader-typography-row">
+                    <div>
+                      <strong>行距</strong>
+                      <span>让文字更紧凑，或多留一点呼吸</span>
+                    </div>
+                    <div className="reader-font-size-controls">
+                      <button
+                        type="button"
+                        aria-label="缩小行距"
+                        disabled={readerTypography.lineHeight <= MIN_READER_LINE_HEIGHT}
+                        onClick={() => updateReaderTypography({
+                          ...readerTypography,
+                          lineHeight: readerTypography.lineHeight - 0.1
+                        })}
+                      >
+                        <Minus aria-hidden="true" strokeWidth={2} />
+                      </button>
+                      <output aria-label="当前行距">{readerTypography.lineHeight.toFixed(1)}</output>
+                      <button
+                        type="button"
+                        aria-label="放大行距"
+                        disabled={readerTypography.lineHeight >= MAX_READER_LINE_HEIGHT}
+                        onClick={() => updateReaderTypography({
+                          ...readerTypography,
+                          lineHeight: readerTypography.lineHeight + 0.1
+                        })}
+                      >
+                        <Plus aria-hidden="true" strokeWidth={2} />
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className="reader-page-width-setting">
+                    <div>
+                      <strong>页面宽度</strong>
+                      <span>窄一些更专注，宽一些能容纳更多文字</span>
+                    </div>
+                    <div className="reader-page-width-options" role="group" aria-label="页面宽度">
+                      {(["narrow", "standard", "wide"] as const).map((width) => (
+                        <button
+                          key={width}
+                          type="button"
+                          aria-pressed={readerTypography.pageWidth === width}
+                          onClick={() => updateReaderTypography({ ...readerTypography, pageWidth: width })}
+                        >
+                          {{ narrow: "窄", standard: "标准", wide: "宽" }[width]}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <button
+                    type="button"
+                    className="reader-bold-toggle reader-night-toggle"
+                    aria-label="夜间模式"
+                    aria-pressed={readerTypography.darkMode}
+                    onClick={() => updateReaderTypography({
+                      ...readerTypography,
+                      darkMode: !readerTypography.darkMode
+                    })}
+                  >
+                    <span aria-hidden="true">
+                      {readerTypography.darkMode ? <Sun strokeWidth={1.8} /> : <Moon strokeWidth={1.8} />}
+                    </span>
+                    <span>
+                      <strong>夜间模式</strong>
+                      <small>{readerTypography.darkMode ? "已开启" : "未开启"}</small>
                     </span>
                   </button>
 
@@ -828,6 +1010,61 @@ type NavigationEntry = {
   title: string;
 };
 
+type SearchResult = {
+  id: string;
+  page: number;
+  kind: "正文" | "划线" | "清思";
+  snippet: string;
+};
+
+function buildSearchResults(chunks: string[], quotes: Quote[], rawQuery: string): SearchResult[] {
+  const query = rawQuery.trim().toLocaleLowerCase();
+  if (!query) return [];
+  const results: SearchResult[] = [];
+
+  chunks.forEach((chunk, index) => {
+    if (chunk.toLocaleLowerCase().includes(query)) {
+      results.push({
+        id: `body-${index + 1}`,
+        page: index + 1,
+        kind: "正文",
+        snippet: searchSnippet(chunk, query)
+      });
+    }
+  });
+
+  quotes.forEach((quote) => {
+    const page = Math.max(1, quote.position.index);
+    if (quote.content.toLocaleLowerCase().includes(query)) {
+      results.push({
+        id: `quote-${quote.id}`,
+        page,
+        kind: "划线",
+        snippet: searchSnippet(normalizeQuote(quote.content), query)
+      });
+    }
+    if (quote.clearThought?.toLocaleLowerCase().includes(query)) {
+      results.push({
+        id: `clear-${quote.id}`,
+        page,
+        kind: "清思",
+        snippet: searchSnippet(quote.clearThought, query)
+      });
+    }
+  });
+
+  return results.slice(0, 100);
+}
+
+function searchSnippet(value: string, normalizedQuery: string) {
+  const text = value.replace(/\s+/g, " ").trim();
+  const index = text.toLocaleLowerCase().indexOf(normalizedQuery);
+  if (index < 0) return shorten(text, 100);
+  const start = Math.max(0, index - 36);
+  const end = Math.min(text.length, index + normalizedQuery.length + 56);
+  return `${start > 0 ? "…" : ""}${text.slice(start, end)}${end < text.length ? "…" : ""}`;
+}
+
 function buildNavigationEntries(chunks: string[]): NavigationEntry[] {
   return chunks.flatMap((chunk, index) => {
     const title = findChunkHeading(chunk);
@@ -868,6 +1105,19 @@ function clampReaderFontSize(value: number) {
   return Math.min(MAX_READER_FONT_SIZE, Math.max(MIN_READER_FONT_SIZE, Math.round(value)));
 }
 
+function clampReaderLineHeight(value: number) {
+  const clamped = Math.min(MAX_READER_LINE_HEIGHT, Math.max(MIN_READER_LINE_HEIGHT, value));
+  return Math.round(clamped * 10) / 10;
+}
+
+function normalizeReaderPageWidth(value: unknown): ReaderTypography["pageWidth"] {
+  return value === "narrow" || value === "wide" ? value : "standard";
+}
+
+function readerPageWidth(value: ReaderTypography["pageWidth"]) {
+  return { narrow: "560px", standard: "700px", wide: "880px" }[value];
+}
+
 function readReaderTypography(): ReaderTypography {
   try {
     const stored = window.localStorage.getItem(READER_TYPOGRAPHY_STORAGE_KEY);
@@ -877,7 +1127,14 @@ function readReaderTypography(): ReaderTypography {
       fontSize: clampReaderFontSize(
         typeof parsed.fontSize === "number" ? parsed.fontSize : DEFAULT_READER_TYPOGRAPHY.fontSize
       ),
-      bold: parsed.bold === true
+      bold: parsed.bold === true,
+      lineHeight: clampReaderLineHeight(
+        typeof parsed.lineHeight === "number"
+          ? parsed.lineHeight
+          : DEFAULT_READER_TYPOGRAPHY.lineHeight
+      ),
+      pageWidth: normalizeReaderPageWidth(parsed.pageWidth),
+      darkMode: parsed.darkMode === true
     };
   } catch {
     return DEFAULT_READER_TYPOGRAPHY;
