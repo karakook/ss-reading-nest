@@ -1090,3 +1090,114 @@ body {
   .app-screen-home .is-drawer-view .drawer-intro p { font-size: 20px; }
   .app-screen-home .is-drawer-view .drawer-note p { font-size: 18px; }
 }
+
+/*
+ * Final mobile positioning corrections from the reference screenshots.
+ * These selectors intentionally target the view class on the main element;
+ * the view class is not on .app-screen-home.
+ */
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room .library-header {
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header-illustration {
+    min-width: 0;
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header-illustration img {
+    display: block;
+    width: min(100%, 205px);
+    max-width: calc(100% - 8px);
+    margin-inline: auto;
+    object-position: center bottom;
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card,
+  .app-screen-home .dessert-reading-room .dessert-stat-card,
+  .app-screen-home .dessert-reading-room .bookshelf-section,
+  .app-screen-home .dessert-reading-room .reading-reward-card {
+    position: relative;
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card-empty > svg {
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    justify-self: center;
+  }
+
+  .app-screen-home .dessert-reading-room .today-cookie-art,
+  .app-screen-home .dessert-reading-room .weekly-books-art {
+    right: clamp(32px, 7vw, 52px);
+    max-width: calc(100% - 64px);
+    z-index: 2;
+  }
+
+  /* Home uses the fixed bottom navigation from the reference, not a content card. */
+  .app-screen-home .dessert-reading-room.is-library-view {
+    padding-bottom: calc(112px + var(--safe-bottom)) !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .home-shell {
+    padding-bottom: calc(120px + var(--safe-bottom));
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs {
+    position: fixed !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 90 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 10px 13px calc(8px + var(--safe-bottom)) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--dessert-blue) !important;
+    box-shadow: 0 -5px 15px rgba(76, 63, 51, .10) !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button {
+    display: grid !important;
+    min-height: 67px !important;
+    place-items: center;
+    gap: 2px;
+    font-size: clamp(14px, 2.4vw, 19px);
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs button:last-child {
+    display: none !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button[aria-pressed="true"] {
+    background: rgba(133, 190, 221, .42);
+  }
+
+  /* Records and drawer keep their three-tab strip in the document flow. */
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    margin: 16px 0 0 !important;
+    padding: 5px !important;
+    border: 1px solid #d8b996 !important;
+    border-radius: 19px !important;
+    background: rgba(255, 253, 245, .74) !important;
+    box-shadow: none !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-settings-view .library-mobile-tabs {
+    display: none !important;
+  }
+}
