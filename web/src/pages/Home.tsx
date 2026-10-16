@@ -180,7 +180,7 @@ export function Home(props: {
         };
 
   return (
-    <main className="library-app-shell dessert-reading-room">
+    <main className={`library-app-shell dessert-reading-room${view === "drawer" ? " is-drawer-view" : ""}`}>
       <aside className="library-rail" aria-label="小书房导航">
         <div className="library-rail-brand">
           <Sparkles aria-hidden="true" />

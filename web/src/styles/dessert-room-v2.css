@@ -492,3 +492,205 @@
   .app-screen-home .dessert-reward-message { grid-column: 1; }
   .app-screen-home .dessert-reward-message { border-top: 1px dashed #d8b996; border-left: 0; padding: 12px 0 0; }
 }
+
+/* The drawer is a separate iPhone composition. Keep its lace attached to the
+   viewport rather than to the scrolling content, matching the reference view. */
+@media (max-width: 800px) {
+  .app-screen-home.is-drawer-view::before,
+  .app-screen-home.is-drawer-view::after { display: none; }
+
+  .app-screen-home.is-drawer-view .home-shell {
+    max-width: 710px;
+    padding: 15px 21px 150px;
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-brand {
+    position: relative;
+    z-index: 3;
+    grid-template-columns: 27px minmax(0, 1fr) 42px;
+    min-height: 119px;
+    margin: 0 8px 0;
+    padding: 7px 14px 47px;
+    border-radius: 38px;
+    background: rgba(255, 253, 245, .87);
+    box-shadow: none;
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-brand strong {
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 25px;
+    letter-spacing: .02em;
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-brand > span {
+    align-self: start;
+    padding-top: 2px;
+    color: #a88265;
+    font-size: 14px;
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-brand button {
+    align-self: start;
+    margin-top: -1px;
+  }
+
+  .app-screen-home.is-drawer-view .library-header {
+    position: relative;
+    z-index: 1;
+    display: block;
+    min-height: 0;
+    margin: 0 -21px 0;
+    padding: 41px 29px 22px;
+    border-bottom: 1px dashed #d9b792;
+  }
+
+  .app-screen-home.is-drawer-view .library-header h1 {
+    margin: 0 0 21px;
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 54px;
+    line-height: 1;
+    letter-spacing: .02em;
+  }
+
+  .app-screen-home.is-drawer-view .library-header p {
+    max-width: 24ch;
+    color: #8d776b;
+    font-family: "Songti SC", "STSong", serif;
+    font-size: 20px;
+    line-height: 1.7;
+    letter-spacing: .01em;
+  }
+
+  .app-screen-home.is-drawer-view .library-skin-switch {
+    gap: 16px;
+    margin-top: 22px;
+  }
+
+  .app-screen-home.is-drawer-view .library-skin-switch .skin-star,
+  .app-screen-home.is-drawer-view .skin-star svg {
+    width: 35px;
+    min-height: 35px;
+    height: 35px;
+  }
+
+  .app-screen-home.is-drawer-view .library-header-illustration { display: none; }
+
+  .app-screen-home.is-drawer-view .drawer-view {
+    position: relative;
+    z-index: 1;
+    gap: 31px;
+    padding-top: 28px;
+  }
+
+  .app-screen-home.is-drawer-view .drawer-view::before,
+  .app-screen-home.is-drawer-view .drawer-view::after {
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 46;
+    height: 39px;
+    content: "";
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 20px 100%, transparent 0 15px, #c6a483 15.5px 17px, transparent 17.5px) 0 0 / 40px 39px repeat-x,
+      radial-gradient(circle at 20px 25px, #b79170 0 2.3px, transparent 2.8px) 0 0 / 40px 39px repeat-x,
+      linear-gradient(#fff8e8, #fff8e8);
+    filter: drop-shadow(0 1px 0 rgba(100, 71, 47, .12));
+  }
+
+  .app-screen-home.is-drawer-view .drawer-view::before { top: 176px; }
+
+  .app-screen-home.is-drawer-view .drawer-view::after {
+    bottom: 75px;
+    transform: rotate(180deg);
+  }
+
+  .app-screen-home.is-drawer-view .drawer-intro {
+    display: grid;
+    gap: 14px;
+    min-height: 267px;
+    padding: 39px 31px 26px;
+    border: 1px solid #aeb7b8;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #c3e3f1, #edf7f4);
+    box-shadow: 3px 4px 0 rgba(103, 88, 74, .12);
+  }
+
+  .app-screen-home.is-drawer-view .drawer-intro::after {
+    inset: 15px;
+    border: 1px dashed rgba(255, 250, 238, .75);
+    border-radius: 20px;
+  }
+
+  .app-screen-home.is-drawer-view .drawer-kicker {
+    color: #5f5048;
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .app-screen-home.is-drawer-view .drawer-intro p {
+    color: #5d4d49;
+    font-family: "Songti SC", "STSong", serif;
+    font-size: 25px;
+    line-height: 1.75;
+  }
+
+  .app-screen-home.is-drawer-view .drawer-intro small {
+    color: #685953;
+    font-family: "Songti SC", "STSong", serif;
+    font-size: 16px;
+  }
+
+  .app-screen-home.is-drawer-view .drawer-empty {
+    min-height: 298px;
+    padding: 40px 44px;
+    border: 1px dashed #d8cfc2;
+    border-radius: 19px;
+    background: rgba(255, 253, 247, .75);
+    color: #9a8e84;
+    font-family: "Songti SC", "STSong", serif;
+    font-size: 22px;
+    line-height: 1.75;
+    text-align: center;
+  }
+
+  .app-screen-home.is-drawer-view .drawer-list { gap: 15px; }
+  .app-screen-home.is-drawer-view .drawer-note {
+    border-radius: 20px;
+    border-color: #d8cfc2;
+    background: rgba(255, 253, 247, .82);
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-tabs {
+    z-index: 45;
+    min-height: 132px;
+    padding-top: 45px;
+    border-top: 0;
+    background: #b9d9ee;
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-tabs button {
+    min-height: 69px;
+    font-size: 17px;
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-tabs button[aria-pressed="true"] {
+    background: rgba(133, 190, 221, .35);
+  }
+
+  .app-screen-home.is-drawer-view .library-mobile-tab-icon {
+    width: 31px;
+    height: 31px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-screen-home.is-drawer-view .home-shell { padding-inline: 21px; }
+  .app-screen-home.is-drawer-view .library-mobile-brand strong { font-size: 24px; }
+  .app-screen-home.is-drawer-view .library-header { padding-inline: 29px; }
+  .app-screen-home.is-drawer-view .library-header h1 { font-size: 51px; }
+  .app-screen-home.is-drawer-view .drawer-intro { padding-inline: 30px; }
+  .app-screen-home.is-drawer-view .drawer-intro p { font-size: 23px; }
+  .app-screen-home.is-drawer-view .drawer-empty { padding-inline: 38px; font-size: 20px; }
+}
