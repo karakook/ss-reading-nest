@@ -1,0 +1,494 @@
+/*
+ * Dessert room v2 is intentionally loaded after the legacy application CSS.
+ * Every selector is scoped to the rebuilt home shell so older reader/cover
+ * styles cannot leak into this page and this page cannot leak into them.
+ */
+.app-screen-home {
+  --room-cream: #fff8e8;
+  --room-paper: #fffdf5;
+  --room-paper-2: #fff9eb;
+  --room-blue: #b9d9ee;
+  --room-blue-deep: #8fbad6;
+  --room-taupe: #a18470;
+  --room-cocoa: #3f2d25;
+  --room-ink: #382820;
+  --room-muted: #887064;
+  --room-line: #d9b996;
+  --room-shadow: rgba(112, 78, 46, .17);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 79% 8%, rgba(255, 255, 255, .82), transparent 23rem),
+    repeating-linear-gradient(0deg, rgba(122, 83, 43, .018) 0 1px, transparent 1px 4px),
+    var(--room-cream);
+  color: var(--room-ink);
+}
+
+.app-screen-home.library-theme-pink { --room-blue: #efc9cf; --room-blue-deep: #d8a6ae; }
+.app-screen-home.library-theme-beige { --room-blue: #dfcfad; --room-blue-deep: #bea77b; }
+.app-screen-home.library-theme-green { --room-blue: #c4d7c7; --room-blue-deep: #94b09a; }
+
+.app-screen-home::before,
+.app-screen-home::after {
+  position: fixed;
+  z-index: 50;
+  right: 0;
+  left: 0;
+  height: 30px;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20px 0, transparent 16px, #cda783 16.5px 17.5px, #fff8e8 18px 24px, transparent 24.5px) 0 0 / 40px 30px repeat-x,
+    radial-gradient(circle at 20px 8px, #b89472 0 2px, transparent 2.5px) 0 0 / 40px 30px repeat-x;
+  filter: drop-shadow(0 2px 0 rgba(91, 61, 37, .16));
+}
+.app-screen-home::before { top: 0; transform: rotate(180deg); }
+.app-screen-home::after { bottom: 0; }
+
+.app-screen-home .dessert-reading-room.library-app-shell {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px 0 28px;
+}
+
+.app-screen-home .dessert-reading-room .library-rail {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  min-height: calc(100vh - 48px);
+  flex-direction: column;
+  align-self: start;
+  gap: 18px;
+  padding: 57px 20px 26px;
+  border: 0;
+  border-right: 1px solid rgba(87, 116, 135, .24);
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 16px 16px, rgba(255,255,255,.18) 0 2px, transparent 2.5px) 0 0 / 32px 32px,
+    linear-gradient(180deg, color-mix(in srgb, var(--room-blue) 94%, #fff), var(--room-blue));
+  box-shadow: 7px 0 18px rgba(86, 76, 65, .08);
+  backdrop-filter: none;
+}
+
+.app-screen-home .dessert-reading-room .library-rail::after {
+  position: absolute;
+  top: 0;
+  right: -18px;
+  bottom: 0;
+  width: 20px;
+  content: "";
+  background:
+    radial-gradient(circle at 0 16px, transparent 12px, #fff8e8 12.5px 14px, transparent 14.5px) 0 0 / 20px 32px repeat-y;
+  pointer-events: none;
+}
+
+.app-screen-home .library-rail-brand {
+  position: relative;
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  padding: 28px 18px;
+  color: var(--room-cocoa);
+  text-align: center;
+}
+.app-screen-home .library-rail-brand::before {
+  position: absolute;
+  inset: 0;
+  border: 1px dashed #bc916f;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 4px, var(--room-paper) 0 7px, transparent 7.5px) 0 0 / 20px 18px repeat-x,
+    radial-gradient(circle at 50% calc(100% - 4px), var(--room-paper) 0 7px, transparent 7.5px) 0 100% / 20px 18px repeat-x,
+    var(--room-paper);
+  box-shadow: 0 5px 0 rgba(100, 70, 45, .11);
+  content: "";
+}
+.app-screen-home .library-rail-brand > * { position: relative; z-index: 1; }
+.app-screen-home .library-rail-brand > svg { width: 28px; height: 28px; color: #a7856e; }
+.app-screen-home .library-rail-brand strong { max-width: 8em; color: var(--room-ink); font-family: "STKaiti", "KaiTi", "Songti SC", serif; font-size: 23px; font-weight: 700; line-height: 1.42; }
+.app-screen-home .library-rail-brand span { color: #b08c70; font-size: 10px; }
+
+.app-screen-home .dessert-reading-room .library-rail nav { display: grid; gap: 3px; }
+.app-screen-home .dessert-reading-room .library-rail-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 61px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 19px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--room-ink);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 17px;
+  font-weight: 650;
+}
+.app-screen-home .dessert-reading-room .library-rail-item[aria-current="page"] { background: rgba(114, 160, 191, .20); color: var(--room-cocoa); }
+.app-screen-home .dessert-reading-room .library-rail-icon { width: 25px; height: 25px; color: var(--room-cocoa); stroke-width: 2; }
+
+.app-screen-home .library-rail-mascot {
+  position: relative;
+  display: grid;
+  min-height: 240px;
+  place-items: end center;
+  margin: auto -12px 0;
+  padding: 0;
+}
+.app-screen-home .library-rail-mascot img { display: block; width: 220px; max-height: 226px; object-fit: contain; filter: drop-shadow(0 7px 3px rgba(74, 53, 36, .11)); }
+.app-screen-home .library-rail-mascot .rail-star-one { top: 26px; left: 28px; }
+.app-screen-home .library-rail-mascot .rail-star-two { top: 58px; right: 25px; }
+
+.app-screen-home .dessert-reading-room .home-shell {
+  width: 100%;
+  max-width: 1286px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 47px clamp(34px, 4.2vw, 68px) 44px;
+}
+.app-screen-home .library-mobile-brand { display: none; }
+
+.app-screen-home .dessert-reading-room .library-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 30px;
+  min-height: 168px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 3px 8px 27px;
+  border: 0;
+  border-bottom: 1px dashed #d9b792;
+}
+.app-screen-home .dessert-reading-room .library-header::after { display: none; }
+.app-screen-home .dessert-reading-room .library-kicker { display: none; }
+.app-screen-home .dessert-reading-room .library-header h1 {
+  margin: 0 0 10px;
+  color: var(--room-ink);
+  font-family: "STKaiti", "KaiTi", "Songti SC", serif;
+  font-size: clamp(42px, 4vw, 60px);
+  font-weight: 800;
+  letter-spacing: .03em;
+  line-height: 1.08;
+}
+.app-screen-home .dessert-reading-room .library-header h1 span { margin-left: 12px; color: #a88670; font-size: .48em; }
+.app-screen-home .dessert-reading-room .library-header p { margin: 0; color: var(--room-muted); font-family: "Songti SC", serif; font-size: 18px; letter-spacing: .06em; }
+
+.app-screen-home .dessert-reading-room .library-skin-switch {
+  display: flex;
+  justify-content: flex-start;
+  gap: 13px;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.app-screen-home .dessert-reading-room .library-skin-switch .skin-star {
+  display: grid;
+  width: 34px;
+  min-height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.app-screen-home .dessert-reading-room .library-skin-switch .skin-star::before { display: none; }
+.app-screen-home .dessert-reading-room .skin-star svg { width: 29px; height: 29px; fill: currentColor; stroke: #fff6e7; stroke-width: 1.2; filter: drop-shadow(0 2px 0 rgba(75, 50, 32, .15)); }
+.app-screen-home .dessert-reading-room .skin-star-blue { color: #a8cde5; }
+.app-screen-home .dessert-reading-room .skin-star-pink { color: #dfb6ab; }
+.app-screen-home .dessert-reading-room .skin-star-beige { color: #f5e5bc; }
+.app-screen-home .dessert-reading-room .skin-star-green { color: #594237; }
+.app-screen-home .dessert-reading-room .skin-star[aria-pressed="true"] { transform: scale(1.15) rotate(-7deg); }
+
+.app-screen-home .library-header-illustration { position: relative; display: grid; width: 390px; height: 150px; place-items: center end; }
+.app-screen-home .library-header-illustration img { display: block; width: 330px; max-height: 160px; object-fit: contain; filter: drop-shadow(0 5px 2px rgba(81, 57, 39, .10)); }
+.app-screen-home .header-sparkle { position: absolute; z-index: 2; color: #c5a272; }
+.app-screen-home .sparkle-one { top: 16px; left: 23px; font-size: 28px; }
+.app-screen-home .sparkle-two { top: 49px; left: 3px; font-size: 16px; }
+
+.app-screen-home .reading-dashboard { display: grid; gap: 16px; }
+.app-screen-home .dashboard-main-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(330px, 1fr); gap: 16px; }
+.app-screen-home .dashboard-side-stack { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.app-screen-home .dashboard-bottom-grid { display: grid; grid-template-columns: minmax(0, 2.35fr) minmax(286px, .95fr); gap: 16px; align-items: stretch; }
+
+.app-screen-home .dessert-reading-room .continue-card,
+.app-screen-home .dessert-reading-room .dessert-stat-card,
+.app-screen-home .dessert-reading-room .bookshelf-section,
+.app-screen-home .dessert-reading-room .reading-reward-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #d1ad85;
+  border-radius: 19px;
+  box-shadow: 5px 6px 0 var(--room-shadow);
+}
+.app-screen-home .dessert-reading-room .continue-card::after,
+.app-screen-home .dessert-reading-room .dessert-stat-card::after,
+.app-screen-home .dessert-reading-room .bookshelf-section::after,
+.app-screen-home .dessert-reading-room .reading-reward-card::after {
+  position: absolute;
+  inset: 12px;
+  z-index: 0;
+  border: 1px dashed rgba(199, 159, 120, .58);
+  border-radius: 13px;
+  content: "";
+  pointer-events: none;
+}
+.app-screen-home .dessert-reading-room .continue-card > *,
+.app-screen-home .dessert-reading-room .dessert-stat-card > *,
+.app-screen-home .dessert-reading-room .bookshelf-section > *,
+.app-screen-home .dessert-reading-room .reading-reward-card > * { position: relative; z-index: 1; }
+
+.app-screen-home .dessert-reading-room .continue-card {
+  display: grid;
+  grid-template-columns: 178px minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 16px 28px;
+  min-height: 408px;
+  margin: 0;
+  padding: 64px 40px 27px;
+  background:
+    radial-gradient(circle at 82% 25%, rgba(255,255,255,.35), transparent 14rem),
+    linear-gradient(140deg, color-mix(in srgb, var(--room-blue) 94%, #fff), var(--room-blue));
+}
+.app-screen-home .dessert-reading-room .continue-card::before {
+  position: absolute;
+  z-index: 4;
+  top: 15px;
+  left: -1px;
+  display: block;
+  width: 196px;
+  height: 49px;
+  clip-path: polygon(0 0, 100% 0, 86% 50%, 100% 100%, 0 100%);
+  background: linear-gradient(90deg, #a48670, #b79a83);
+  content: "正在读  ✿";
+  color: #fff9ed;
+  font-family: "STKaiti", "KaiTi", serif;
+  font-size: 20px;
+  line-height: 49px;
+  text-align: center;
+  letter-spacing: .12em;
+}
+.app-screen-home .dessert-reading-room .continue-card .library-cover.compact {
+  width: 178px;
+  min-height: 244px;
+  border: 1px solid #8f765f;
+  border-radius: 4px;
+  background:
+    radial-gradient(ellipse at 65% 75%, rgba(177,146,97,.42) 0 8%, transparent 8.5%),
+    radial-gradient(ellipse at 56% 67%, rgba(105,119,79,.55) 0 5%, transparent 5.5%),
+    radial-gradient(ellipse at 74% 63%, rgba(105,119,79,.44) 0 4%, transparent 4.5%),
+    linear-gradient(145deg, #fffaf0, #f4dfbd);
+  box-shadow: 4px 5px 0 rgba(72, 54, 42, .15);
+  transform: none;
+}
+.app-screen-home .dessert-reading-room .continue-card .library-cover-title { align-self: start; margin-top: 23px; font-size: 17px; }
+.app-screen-home .dessert-reading-room .continue-card-body { align-content: center; gap: 12px; }
+.app-screen-home .dessert-reading-room .continue-status { display: none; }
+.app-screen-home .dessert-reading-room .continue-card h2 { color: var(--room-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 32px; }
+.app-screen-home .dessert-reading-room .continue-card p { margin: 0; color: #67574e; font-family: "Songti SC", serif; font-size: 14px; }
+.app-screen-home .dessert-reading-room .continue-progress-row { color: #5a4a43; font-size: 13px; }
+.app-screen-home .dessert-reading-room .continue-progress-track { height: 13px; border: 1px solid rgba(133, 100, 75, .22); background: #fff8dd; }
+.app-screen-home .dessert-reading-room .continue-progress-track span { background: linear-gradient(90deg, #9c765d, #b08b70); }
+.app-screen-home .dessert-reading-room .continue-card-actions { grid-column: 2; display: flex; min-width: 0; gap: 10px; align-items: center; }
+.app-screen-home .dessert-reading-room .continue-card-actions button { min-height: 48px; border-radius: 999px; }
+.app-screen-home .dessert-reading-room .continue-card-actions .action-primary { min-width: 190px; border: 1px solid #8d6e59; background: #a88770; color: #fff9eb; box-shadow: inset 0 0 0 2px rgba(255,255,255,.26); }
+.app-screen-home .dessert-reading-room .continue-card-actions .library-quiet-action { width: 48px; overflow: hidden; padding: 0; border-color: rgba(126,96,75,.25); background: rgba(255,250,235,.5); font-size: 0; }
+.app-screen-home .dessert-reading-room .continue-card-actions .library-quiet-action svg { width: 19px; height: 19px; }
+
+.app-screen-home .dessert-stat-card { min-height: 196px; padding: 31px 40px; background: linear-gradient(145deg, #fffdf6, #fff8e9); }
+.app-screen-home .dessert-stat-heading .dessert-card-kicker { display: none; }
+.app-screen-home .dessert-stat-heading h2 { margin: 0; color: var(--room-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 20px; }
+.app-screen-home .dessert-stat-heading h2::after { margin-left: 8px; content: "✿"; color: #a48673; font-size: 13px; }
+.app-screen-home .today-reading-value { display: flex; align-items: baseline; gap: 7px; margin-top: 12px; color: var(--room-ink); }
+.app-screen-home .today-reading-value strong { font-family: Georgia, serif; font-size: 48px; font-weight: 500; line-height: .9; }
+.app-screen-home .today-reading-value span { font-size: 14px; }
+.app-screen-home .today-reading-stars { display: flex; gap: 8px; margin-top: 17px; }
+.app-screen-home .today-reading-stars svg { width: 24px; height: 24px; color: #5b463c; fill: currentColor; stroke: #fff6df; stroke-width: 1.2; }
+.app-screen-home .today-reading-stars svg:nth-child(1) { color: #a9cee6; }
+.app-screen-home .today-reading-stars svg:nth-child(2) { color: #ae9a83; }
+.app-screen-home .today-reading-stars svg:nth-child(3) { color: #f4dfb4; }
+.app-screen-home .today-reading-stars svg:nth-child(4) { color: #4b362e; }
+.app-screen-home .dessert-stat-card > p { display: none; }
+.app-screen-home .today-cookie-art {
+  position: absolute !important;
+  z-index: 2 !important;
+  right: 30px;
+  bottom: 38px;
+  width: 82px;
+  height: 82px;
+  background-repeat: no-repeat;
+  background-position: 34% center;
+  background-size: 430% auto;
+  filter: drop-shadow(2px 3px 0 rgba(88,59,39,.15));
+}
+.app-screen-home .weekly-goal-copy { position: static !important; margin-top: 12px; color: var(--room-ink); }
+.app-screen-home .weekly-goal-copy strong { font-family: Georgia, serif; font-size: 35px; font-weight: 500; }
+.app-screen-home .weekly-goal-copy span { font-size: 15px; }
+.app-screen-home .weekly-goal-days { display: flex; gap: 8px; margin-top: 15px; }
+.app-screen-home .weekly-goal-days span { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid #3e2c25; border-radius: 50%; background: #fffef8; color: transparent; font-size: 0; }
+.app-screen-home .weekly-goal-days span.is-done { background: #5a3526; box-shadow: inset 0 0 0 3px #704836; }
+.app-screen-home .weekly-goal-days span.is-done::after { content: "✿"; color: #aa765d; font-size: 9px; }
+.app-screen-home .weekly-books-art { position: absolute !important; z-index: 2 !important; right: 24px; bottom: 24px; width: 128px; height: 100px; object-fit: contain; }
+
+.app-screen-home .dessert-reading-room .bookshelf-section { display: grid; gap: 12px; min-width: 0; min-height: 286px; padding: 26px 34px 17px; background: linear-gradient(145deg, #fffdf6, #fff8e9); }
+.app-screen-home .dessert-reading-room .section-heading { align-items: end; }
+.app-screen-home .dessert-reading-room .section-heading h2 { margin: 0; color: var(--room-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 20px; }
+.app-screen-home .dessert-reading-room .section-heading h2::after { margin-left: 8px; content: "✿"; color: #a48673; font-size: 12px; }
+.app-screen-home .dessert-reading-room .section-heading > span { color: var(--room-muted); }
+.app-screen-home .dessert-reading-room .dessert-card-kicker { display: none; }
+.app-screen-home .dessert-reading-room .bookshelf-filters { display: none; }
+.app-screen-home .dessert-reading-room .library-book-grid { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: clamp(13px, 2vw, 28px); overflow: visible; padding: 0 4px; }
+.app-screen-home .dessert-reading-room .library-book-card { display: grid; flex: none; gap: 6px; min-width: 0; }
+.app-screen-home .dessert-reading-room .library-book-card:nth-child(n+5) { display: none; }
+.app-screen-home .dessert-reading-room .library-cover { width: min(100%, 112px); min-height: 148px; justify-self: center; border: 1px solid #9c816b; border-radius: 3px; box-shadow: 3px 4px 0 rgba(76,56,42,.13); }
+.app-screen-home .dessert-reading-room .library-cover-0,
+.app-screen-home .dessert-reading-room .library-cover-4 { background: linear-gradient(150deg, #fff9e9, #eedcbc); }
+.app-screen-home .dessert-reading-room .library-cover-1 { background: linear-gradient(165deg, #d9e9ef, #8eb6d4 62%, #4d7290); }
+.app-screen-home .dessert-reading-room .library-cover-2 { background: linear-gradient(150deg, #fff0c9, #c7d9d0 55%, #8aa5a0); }
+.app-screen-home .dessert-reading-room .library-cover-3 { background: linear-gradient(135deg, #dce8ec, #efd6b2 55%, #7c6658); }
+.app-screen-home .dessert-reading-room .library-cover-title { color: #46352d; font-size: 13px; }
+.app-screen-home .dessert-reading-room .library-cover-mark { display: none; }
+.app-screen-home .dessert-reading-room .library-book-info strong { color: var(--room-ink); font-family: "Songti SC", serif; font-size: 12px; }
+.app-screen-home .dessert-reading-room .library-book-info small { color: var(--room-muted); font-size: 10px; }
+
+.app-screen-home .dessert-reading-room .reading-reward-card { display: grid; grid-template-rows: auto 1fr auto; gap: 9px; min-height: 286px; margin: 0; padding: 26px 30px 22px; background: linear-gradient(145deg, #fffdf6, #fff8e9); }
+.app-screen-home .dessert-reward-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.app-screen-home .dessert-reward-heading h2 { margin: 0; color: var(--room-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 20px; }
+.app-screen-home .dessert-reward-heading h2 span { color: #a48673; font-size: 12px; }
+.app-screen-home .reward-bow { color: #9e7f69; font-family: Georgia, serif; font-size: 52px; line-height: .6; transform: rotate(-16deg); }
+.app-screen-home .reward-cookie-row { display: block; width: 100%; max-width: 260px; align-self: center; justify-self: center; object-fit: contain; filter: drop-shadow(2px 3px 0 rgba(88,59,39,.10)); }
+.app-screen-home .dessert-reward-message { padding-top: 12px; border-top: 1px dashed #d8b996; text-align: center; }
+.app-screen-home .dessert-reward-message p { margin: 0 0 3px; color: var(--room-ink); font-family: "Songti SC", serif; font-size: 14px; }
+.app-screen-home .dessert-reward-message span { color: var(--room-ink); font-family: "Songti SC", serif; font-size: 14px; }
+
+.app-screen-home .dashboard-utilities { display: flex; gap: 14px; align-items: stretch; justify-content: space-between; }
+.app-screen-home .dashboard-utilities .shared-memory-note { flex: 1; margin: 0; }
+.app-screen-home .dashboard-utilities .library-header-actions { display: flex; align-items: end; }
+.app-screen-home .dashboard-utilities .library-header-actions button { border-radius: 999px; }
+
+.app-screen-home .dessert-reading-room .library-mobile-tabs { display: none; }
+
+@media (max-width: 1180px) {
+  .app-screen-home .dessert-reading-room.library-app-shell { grid-template-columns: 218px minmax(0, 1fr); }
+  .app-screen-home .dessert-reading-room .library-rail { padding-inline: 15px; }
+  .app-screen-home .library-rail-brand strong { font-size: 20px; }
+  .app-screen-home .dessert-reading-room .home-shell { padding-inline: 31px; }
+  .app-screen-home .dessert-reading-room .library-header { grid-template-columns: minmax(0, 1fr) 280px; }
+  .app-screen-home .library-header-illustration { width: 280px; }
+  .app-screen-home .library-header-illustration img { width: 270px; }
+  .app-screen-home .dashboard-main-grid { grid-template-columns: minmax(0, 1.65fr) minmax(285px, 1fr); }
+  .app-screen-home .dessert-reading-room .continue-card { grid-template-columns: 144px minmax(0, 1fr); padding-inline: 29px; }
+  .app-screen-home .dessert-reading-room .continue-card .library-cover.compact { width: 144px; min-height: 204px; }
+}
+
+@media (max-width: 800px) {
+  .app-screen-home::before,
+  .app-screen-home::after { height: 22px; background-size: 32px 22px; }
+  .app-screen-home .dessert-reading-room.library-app-shell { display: block; min-height: 100vh; padding: 28px 0 calc(92px + var(--safe-bottom)); }
+  .app-screen-home .dessert-reading-room .library-rail { display: none; }
+  .app-screen-home .dessert-reading-room .home-shell { max-width: 520px; padding: 15px 20px 24px; }
+  .app-screen-home .library-mobile-brand {
+    display: grid;
+    grid-template-columns: 27px minmax(0, 1fr) 42px;
+    min-height: 70px;
+    align-items: center;
+    margin: 0 5px 19px;
+    padding: 8px 12px;
+    border: 1px dashed #c39b77;
+    border-radius: 26px;
+    background: var(--room-paper);
+    box-shadow: 0 4px 0 rgba(103,72,48,.10);
+    color: var(--room-ink);
+    text-align: center;
+  }
+  .app-screen-home .library-mobile-brand::before,
+  .app-screen-home .library-mobile-brand::after { position: absolute; color: #b08a6d; content: "✿"; font-size: 9px; }
+  .app-screen-home .library-mobile-brand strong { font-family: "STKaiti", "KaiTi", serif; font-size: 19px; }
+  .app-screen-home .library-mobile-brand button { display: grid; width: 42px; min-height: 42px; place-items: center; padding: 0; border: 0; background: transparent; }
+  .app-screen-home .library-mobile-brand button svg { width: 24px; height: 24px; }
+
+  .app-screen-home .dessert-reading-room .library-header { grid-template-columns: minmax(0, 1fr) 150px; gap: 6px; min-height: 148px; margin: 0 0 16px; padding: 4px 4px 20px; }
+  .app-screen-home .dessert-reading-room .library-header h1 { font-size: clamp(37px, 10vw, 50px); }
+  .app-screen-home .dessert-reading-room .library-header p { max-width: 26ch; font-size: 14px; line-height: 1.6; }
+  .app-screen-home .library-header-illustration { width: 160px; height: 130px; margin-right: -13px; }
+  .app-screen-home .library-header-illustration img { width: 185px; max-height: 126px; }
+  .app-screen-home .sparkle-one { top: 8px; left: 5px; }
+  .app-screen-home .sparkle-two { top: 34px; left: -4px; }
+  .app-screen-home .dessert-reading-room .library-skin-switch { gap: 7px; margin-top: 10px; }
+  .app-screen-home .dessert-reading-room .library-skin-switch .skin-star { width: 25px; min-height: 25px; }
+  .app-screen-home .dessert-reading-room .skin-star svg { width: 22px; height: 22px; }
+
+  .app-screen-home .reading-dashboard { gap: 15px; }
+  .app-screen-home .dashboard-main-grid,
+  .app-screen-home .dashboard-bottom-grid { grid-template-columns: 1fr; gap: 15px; }
+  .app-screen-home .dashboard-side-stack { grid-template-columns: 1fr; grid-template-rows: none; gap: 15px; }
+  .app-screen-home .dessert-reading-room .continue-card { grid-template-columns: 174px minmax(0, 1fr); gap: 17px 25px; min-height: 448px; padding: 75px 31px 28px; }
+  .app-screen-home .dessert-reading-room .continue-card .library-cover.compact { width: 174px; min-height: 258px; }
+  .app-screen-home .dessert-reading-room .continue-card h2 { font-size: 31px; }
+  .app-screen-home .dessert-reading-room .continue-card-actions { grid-column: 2; }
+  .app-screen-home .dessert-reading-room .continue-card-actions .action-primary { min-width: 0; width: 100%; }
+  .app-screen-home .dessert-stat-card { min-height: 190px; padding-inline: 37px; }
+  .app-screen-home .dessert-reading-room .bookshelf-section { min-height: 314px; padding: 26px 31px 20px; }
+  .app-screen-home .dessert-reading-room .library-book-grid { gap: 20px; overflow-x: auto; grid-template-columns: repeat(4, 112px); scrollbar-width: none; }
+  .app-screen-home .dessert-reading-room .reading-reward-card { min-height: 175px; grid-template-columns: minmax(0, 1.15fr) minmax(170px, .85fr); grid-template-rows: auto 1fr; align-items: center; }
+  .app-screen-home .dessert-reward-heading { grid-column: 1 / -1; }
+  .app-screen-home .reward-cookie-row { grid-column: 1; width: 100%; }
+  .app-screen-home .dessert-reward-message { grid-column: 2; border-top: 0; border-left: 1px dashed #d8b996; padding: 10px 0 10px 22px; }
+  .app-screen-home .dashboard-utilities { flex-direction: column; }
+  .app-screen-home .dashboard-utilities .library-header-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs {
+    position: fixed;
+    z-index: 45;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 9px 10px calc(8px + var(--safe-bottom));
+    border: 0;
+    border-top: 1px solid #8fb9d4;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--room-blue) 94%, transparent);
+    box-shadow: 0 -7px 18px rgba(76, 63, 51, .12);
+    backdrop-filter: blur(12px);
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button { display: grid; min-height: 62px; place-items: center; gap: 2px; padding: 4px; border: 0; border-radius: 18px; background: transparent; color: var(--room-ink); font-family: "Songti SC", serif; font-size: 11px; }
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button[aria-pressed="true"] { background: rgba(116, 165, 196, .21); box-shadow: none; }
+  .app-screen-home .dessert-reading-room .library-mobile-tab-icon { width: 24px; height: 24px; }
+}
+
+@media (max-width: 520px) {
+  .app-screen-home .dessert-reading-room .home-shell { padding-inline: 13px; }
+  .app-screen-home .library-mobile-brand { margin-inline: 4px; }
+  .app-screen-home .dessert-reading-room .library-header { grid-template-columns: minmax(0, 1fr) 112px; }
+  .app-screen-home .dessert-reading-room .library-header h1 { font-size: 38px; white-space: nowrap; }
+  .app-screen-home .dessert-reading-room .library-header p { font-size: 13px; }
+  .app-screen-home .library-header-illustration { width: 120px; margin-right: -16px; }
+  .app-screen-home .library-header-illustration img { width: 155px; }
+  .app-screen-home .dessert-reading-room .continue-card { grid-template-columns: 122px minmax(0, 1fr); gap: 14px 20px; min-height: 350px; padding: 67px 21px 23px; }
+  .app-screen-home .dessert-reading-room .continue-card::before { width: 164px; height: 43px; font-size: 17px; line-height: 43px; }
+  .app-screen-home .dessert-reading-room .continue-card .library-cover.compact { width: 122px; min-height: 182px; }
+  .app-screen-home .dessert-reading-room .continue-card h2 { font-size: 24px; }
+  .app-screen-home .dessert-reading-room .continue-card p { font-size: 12px; }
+  .app-screen-home .dessert-reading-room .continue-card-actions { grid-column: 1 / -1; }
+  .app-screen-home .dessert-reading-room .continue-card-actions .library-quiet-action { display: none; }
+  .app-screen-home .dessert-stat-card { min-height: 188px; padding: 29px 29px; }
+  .app-screen-home .today-cookie-art { right: 20px; width: 76px; height: 76px; }
+  .app-screen-home .weekly-books-art { right: 13px; width: 120px; }
+  .app-screen-home .dessert-reading-room .bookshelf-section { padding-inline: 25px; }
+  .app-screen-home .dessert-reading-room .reading-reward-card { grid-template-columns: 1fr; grid-template-rows: auto auto auto; padding: 25px; }
+  .app-screen-home .dessert-reward-heading,
+  .app-screen-home .reward-cookie-row,
+  .app-screen-home .dessert-reward-message { grid-column: 1; }
+  .app-screen-home .dessert-reward-message { border-top: 1px dashed #d8b996; border-left: 0; padding: 12px 0 0; }
+}

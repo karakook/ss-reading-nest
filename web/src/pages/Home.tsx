@@ -2,12 +2,8 @@ import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import {
   BookOpen,
-  Cat,
-  Coffee,
-  Cookie,
   Eye,
   Ellipsis,
-  Flower2,
   House,
   History,
   LoaderCircle,
@@ -22,6 +18,10 @@ import {
   Star,
   type LucideIcon
 } from "lucide-react";
+import teaBooksArt from "../assets/dessert-room/tea-books.webp";
+import catBooksArt from "../assets/dessert-room/cat-books.webp";
+import cookieRowArt from "../assets/dessert-room/cookie-row.webp";
+import weeklyBooksArt from "../assets/dessert-room/weekly-books.webp";
 import type {
   DrawerItem,
   ReadingRecord as StoredReadingRecord,
@@ -90,7 +90,7 @@ const LIBRARY_NAV: Array<{
 }> = [
   { label: "书架", accessibleLabel: "我的书房", icon: House, view: "library" },
   { label: "阅读记录", accessibleLabel: "阅读记录", icon: History, view: "records" },
-  { label: "小抽屉", accessibleLabel: "小抽屉", icon: MessageSquareText, view: "drawer" },
+  { label: "划线摘录", accessibleLabel: "小抽屉", icon: MessageSquareText, view: "drawer" },
   { label: "设置", accessibleLabel: "设置", icon: Settings, view: "settings" }
 ];
 
@@ -215,9 +215,7 @@ export function Home(props: {
         <div className="library-rail-mascot" aria-hidden="true">
           <span className="rail-star rail-star-one">✦</span>
           <span className="rail-star rail-star-two">✧</span>
-          <Cat />
-          <i /><i /><i />
-          <small>慢慢读，也很好</small>
+          <img src={catBooksArt} alt="" />
         </div>
       </aside>
 
@@ -252,10 +250,7 @@ export function Home(props: {
             <div className="library-header-illustration" aria-hidden="true">
               <span className="header-sparkle sparkle-one">✦</span>
               <span className="header-sparkle sparkle-two">✧</span>
-              <Coffee />
-              <i className="header-book header-book-one" />
-              <i className="header-book header-book-two" />
-              <Flower2 />
+              <img src={teaBooksArt} alt="" />
             </div>
           ) : null}
         </header>
@@ -462,13 +457,13 @@ function TodayReadingCard(props: { reward: ReadingReward }) {
         <strong>{minutes}</strong>
         <span>分钟</span>
       </div>
-      <div className="today-reading-stars" aria-label={`今日阅读星星 ${filledStars} / 5`}>
-        {Array.from({ length: 5 }, (_, index) => (
+      <div className="today-reading-stars" aria-label={`今日阅读星星 ${Math.min(4, filledStars)} / 4`}>
+        {Array.from({ length: 4 }, (_, index) => (
           <Star key={index} aria-hidden="true" className={index < filledStars ? "is-filled" : undefined} />
         ))}
       </div>
       <p>{props.reward.todayQualified ? "今天的阅读目标完成啦" : "再读一会儿，就能点亮小星星"}</p>
-      <Cookie className="dessert-card-ornament" aria-hidden="true" />
+      <span className="today-cookie-art" style={{ backgroundImage: `url(${cookieRowArt})` }} aria-hidden="true" />
     </section>
   );
 }
@@ -485,14 +480,14 @@ function WeeklyGoalCard(props: { days: boolean[] }) {
       </div>
       <div className="weekly-goal-copy"><strong>{completed}</strong><span> / {target} 天</span></div>
       <div className="weekly-goal-days" aria-label={`本周已阅读 ${completed} 天`}>
-        {props.days.map((done, index) => (
+        {props.days.slice(0, 5).map((done, index) => (
           <span key={index} className={done ? "is-done" : undefined} aria-hidden="true">
             {done ? "✦" : index + 1}
           </span>
         ))}
       </div>
       <p>{completed >= target ? "本周的小目标已经完成" : "每一次翻页，都算数"}</p>
-      <Flower2 className="dessert-card-ornament" aria-hidden="true" />
+      <img className="weekly-books-art" src={weeklyBooksArt} alt="" aria-hidden="true" />
     </section>
   );
 }
@@ -541,55 +536,24 @@ function ReadingRewardCard(props: {
 
   return (
     <section className="reading-reward-card" aria-label={`${partner.viewerName}的阅读奖励`}>
-      <div className="reading-reward-summary">
-        <span className="reading-reward-kicker">轻轻读，也会被记住</span>
-        <div className="reading-reward-total">
-          <span className="reading-reward-paw" aria-hidden="true">🐾</span>
-          <strong>{reward.pawCount} 枚猫爪</strong>
+      <div className="dessert-reward-heading">
+        <div>
+          <span className="dessert-card-kicker">READING TREAT</span>
+          <h2>阅读小奖励 <span aria-hidden="true">✿</span></h2>
         </div>
-        <p>
-          {reward.todayQualified
-            ? "今天的猫爪已经盖好啦。"
-            : `再读 ${remainingMinutes} 分钟，或者再翻 ${remainingPages} 页，就能盖下今天的猫爪。`}
-        </p>
-        <small>
-          今天已读 {formatRewardMinutes(reward.todaySeconds)} · {reward.todayPages} 页
-        </small>
+        <span className="reward-bow" aria-hidden="true">⌁</span>
       </div>
-
-      <div className="reading-reward-progress">
-        <div className="reading-reward-progress-heading">
-          <span>
-            {reward.unlockedLetters > 0 && reward.cycleProgress < 7
-              ? "下一张小纸条"
-              : `${partner.companionName}的小纸条`}
-          </span>
-          <strong>{reward.cycleProgress} / 7</strong>
-        </div>
-        <div
-          className="reading-reward-paw-row"
-          aria-label={`本轮已经收集 ${reward.cycleProgress} 枚猫爪，共需 7 枚`}
-        >
-          {Array.from({ length: 7 }, (_, index) => (
-            <span
-              key={index}
-              className={index < reward.cycleProgress ? "is-collected" : undefined}
-              aria-hidden="true"
-            >
-              🐾
-            </span>
-          ))}
-        </div>
-        {latestLetter ? (
-          <blockquote className="reading-reward-letter">
-            <span>{partner.companionName}的小纸条 · 第 {reward.unlockedLetters} 封</span>
-            <p>{latestLetter}</p>
-          </blockquote>
-        ) : (
-          <p className="reading-reward-hint">
-            再收集 {remainingPaws} 枚，{partner.companionName}就留一张小纸条。
-          </p>
-        )}
+      <img className="reward-cookie-row" src={cookieRowArt} alt="四块不同形状的小饼干" />
+      <div className="dessert-reward-message">
+        <p>{reward.todayQualified ? "今天的小饼干已经烤好啦！" : `再读 ${Math.max(1, remainingMinutes)} 分钟`}</p>
+        <span>{reward.todayQualified ? "明天再来收下一块" : "可以获得一块小饼干！"}</span>
+      </div>
+      <div className="visually-hidden">
+        <span>{reward.pawCount} 枚猫爪</span>
+        <span>{reward.cycleProgress} / 7</span>
+        <p>{reward.todayQualified ? "今天的猫爪已经盖好啦。" : `再读 ${remainingMinutes} 分钟，或者再翻 ${remainingPages} 页，就能盖下今天的猫爪。`}</p>
+        <small>今天已读 {formatRewardMinutes(reward.todaySeconds)} · {reward.todayPages} 页</small>
+        {latestLetter ? <><span>{partner.companionName}的小纸条 · 第 {reward.unlockedLetters} 封</span><p>{latestLetter}</p></> : <p>再收集 {remainingPaws} 枚，{partner.companionName}就留一张小纸条。</p>}
       </div>
     </section>
   );
