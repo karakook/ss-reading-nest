@@ -71,7 +71,8 @@ describe("Home novel bookshelf", () => {
     expect(screen.getAllByRole("button", { name: "我的书房" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: "阅读记录" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: "小抽屉" }).length).toBeGreaterThan(0);
-    expect(container.querySelectorAll("svg.library-rail-icon")).toHaveLength(3);
+    expect(screen.getAllByRole("button", { name: "设置" }).length).toBeGreaterThan(0);
+    expect(container.querySelectorAll("svg.library-rail-icon")).toHaveLength(4);
     expect(container).not.toHaveTextContent("▣");
     expect(container).not.toHaveTextContent("◷");
     expect(screen.queryByRole("button", { name: "书摘笔记" })).not.toBeInTheDocument();

@@ -1,17 +1,25 @@
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import {
-  Archive,
   BookOpen,
+  Cat,
+  Coffee,
+  Cookie,
   Eye,
   Ellipsis,
+  Flower2,
+  House,
   History,
   LoaderCircle,
   Maximize2,
+  MessageSquareText,
+  Palette,
   Plus,
   RefreshCw,
+  Settings,
   Settings2,
   Sparkles,
+  Star,
   type LucideIcon
 } from "lucide-react";
 import type {
@@ -30,7 +38,7 @@ export type BookshelfItem = SessionBundle & {
 };
 
 type Filter = "all" | "active" | "completed" | "missing";
-type LibraryView = "library" | "records" | "drawer";
+type LibraryView = "library" | "records" | "drawer" | "settings";
 export type LibrarySkin = "blue" | "pink" | "beige" | "green";
 
 type ReadingRecordView = {
@@ -76,12 +84,14 @@ const FILTERS: Array<{ value: Filter; label: string }> = [
 
 const LIBRARY_NAV: Array<{
   label: string;
+  accessibleLabel: string;
   icon: LucideIcon;
   view: LibraryView;
 }> = [
-  { label: "我的书房", icon: BookOpen, view: "library" },
-  { label: "阅读记录", icon: History, view: "records" },
-  { label: "小抽屉", icon: Archive, view: "drawer" }
+  { label: "书架", accessibleLabel: "我的书房", icon: House, view: "library" },
+  { label: "阅读记录", accessibleLabel: "阅读记录", icon: History, view: "records" },
+  { label: "小抽屉", accessibleLabel: "小抽屉", icon: MessageSquareText, view: "drawer" },
+  { label: "设置", accessibleLabel: "设置", icon: Settings, view: "settings" }
 ];
 
 export function Home(props: {
@@ -141,6 +151,10 @@ export function Home(props: {
     () => buildReadingReward(props.readingRecords ?? []),
     [props.readingRecords]
   );
+  const weeklyDays = useMemo(
+    () => buildWeeklyReadingDays(props.readingRecords ?? []),
+    [props.readingRecords]
+  );
   const hasUnseenDrawer = props.drawerItems?.some((item) => !item.seen) ?? false;
   const headerCopy =
     view === "drawer"
@@ -153,17 +167,26 @@ export function Home(props: {
           title: "阅读记录",
           subtitle: "看见每一次停在书页里的时间。"
         }
+      : view === "settings"
+      ? {
+          title: "书房设置",
+          subtitle: "把这间小书房调成最舒服的样子。"
+        }
       : {
           title: continueItem
             ? continueReadingHeading(continueItem, partner)
             : `${partner.viewerName}的私人书房`,
-          subtitle: "继续翻开上次停下的地方，书页和想法都还在。"
+          subtitle: "今天也在书页里，慢慢走一会儿吧。"
         };
 
   return (
-    <main className="library-app-shell">
+    <main className="library-app-shell dessert-reading-room">
       <aside className="library-rail" aria-label="小书房导航">
-        <strong>{partner.roomName}</strong>
+        <div className="library-rail-brand">
+          <Sparkles aria-hidden="true" />
+          <strong>{partner.roomName}</strong>
+          <span aria-hidden="true">✦ · ✧ · ✦</span>
+        </div>
         <nav>
           {LIBRARY_NAV.map((item) => {
             const Icon = item.icon;
@@ -172,6 +195,7 @@ export function Home(props: {
                 key={item.label}
                 type="button"
                 className="library-rail-item"
+                aria-label={item.accessibleLabel}
                 aria-current={item.view === view ? "page" : undefined}
                 onClick={() => {
                   setView(item.view);
@@ -188,68 +212,53 @@ export function Home(props: {
             );
           })}
         </nav>
+        <div className="library-rail-mascot" aria-hidden="true">
+          <span className="rail-star rail-star-one">✦</span>
+          <span className="rail-star rail-star-two">✧</span>
+          <Cat />
+          <i /><i /><i />
+          <small>慢慢读，也很好</small>
+        </div>
       </aside>
 
       <section className="home-shell">
+        <div className="library-mobile-brand">
+          <span aria-hidden="true">✦</span>
+          <strong>{partner.roomName}</strong>
+          <button type="button" aria-label="打开设置" onClick={() => setView("settings")}>
+            <Settings aria-hidden="true" />
+          </button>
+        </div>
+
         <header className="library-header">
-          <div>
+          <div className="library-header-copy">
             <span className="visually-hidden">{partner.roomName}</span>
-            <span className="library-kicker">{partner.roomName}</span>
-            <h1>{headerCopy.title}</h1>
+            <span className="library-kicker">
+              {view === "library" ? "✦ MY READING NOOK ✦" : partner.roomName}
+            </span>
+            <h1 aria-label={headerCopy.title}>
+              {view === "library" ? `欢迎回来，${partner.viewerName}` : headerCopy.title}
+              {view === "library" ? <span aria-hidden="true">🐾</span> : null}
+            </h1>
             <p>{headerCopy.subtitle}</p>
+            <div className="library-skin-switch" aria-label="界面皮肤">
+              <button type="button" className="skin-star skin-star-blue" aria-label="水蓝" aria-pressed={props.skin === "blue"} onClick={() => props.onSkinChange("blue")}><Star aria-hidden="true" /></button>
+              <button type="button" className="skin-star skin-star-pink" aria-label="粉桃" aria-pressed={props.skin === "pink"} onClick={() => props.onSkinChange("pink")}><Star aria-hidden="true" /></button>
+              <button type="button" className="skin-star skin-star-beige" aria-label="米白" aria-pressed={props.skin === "beige"} onClick={() => props.onSkinChange("beige")}><Star aria-hidden="true" /></button>
+              <button type="button" className="skin-star skin-star-green" aria-label="墨绿" aria-pressed={props.skin === "green"} onClick={() => props.onSkinChange("green")}><Star aria-hidden="true" /></button>
+            </div>
           </div>
           {view === "library" ? (
-            <div className="library-header-actions">
-              {props.onExpand ? (
-                <button type="button" className="library-quiet-action" onClick={props.onExpand}>
-                  <Maximize2 className="library-action-icon" aria-hidden="true" strokeWidth={1.8} />
-                  <span>展开书房</span>
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="library-add"
-                aria-label="小说共读：导入小说"
-                onClick={props.onNew}
-              >
-                <Plus className="library-action-icon" aria-hidden="true" strokeWidth={1.9} />
-                <span>导入小说</span>
-              </button>
+            <div className="library-header-illustration" aria-hidden="true">
+              <span className="header-sparkle sparkle-one">✦</span>
+              <span className="header-sparkle sparkle-two">✧</span>
+              <Coffee />
+              <i className="header-book header-book-one" />
+              <i className="header-book header-book-two" />
+              <Flower2 />
             </div>
           ) : null}
         </header>
-
-        <div className="library-skin-switch" aria-label="界面皮肤">
-          <span>换肤</span>
-          <button
-            type="button"
-            aria-pressed={props.skin === "blue"}
-            onClick={() => props.onSkinChange("blue")}
-          >
-            水蓝
-          </button>
-          <button
-            type="button"
-            aria-pressed={props.skin === "pink"}
-            onClick={() => props.onSkinChange("pink")}
-          >
-            粉桃
-          </button>
-          <button
-            type="button"
-            aria-pressed={props.skin === "beige"}
-            onClick={() => props.onSkinChange("beige")}
-          >
-            米白
-          </button>
-          <button
-            type="button"
-            aria-pressed={props.skin === "green"}
-            onClick={() => props.onSkinChange("green")}
-          >
-            墨绿
-          </button>
-        </div>
 
         <div className="library-mobile-tabs" aria-label="小书房视图">
           {LIBRARY_NAV.map((item) => {
@@ -258,6 +267,7 @@ export function Home(props: {
               <button
                 key={item.label}
                 type="button"
+                aria-label={item.accessibleLabel}
                 aria-pressed={view === item.view}
                 onClick={() => {
                   setView(item.view);
@@ -272,32 +282,38 @@ export function Home(props: {
         </div>
 
         {view === "library" ? (
-          <>
-            {filter === "all" && continueItem ? (
-              <ContinueReadingCard
-                item={continueItem}
-                onOpen={props.onOpen}
-                onContinue={props.onContinue}
-                onManage={props.onManage}
-                partner={partner}
-              />
-            ) : null}
+          <div className="reading-dashboard">
+            {filter === "all" ? <div className="dashboard-main-grid">
+              {continueItem ? (
+                <ContinueReadingCard
+                  item={continueItem}
+                  onOpen={props.onOpen}
+                  onContinue={props.onContinue}
+                  onManage={props.onManage}
+                  partner={partner}
+                />
+              ) : (
+                <section className="continue-card continue-card-empty" aria-label="继续阅读">
+                  <BookOpen aria-hidden="true" />
+                  <h2>从一本新书开始</h2>
+                  <p>导入一本小说，我们就从第一页慢慢读起。</p>
+                  <button type="button" className="action-primary" onClick={props.onNew}><Plus aria-hidden="true" />导入小说</button>
+                </section>
+              )}
+              <div className="dashboard-side-stack">
+                <TodayReadingCard reward={reward} />
+                <WeeklyGoalCard days={weeklyDays} />
+              </div>
+            </div> : null}
 
-            {filter === "all" ? (
-              <ReadingRewardCard reward={reward} partner={partner} />
-            ) : null}
-
-            {filter === "all" && continueItem && hasSharedMemory(continueItem) ? (
-              <section className="shared-memory-note" aria-label="我们上次聊到这里">
-                <span className="shared-memory-kicker">我们上次聊到这里</span>
-                <p>{latestSharedMemory(continueItem, partner)}</p>
-                <small>{partner.companionName}会记得这句，等你下次翻到这里。</small>
-              </section>
-            ) : null}
-
-            <section className="bookshelf-section" aria-label="小说书架">
+            <div className="dashboard-bottom-grid">
+              <section className="bookshelf-section" aria-label="小说书架">
+              <h2 className="visually-hidden">书架</h2>
               <div className="section-heading">
-                <h2>书架</h2>
+                <div>
+                  <span className="dessert-card-kicker">RECENT READS</span>
+                  <h2>最近读过</h2>
+                </div>
                 <span>{novels.length} 本小说</span>
               </div>
               <div className="bookshelf-filters" aria-label="书架筛选">
@@ -345,10 +361,36 @@ export function Home(props: {
                   ))}
                 </div>
               )}
-            </section>
-          </>
+              </section>
+              {filter === "all" ? <ReadingRewardCard reward={reward} partner={partner} /> : null}
+            </div>
+
+            <div className="dashboard-utilities">
+              {filter === "all" && continueItem && hasSharedMemory(continueItem) ? (
+                <section className="shared-memory-note" aria-label="我们上次聊到这里">
+                  <span className="shared-memory-kicker">我们上次聊到这里</span>
+                  <p>{latestSharedMemory(continueItem, partner)}</p>
+                  <small>{partner.companionName}会记得这句，等你下次翻到这里。</small>
+                </section>
+              ) : null}
+              <div className="library-header-actions">
+                {props.onExpand ? (
+                  <button type="button" className="library-quiet-action" onClick={props.onExpand}>
+                    <Maximize2 className="library-action-icon" aria-hidden="true" strokeWidth={1.8} />
+                    <span>展开书房</span>
+                  </button>
+                ) : null}
+                <button type="button" className="library-add" aria-label="小说共读：导入小说" onClick={props.onNew}>
+                  <Plus className="library-action-icon" aria-hidden="true" strokeWidth={1.9} />
+                  <span>导入小说</span>
+                </button>
+              </div>
+            </div>
+          </div>
         ) : view === "drawer" ? (
           <DrawerView items={props.drawerItems ?? []} />
+        ) : view === "settings" ? (
+          <SettingsView skin={props.skin} onSkinChange={props.onSkinChange} />
         ) : (
           <ReadingRecordsView records={records} />
         )}
@@ -404,6 +446,85 @@ function formatDrawerTime(value: string) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(date);
+}
+
+function TodayReadingCard(props: { reward: ReadingReward }) {
+  const minutes = Math.max(0, Math.round(props.reward.todaySeconds / 60));
+  const filledStars = Math.min(5, Math.max(0, Math.ceil(minutes / 5)));
+
+  return (
+    <section className="dessert-stat-card today-reading-card" aria-label="今日阅读">
+      <div className="dessert-stat-heading">
+        <span className="dessert-card-kicker">TODAY'S READING</span>
+        <h2>今日阅读</h2>
+      </div>
+      <div className="today-reading-value">
+        <strong>{minutes}</strong>
+        <span>分钟</span>
+      </div>
+      <div className="today-reading-stars" aria-label={`今日阅读星星 ${filledStars} / 5`}>
+        {Array.from({ length: 5 }, (_, index) => (
+          <Star key={index} aria-hidden="true" className={index < filledStars ? "is-filled" : undefined} />
+        ))}
+      </div>
+      <p>{props.reward.todayQualified ? "今天的阅读目标完成啦" : "再读一会儿，就能点亮小星星"}</p>
+      <Cookie className="dessert-card-ornament" aria-hidden="true" />
+    </section>
+  );
+}
+
+function WeeklyGoalCard(props: { days: boolean[] }) {
+  const completed = props.days.filter(Boolean).length;
+  const target = 5;
+
+  return (
+    <section className="dessert-stat-card weekly-goal-card" aria-label="本周目标">
+      <div className="dessert-stat-heading">
+        <span className="dessert-card-kicker">WEEKLY GOAL</span>
+        <h2>本周目标</h2>
+      </div>
+      <div className="weekly-goal-copy"><strong>{completed}</strong><span> / {target} 天</span></div>
+      <div className="weekly-goal-days" aria-label={`本周已阅读 ${completed} 天`}>
+        {props.days.map((done, index) => (
+          <span key={index} className={done ? "is-done" : undefined} aria-hidden="true">
+            {done ? "✦" : index + 1}
+          </span>
+        ))}
+      </div>
+      <p>{completed >= target ? "本周的小目标已经完成" : "每一次翻页，都算数"}</p>
+      <Flower2 className="dessert-card-ornament" aria-hidden="true" />
+    </section>
+  );
+}
+
+function SettingsView(props: {
+  skin: LibrarySkin;
+  onSkinChange: (skin: LibrarySkin) => void;
+}) {
+  const skins: Array<{ value: LibrarySkin; label: string; note: string }> = [
+    { value: "blue", label: "奶油水蓝", note: "参考稿的默认甜点书房" },
+    { value: "pink", label: "草莓粉桃", note: "更软、更甜一点" },
+    { value: "beige", label: "饼干米白", note: "温暖安静的纸张感" },
+    { value: "green", label: "抹茶墨绿", note: "更深、更沉静的阅读色" }
+  ];
+
+  return (
+    <section className="dessert-settings" aria-label="书房设置">
+      <div className="settings-intro-card">
+        <Palette aria-hidden="true" />
+        <div><span className="dessert-card-kicker">ROOM COLORS</span><h2>选择书房配色</h2><p>首页上方的小星星也可以随时切换。</p></div>
+      </div>
+      <div className="settings-skin-grid">
+        {skins.map((skin) => (
+          <button key={skin.value} type="button" className={`settings-skin-card skin-${skin.value}`} aria-pressed={props.skin === skin.value} onClick={() => props.onSkinChange(skin.value)}>
+            <span className="settings-skin-swatch"><i /><i /><i /></span>
+            <strong>{skin.label}</strong>
+            <small>{skin.note}</small>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function ReadingRewardCard(props: {
@@ -871,6 +992,20 @@ function buildReadingReward(records: StoredReadingRecord[], now = new Date()): R
     todayPages: today.pages,
     todayQualified: today.seconds >= 5 * 60 || today.pages >= 3
   };
+}
+
+function buildWeeklyReadingDays(records: StoredReadingRecord[], now = new Date()): boolean[] {
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekday = start.getDay() || 7;
+  start.setDate(start.getDate() - weekday + 1);
+  const readDates = new Set(
+    records
+      .filter((record) => record.durationSeconds > 0 || record.pagesRead > 0)
+      .map((record) => new Date(record.endedAt))
+      .filter(isValidDate)
+      .map(dateKey)
+  );
+  return Array.from({ length: 7 }, (_, index) => readDates.has(dateKey(offsetDate(start, index))));
 }
 
 function formatRewardMinutes(seconds: number): string {

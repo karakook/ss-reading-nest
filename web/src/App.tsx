@@ -154,13 +154,92 @@ const MAX_EPUB_FILE_SIZE = 50 * 1024 * 1024;
 const LARGE_NOVEL_TEXTAREA_PREVIEW_BYTES = 2 * 1024 * 1024;
 const LARGE_NOVEL_TEXTAREA_PREVIEW_CHARS = 1200;
 
+function previewOpenOutput(): OpenOutput | undefined {
+  if (typeof window === "undefined") return undefined;
+  if (new URLSearchParams(window.location.search).get("preview") !== "1") return undefined;
+
+  const now = new Date();
+  const isoDaysAgo = (days: number, hour: number) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() - days);
+    date.setHours(hour, 0, 0, 0);
+    return date.toISOString();
+  };
+  const previewBook = (
+    id: string,
+    title: string,
+    index: number,
+    total: number,
+    daysAgo: number,
+    status: "active" | "completed" = "active"
+  ): SessionBundle => ({
+    session: {
+      id,
+      title,
+      type: "novel",
+      status,
+      userCurrentPosition: { kind: "paragraph", index, total, label: `第 ${index} 页` },
+      assistantSyncedPosition: id === "preview-1"
+        ? { kind: "paragraph", index: Math.max(1, index - 2), total, label: `第 ${Math.max(1, index - 2)} 页` }
+        : null,
+      liveReadingEnabled: false,
+      sessionPreferences: DEFAULT_SESSION_PREFERENCES,
+      sourceManifest: null,
+      createdAt: isoDaysAgo(30 + daysAgo, 10),
+      updatedAt: isoDaysAgo(daysAgo, 21),
+      lastReadAt: isoDaysAgo(daysAgo, 21)
+    },
+    quotes: id === "preview-1" ? [{
+      id: "preview-quote",
+      sessionId: id,
+      content: "夜色落在窗边，也落在还没读完的句子上。",
+      position: { kind: "paragraph", index, total, label: `第 ${index} 页` },
+      note: "我们上次说到：温柔不是退让，是愿意再多理解一会儿。",
+      createdAt: isoDaysAgo(daysAgo, 21)
+    }] : [],
+    reactions: [],
+    bookmarks: []
+  });
+
+  const bookshelfSessions = [
+    previewBook("preview-1", "夜晚的潜水艇", 42, 168, 0),
+    previewBook("preview-2", "山茶文具店", 86, 240, 1),
+    previewBook("preview-3", "长日将尽", 134, 298, 3),
+    previewBook("preview-4", "小王子", 96, 96, 6, "completed")
+  ];
+  const readingRecords: ReadingRecord[] = [0, 1, 3].map((daysAgo, index) => ({
+    id: `preview-record-${index}`,
+    sessionId: bookshelfSessions[index]?.session.id ?? "preview-1",
+    bookTitle: bookshelfSessions[index]?.session.title ?? "夜晚的潜水艇",
+    startedAt: isoDaysAgo(daysAgo, 20),
+    endedAt: isoDaysAgo(daysAgo, 21),
+    durationSeconds: index === 0 ? 26 * 60 : (14 + index * 8) * 60,
+    startPosition: { kind: "paragraph", index: 30 + index * 12, total: 168, label: `第 ${30 + index * 12} 页` },
+    endPosition: { kind: "paragraph", index: 42 + index * 12, total: 168, label: `第 ${42 + index * 12} 页` },
+    pagesRead: 12,
+    operationId: `preview-operation-${index}`,
+    createdAt: isoDaysAgo(daysAgo, 21)
+  }));
+
+  return {
+    bookshelfSessions,
+    readingRecords,
+    drawerItems: [{
+      id: "preview-drawer-note",
+      content: "小猫，今天读到这里就很好。剩下的页，我们下次再慢慢翻。",
+      createdAt: isoDaysAgo(0, 22),
+      seen: false
+    }]
+  };
+}
+
 export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}) {
   const readingPartner = useMemo(
     () => resolveReadingPartnerCopy(props.readingPartner),
     [props.readingPartner]
   );
   const [openOutput, setOpenOutput] = useState<OpenOutput | undefined>(() =>
-    normalizeOpenOutput(initialToolOutput<OpenOutput>())
+    normalizeOpenOutput(initialToolOutput<OpenOutput>() ?? previewOpenOutput())
   );
   const [bookshelfState, setBookshelfState] = useState<"loading" | "ready" | "failed">(() =>
     Array.isArray(openOutput?.bookshelfSessions ?? openOutput?.recentSessions) ? "ready" : "loading"
