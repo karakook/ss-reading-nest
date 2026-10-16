@@ -2850,3 +2850,564 @@ textarea:focus {
     animation: none;
   }
 }
+
+/* Final visual pass: vintage dessert reading room. */
+.app-screen-home,
+.app-screen-cover {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--rose-gold) 16%, transparent), transparent 18rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--blue-soft) 25%, transparent), transparent 34%),
+    var(--cream);
+}
+
+.app-screen-home::before,
+.app-screen-cover::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 24px;
+  content: "";
+  pointer-events: none;
+  opacity: .8;
+  background:
+    radial-gradient(circle at 12px -2px, transparent 10px, color-mix(in srgb, var(--paper) 94%, transparent) 10.5px, color-mix(in srgb, var(--rose-gold) 48%, var(--paper)) 12px, transparent 13px) 0 0 / 24px 24px repeat-x;
+}
+
+.library-app-shell,
+.cover-shell {
+  position: relative;
+  z-index: 1;
+}
+
+.library-app-shell {
+  gap: clamp(22px, 3vw, 42px);
+  padding-top: max(34px, var(--safe-top));
+}
+
+.library-rail {
+  gap: 18px;
+  padding: 16px 13px 22px;
+  border-radius: 26px;
+  border-color: color-mix(in srgb, var(--blue-strong) 20%, var(--line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--blue-soft) 80%, var(--paper)), color-mix(in srgb, var(--blue) 32%, var(--paper))),
+    var(--paper);
+  box-shadow: 0 22px 48px color-mix(in srgb, var(--rose-shadow) 12%, transparent);
+}
+
+.library-rail > strong {
+  padding: 17px 10px 18px;
+  border: 1px dashed color-mix(in srgb, var(--rose-gold) 62%, var(--line));
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--paper) 84%, transparent);
+  color: var(--wine-dark, var(--blue-strong));
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 17px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.library-rail nav { gap: 9px; }
+
+.library-rail-item {
+  min-height: 50px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  padding-inline: 13px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.library-rail-item[aria-current="page"] {
+  border-color: color-mix(in srgb, var(--blue-strong) 28%, var(--line));
+  background: color-mix(in srgb, var(--blue) 52%, var(--paper));
+  color: var(--wine-dark, var(--blue-strong));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper) 42%, transparent);
+}
+
+.home-shell { padding-top: 4px; }
+
+.library-header {
+  position: relative;
+  min-height: 118px;
+  padding: 10px 0 28px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--rose-gold) 48%, var(--line));
+}
+
+.library-header::after {
+  position: absolute;
+  right: 0;
+  top: 5px;
+  content: "✦  ✧  ✦";
+  color: color-mix(in srgb, var(--blue-strong) 60%, var(--rose-gold));
+  font-size: 24px;
+  letter-spacing: 8px;
+  opacity: .82;
+  pointer-events: none;
+}
+
+.library-kicker {
+  margin-bottom: 9px;
+  color: var(--wine, var(--blue-strong));
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 13px;
+  letter-spacing: .08em;
+}
+
+.library-header h1 {
+  margin-bottom: 8px;
+  color: var(--wine-dark, var(--blue-strong));
+  font-size: clamp(2.3rem, 5vw, 3.5rem);
+  letter-spacing: .02em;
+}
+
+.library-header p { font-size: 15px; }
+
+.library-header-actions { position: relative; z-index: 1; }
+
+.library-add,
+.library-quiet-action,
+.book-action,
+.action-primary,
+.quiet-button,
+.danger-button,
+.sheet-action {
+  border-radius: 999px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rose-shadow) 9%, transparent);
+}
+
+.library-add,
+.action-primary {
+  background: linear-gradient(135deg, var(--wine-dark, var(--blue-strong)), var(--wine, var(--blue-strong)) 76%, var(--rose-gold));
+}
+
+.library-quiet-action,
+.book-action,
+.sheet-action {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.library-skin-switch {
+  position: relative;
+  z-index: 1;
+  margin: -12px 0 18px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--rose-shadow) 5%, transparent);
+}
+
+.library-skin-switch button,
+.library-mobile-tabs button,
+.bookshelf-filters button,
+.record-tabs button,
+.archive-tabs button {
+  border-color: transparent;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.library-skin-switch button[aria-pressed="true"],
+.library-mobile-tabs button[aria-pressed="true"],
+.bookshelf-filters button[aria-pressed="true"],
+.record-tabs button[aria-pressed="true"],
+.archive-tabs button[aria-selected="true"] {
+  border-color: color-mix(in srgb, var(--blue-strong) 30%, var(--line));
+  background: color-mix(in srgb, var(--blue) 52%, var(--paper));
+  color: var(--wine-dark, var(--blue-strong));
+  box-shadow: 0 5px 12px color-mix(in srgb, var(--rose-shadow) 8%, transparent);
+}
+
+.bookshelf-section,
+.reading-records-view,
+.drawer-view {
+  position: relative;
+}
+
+.bookshelf-section {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  box-shadow: 0 18px 46px color-mix(in srgb, var(--rose-shadow) 8%, transparent);
+}
+
+.section-heading h2 {
+  margin-bottom: 0;
+  color: var(--wine-dark, var(--blue-strong));
+  font-size: 26px;
+}
+
+.bookshelf-filters {
+  margin: 2px 0 2px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: none;
+}
+
+.bookshelf-filters::-webkit-scrollbar { display: none; }
+
+.bookshelf-filters button { flex: 0 0 auto; }
+
+.library-book-grid { gap: 20px; }
+
+.library-book-card { gap: 9px; }
+
+.library-cover {
+  min-height: 210px;
+  border-radius: 18px;
+  border-color: color-mix(in srgb, var(--rose-gold) 35%, var(--line));
+  background:
+    radial-gradient(circle at 72% 18%, color-mix(in srgb, var(--paper) 74%, transparent) 0 10px, transparent 11px),
+    linear-gradient(150deg, color-mix(in srgb, var(--paper) 92%, var(--blush)), color-mix(in srgb, var(--blue-soft) 55%, var(--paper)) 70%, var(--paper));
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--rose-shadow) 12%, transparent);
+}
+
+.library-cover::before {
+  inset: 14px auto 14px 15px;
+  width: 4px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--rose-gold) 68%, transparent), transparent);
+}
+
+.library-cover::after {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  content: "✿  ❧";
+  color: color-mix(in srgb, var(--rose-gold) 78%, var(--muted));
+  font-size: 14px;
+  opacity: .75;
+}
+
+.library-cover-title { color: var(--wine-dark, var(--ink)); }
+
+.library-cover-mark {
+  bottom: 13px;
+  color: var(--muted);
+}
+
+.library-book-info strong { color: var(--wine-dark, var(--ink)); }
+
+.continue-card {
+  margin: 12px 0 22px;
+  padding: 22px;
+  border-radius: 24px;
+  border-color: color-mix(in srgb, var(--blue-strong) 36%, var(--line));
+  background:
+    radial-gradient(circle at 92% 9%, color-mix(in srgb, var(--paper) 62%, transparent), transparent 8rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--blue) 72%, var(--paper)), color-mix(in srgb, var(--blue-soft) 82%, var(--paper)));
+  box-shadow: 0 22px 48px color-mix(in srgb, var(--rose-shadow) 13%, transparent);
+}
+
+.continue-card::after,
+.records-hero::after,
+.drawer-intro::after,
+.cover-stage::after {
+  position: absolute;
+  inset: 10px;
+  border: 1px dashed color-mix(in srgb, var(--paper) 80%, var(--rose-gold));
+  border-radius: 18px;
+  content: "";
+  pointer-events: none;
+}
+
+.continue-card > *,
+.records-hero > *,
+.drawer-intro > *,
+.cover-stage > * { position: relative; z-index: 1; }
+
+.continue-status {
+  border: 1px solid color-mix(in srgb, var(--paper) 55%, var(--blue-strong));
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  color: var(--wine-dark, var(--blue-strong));
+}
+
+.continue-card h2 { color: var(--wine-dark, var(--ink)); font-size: 28px; }
+
+.continue-progress-track { background: color-mix(in srgb, var(--paper) 70%, transparent); }
+.continue-progress-track span { background: var(--wine, var(--blue-strong)); }
+
+.reading-reward-card {
+  margin: -4px 0 24px;
+  border-radius: 22px;
+  border-color: color-mix(in srgb, var(--rose-gold) 42%, var(--line));
+  background:
+    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--blush) 48%, transparent), transparent 11rem),
+    color-mix(in srgb, var(--paper) 94%, transparent);
+}
+
+.reading-reward-progress { border-left-color: color-mix(in srgb, var(--rose-gold) 38%, var(--line)); }
+
+.records-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border-color: color-mix(in srgb, var(--blue-strong) 34%, var(--line));
+  background:
+    radial-gradient(circle at 90% 22%, color-mix(in srgb, var(--paper) 48%, transparent), transparent 10rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--blue) 68%, var(--paper)), color-mix(in srgb, var(--blue-soft) 88%, var(--paper)));
+}
+
+.records-hero blockquote,
+.records-hero h2,
+.records-hero p,
+.records-hero small { color: var(--wine-dark, var(--ink)); }
+
+.records-metrics { margin-top: 12px; }
+
+.record-metric,
+.records-card,
+.record-entry {
+  border-radius: 18px;
+  border-color: color-mix(in srgb, var(--rose-gold) 30%, var(--line));
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+.record-metric { min-height: 110px; }
+
+.records-card { min-height: 260px; }
+
+.records-trend-line { stroke: var(--blue-strong); stroke-width: 3; }
+
+.drawer-intro {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 24px;
+  border-radius: 24px;
+  border-color: color-mix(in srgb, var(--blue-strong) 28%, var(--line));
+  background:
+    radial-gradient(circle at 90% 46%, color-mix(in srgb, var(--paper) 58%, transparent), transparent 10rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--blue) 66%, var(--paper)), color-mix(in srgb, var(--blue-soft) 88%, var(--paper)));
+}
+
+.drawer-intro p,
+.drawer-intro small,
+.drawer-kicker { position: relative; z-index: 1; color: var(--wine-dark, var(--ink)); }
+.drawer-kicker { font-size: 13px; }
+.drawer-intro p { font-size: 22px; }
+
+.drawer-note {
+  position: relative;
+  padding: 20px 22px;
+  border-radius: 20px;
+  border-color: color-mix(in srgb, var(--rose-gold) 30%, var(--line));
+  background: color-mix(in srgb, var(--paper) 95%, transparent);
+}
+
+.drawer-note-new {
+  border-color: color-mix(in srgb, var(--blue-strong) 42%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 42%, var(--paper));
+}
+
+.cover-shell { padding-top: max(28px, var(--safe-top)); }
+
+.cover-toolbar {
+  min-height: 56px;
+  margin-bottom: 18px;
+}
+
+.cover-toolbar > span {
+  color: var(--wine-dark, var(--blue-strong));
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 14px;
+}
+
+.cover-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 560px;
+  border-radius: 26px;
+  border-color: color-mix(in srgb, var(--blue-strong) 28%, var(--line));
+  background:
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--paper) 72%, transparent), transparent 11rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--blue) 58%, var(--paper)), color-mix(in srgb, var(--paper) 96%, var(--blue-soft)));
+}
+
+.cover-book {
+  border-radius: 15px;
+  border: 1px solid color-mix(in srgb, var(--rose-gold) 48%, var(--line));
+  background:
+    radial-gradient(circle at 68% 72%, color-mix(in srgb, var(--rose-gold) 26%, transparent) 0 18px, transparent 19px),
+    linear-gradient(155deg, color-mix(in srgb, var(--paper) 98%, var(--blush)), color-mix(in srgb, var(--blue-soft) 44%, var(--paper)) 75%, var(--paper));
+  color: var(--wine-dark, var(--ink));
+  box-shadow: 0 28px 56px color-mix(in srgb, var(--rose-shadow) 18%, transparent);
+}
+
+.cover-book::after {
+  position: absolute;
+  right: 16px;
+  bottom: 22px;
+  content: "✿  ❧  ✿";
+  color: color-mix(in srgb, var(--rose-gold) 78%, var(--muted));
+  font-size: 18px;
+  opacity: .8;
+}
+
+.cover-book strong,
+.cover-book-kicker,
+.cover-book small { position: relative; z-index: 1; color: var(--wine-dark, var(--ink)); }
+
+.cover-details h1 { color: var(--wine-dark, var(--blue-strong)); }
+
+.cover-companion-memory {
+  border-radius: 4px 16px 16px 4px;
+  background: color-mix(in srgb, var(--rose-pale) 54%, var(--paper));
+}
+
+.book-archive {
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+.reader-shell {
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--blue-soft) 38%, transparent), transparent 26%),
+    var(--paper);
+}
+
+.reader-header,
+.reader-actions {
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  border-color: color-mix(in srgb, var(--rose-gold) 28%, var(--line));
+}
+
+.reader-header { min-height: 68px; }
+
+.novel-paper {
+  position: relative;
+  padding-top: clamp(32px, 5vh, 58px);
+  padding-bottom: 42px;
+  color: var(--wine-dark, var(--ink));
+}
+
+.novel-paper::before {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  content: "✿";
+  color: color-mix(in srgb, var(--rose-gold) 72%, var(--muted));
+  font-size: 24px;
+  opacity: .65;
+}
+
+.reader-actions { padding-top: 14px; }
+
+.reader-primary-action { box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-shadow) 16%, transparent); }
+
+.co-read-panel,
+.bottom-sheet {
+  border-color: color-mix(in srgb, var(--rose-gold) 48%, var(--line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--paper) 98%, transparent), color-mix(in srgb, var(--rose-pale) 16%, var(--paper))),
+    var(--paper);
+  box-shadow: 0 -22px 64px color-mix(in srgb, var(--rose-shadow) 20%, transparent);
+}
+
+.co-read-panel { border-radius: 26px 26px 14px 14px; }
+
+.co-read-modes button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--blue-strong) 44%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 64%, var(--paper));
+}
+
+.management-sheet { border-radius: 28px 28px 0 0; }
+
+.management-section {
+  border-top-color: color-mix(in srgb, var(--rose-gold) 28%, var(--line));
+}
+
+.sheet-grip {
+  width: 48px;
+  height: 6px;
+  background: color-mix(in srgb, var(--rose-gold) 48%, var(--line));
+}
+
+@media (max-width: 900px) {
+  .library-app-shell {
+    width: 100%;
+    padding-inline: max(14px, var(--safe-left)) max(14px, var(--safe-right));
+    padding-bottom: calc(92px + var(--safe-bottom));
+  }
+
+  .library-mobile-tabs {
+    position: fixed;
+    z-index: 18;
+    right: max(10px, var(--safe-right));
+    bottom: max(10px, var(--safe-bottom));
+    left: max(10px, var(--safe-left));
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    margin: 0;
+    padding: 6px;
+    border: 1px solid color-mix(in srgb, var(--rose-gold) 38%, var(--line));
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--rose-shadow) 20%, transparent);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .library-mobile-tabs button {
+    display: grid;
+    min-height: 52px;
+    place-items: center;
+    gap: 3px;
+    padding: 3px 5px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .library-mobile-tab-icon { width: 19px; height: 19px; }
+
+  .library-mobile-tabs button[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--blue) 62%, var(--paper));
+    color: var(--wine-dark, var(--blue-strong));
+  }
+
+  .library-header { min-height: 0; padding-top: 4px; }
+  .library-header::after { right: 4px; top: 2px; font-size: 18px; }
+  .library-header-actions { padding-right: 0; }
+  .library-skin-switch { justify-content: flex-start; overflow-x: auto; }
+  .bookshelf-section { padding: 16px; border-radius: 22px; }
+  .continue-card { border-radius: 22px; }
+  .records-hero { border-radius: 22px; }
+  .drawer-intro { border-radius: 22px; }
+  .cover-stage { border-radius: 22px; }
+}
+
+@media (max-width: 699px) {
+  .library-header h1 { font-size: clamp(2rem, 10vw, 2.55rem); }
+  .library-header p { max-width: 28ch; }
+  .library-header-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .library-header-actions button { min-height: 42px; padding-inline: 9px; font-size: 12px; }
+  .library-skin-switch { margin-top: -6px; }
+  .library-skin-switch span { flex: 0 0 100%; }
+  .continue-card { padding: 16px; }
+  .continue-card h2 { font-size: 22px; }
+  .continue-card-actions { gap: 7px; }
+  .reading-reward-card { border-radius: 20px; }
+  .reading-reward-total strong { font-size: 21px; }
+  .records-hero { padding: 18px; }
+  .records-hero h2 { font-size: 40px; }
+  .records-hero blockquote { font-size: 17px; }
+  .records-card { min-height: 220px; padding: 14px; }
+  .records-trend { min-height: 170px; }
+  .records-bars,
+  .records-bar-wrap { height: 155px; }
+  .drawer-intro { padding: 22px 18px; }
+  .drawer-intro p { font-size: 19px; }
+  .drawer-note { padding: 17px; }
+  .cover-shell { width: 100%; padding-inline: 14px; }
+  .cover-stage { padding: 22px 16px; }
+  .cover-book { width: min(66vw, 230px); }
+  .cover-details h1 { font-size: 32px; }
+  .reader-header { min-height: 62px; }
+  .novel-paper::before { right: 4px; }
+  .bottom-sheet,
+  .co-read-panel { border-radius: 26px 26px 12px 12px; }
+}

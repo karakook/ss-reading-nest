@@ -252,30 +252,23 @@ export function Home(props: {
         </div>
 
         <div className="library-mobile-tabs" aria-label="小书房视图">
-          <button
-            type="button"
-            aria-pressed={view === "library"}
-            onClick={() => setView("library")}
-          >
-            我的书房
-          </button>
-          <button
-            type="button"
-            aria-pressed={view === "records"}
-            onClick={() => setView("records")}
-          >
-            阅读记录
-          </button>
-          <button
-            type="button"
-            aria-pressed={view === "drawer"}
-            onClick={() => {
-              setView("drawer");
-              props.onDrawerOpen?.();
-            }}
-          >
-            小抽屉
-          </button>
+          {LIBRARY_NAV.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.label}
+                type="button"
+                aria-pressed={view === item.view}
+                onClick={() => {
+                  setView(item.view);
+                  if (item.view === "drawer") props.onDrawerOpen?.();
+                }}
+              >
+                <Icon className="library-mobile-tab-icon" aria-hidden="true" strokeWidth={1.8} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {view === "library" ? (
