@@ -88,9 +88,9 @@ const LIBRARY_NAV: Array<{
   icon: LucideIcon;
   view: LibraryView;
 }> = [
-  { label: "书架", accessibleLabel: "我的书房", icon: House, view: "library" },
+  { label: "我的书房", accessibleLabel: "我的书房", icon: House, view: "library" },
   { label: "阅读记录", accessibleLabel: "阅读记录", icon: History, view: "records" },
-  { label: "划线摘录", accessibleLabel: "小抽屉", icon: MessageSquareText, view: "drawer" },
+  { label: "小抽屉", accessibleLabel: "小抽屉", icon: MessageSquareText, view: "drawer" },
   { label: "设置", accessibleLabel: "设置", icon: Settings, view: "settings" }
 ];
 
@@ -180,7 +180,7 @@ export function Home(props: {
         };
 
   return (
-    <main className={`library-app-shell dessert-reading-room${view === "drawer" ? " is-drawer-view" : ""}`}>
+    <main className={`library-app-shell dessert-reading-room is-${view}-view`}>
       <aside className="library-rail" aria-label="小书房导航">
         <div className="library-rail-brand">
           <Sparkles aria-hidden="true" />
@@ -246,7 +246,7 @@ export function Home(props: {
               <button type="button" className="skin-star skin-star-green" aria-label="墨绿" aria-pressed={props.skin === "green"} onClick={() => props.onSkinChange("green")}><Star aria-hidden="true" /></button>
             </div>
           </div>
-          {view === "library" ? (
+          {view !== "settings" ? (
             <div className="library-header-illustration" aria-hidden="true">
               <span className="header-sparkle sparkle-one">✦</span>
               <span className="header-sparkle sparkle-two">✧</span>
@@ -311,19 +311,6 @@ export function Home(props: {
                 </div>
                 <span>{novels.length} 本小说</span>
               </div>
-              <div className="bookshelf-filters" aria-label="书架筛选">
-                {FILTERS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    aria-pressed={filter === option.value}
-                    onClick={() => setFilter(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
               {props.loading && novels.length === 0 ? (
                 <div className="empty-nest empty-nest-status" role="status">
                   <LoaderCircle className="empty-nest-icon is-spinning" aria-hidden="true" strokeWidth={1.8} />
@@ -381,6 +368,18 @@ export function Home(props: {
                 </button>
               </div>
             </div>
+            <div className="bookshelf-filters reference-bookshelf-filters" aria-label="书架筛选">
+              {FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={filter === option.value}
+                  onClick={() => setFilter(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         ) : view === "drawer" ? (
           <DrawerView items={props.drawerItems ?? []} />
@@ -406,6 +405,7 @@ function DrawerView(props: { items: DrawerItem[] }) {
         <span className="drawer-kicker">留给以后打开</span>
         <p>有些话不急着在当下说，想起来的时候再来看看。</p>
         <small>这里不会弹通知，也不会催你。</small>
+        <img className="drawer-intro-art" src={weeklyBooksArt} alt="" aria-hidden="true" />
       </div>
 
       {items.length === 0 ? (
@@ -584,6 +584,7 @@ function ReadingRecordsView(props: { records: ReadingRecordView[] }) {
   return (
     <section className="reading-records-view" aria-label="阅读记录">
       <div className="records-hero">
+        <img className="records-hero-art" src={teaBooksArt} alt="" aria-hidden="true" />
         <div className="records-hero-copy">
           <span>14 天累计 · 真实数据</span>
           <h2>{formatDuration(totalSeconds)}</h2>

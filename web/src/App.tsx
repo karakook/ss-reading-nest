@@ -202,10 +202,11 @@ function previewOpenOutput(): OpenOutput | undefined {
   });
 
   const bookshelfSessions = [
-    previewBook("preview-1", "夜晚的潜水艇", 42, 168, 0),
-    previewBook("preview-2", "山茶文具店", 86, 240, 1),
-    previewBook("preview-3", "长日将尽", 134, 298, 3),
-    previewBook("preview-4", "小王子", 96, 96, 6, "completed")
+    previewBook("preview-1", "山茶文具店", 42, 100, 0),
+    previewBook("preview-2", "也许你该找个人聊聊", 100, 100, 1, "completed"),
+    previewBook("preview-3", "我与地坛", 100, 100, 3, "completed"),
+    previewBook("preview-4", "云边有个小卖部", 85, 100, 4),
+    previewBook("preview-5", "猫的告别", 60, 100, 6)
   ];
   const readingRecords: ReadingRecord[] = [0, 1, 3].map((daysAgo, index) => ({
     id: `preview-record-${index}`,
@@ -214,8 +215,8 @@ function previewOpenOutput(): OpenOutput | undefined {
     startedAt: isoDaysAgo(daysAgo, 20),
     endedAt: isoDaysAgo(daysAgo, 21),
     durationSeconds: index === 0 ? 26 * 60 : (14 + index * 8) * 60,
-    startPosition: { kind: "paragraph", index: 30 + index * 12, total: 168, label: `第 ${30 + index * 12} 页` },
-    endPosition: { kind: "paragraph", index: 42 + index * 12, total: 168, label: `第 ${42 + index * 12} 页` },
+    startPosition: { kind: "paragraph", index: 30 + index * 12, total: 100, label: `第 ${30 + index * 12} 页` },
+    endPosition: { kind: "paragraph", index: 42 + index * 12, total: 100, label: `第 ${42 + index * 12} 页` },
     pagesRead: 12,
     operationId: `preview-operation-${index}`,
     createdAt: isoDaysAgo(daysAgo, 21)
@@ -224,12 +225,13 @@ function previewOpenOutput(): OpenOutput | undefined {
   return {
     bookshelfSessions,
     readingRecords,
-    drawerItems: [{
-      id: "preview-drawer-note",
-      content: "小猫，今天读到这里就很好。剩下的页，我们下次再慢慢翻。",
-      createdAt: isoDaysAgo(0, 22),
-      seen: false
-    }]
+    drawerItems: [
+      { id: "preview-drawer-note-1", content: "虽然今天有点累，但看到喜欢的书还是觉得生活很温柔。", createdAt: isoDaysAgo(0, 16), seen: false },
+      { id: "preview-drawer-note-2", content: "想记住这个傍晚的风，和窗台上那只打盹的小猫。", createdAt: isoDaysAgo(1, 21), seen: true },
+      { id: "preview-drawer-note-3", content: "读到一句很喜欢的话：\n“慢慢来，就是最好的答案。”", createdAt: isoDaysAgo(7, 10), seen: true },
+      { id: "preview-drawer-note-4", content: "今天的晚霞很好看，好像所有不开心都被染成了橘色。", createdAt: isoDaysAgo(11, 19), seen: true },
+      { id: "preview-drawer-note-5", content: "想试着更勇敢一点，去做那些一直想做的事情。", createdAt: isoDaysAgo(14, 14), seen: true }
+    ]
   };
 }
 

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { ReadingPosition } from "@ss/shared";
 import type { BookshelfItem } from "./Home.js";
+import teaBooksArt from "../assets/dessert-room/tea-books.webp";
 import {
   DEFAULT_READING_PARTNER_COPY,
   type ReadingPartnerCopy
@@ -130,6 +131,7 @@ export function BookCover(props: {
       </header>
 
       <section className={`cover-stage ${titleClass} ${archiveOpen ? "archive-visible" : ""}`}>
+        <img className="cover-room-art" src={teaBooksArt} alt="" aria-hidden="true" />
         <div className="cover-book-area">
           <button
             type="button"
