@@ -6,6 +6,11 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
+  "build": {
+    "command": "corepack pnpm --filter @ss/server run build:reader-widget",
+    "cwd": "..",
+    "watch_dir": ["../shared/src", "../web/src", "./src"]
+  },
   "secrets": {
     "required": ["MCP_PATH_TOKEN"]
   },
