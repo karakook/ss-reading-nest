@@ -81,6 +81,7 @@ export function NovelReader(props: {
   onScrollPosition: (scrollTop: number) => void;
   partner?: ReadingPartnerCopy;
   layout?: "wide" | "compact";
+  initialCoReadOpen?: boolean;
 }) {
   const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const index = Math.max(
@@ -121,7 +122,7 @@ export function NovelReader(props: {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [readerTypography, setReaderTypography] = useState<ReaderTypography>(readReaderTypography);
-  const [coReadOpen, setCoReadOpen] = useState(false);
+  const [coReadOpen, setCoReadOpen] = useState(props.initialCoReadOpen ?? false);
   const [jumpPage, setJumpPage] = useState(String(index + 1));
   const [jumpError, setJumpError] = useState("");
   const previous = () => props.onPosition(Math.max(1, index));
@@ -129,6 +130,7 @@ export function NovelReader(props: {
   const swipe = useHorizontalPaging(previous, next);
   const scrollRef = useRef<HTMLElement>(null);
   const articleRef = useRef<HTMLElement>(null);
+  const mountedIndexEffect = useRef(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = props.initialScrollTop;
@@ -140,7 +142,11 @@ export function NovelReader(props: {
     setClearThoughtDraft("");
     setClearThoughtEditing(false);
     setThoughtsCardOpen(false);
-    setCoReadOpen(false);
+    if (mountedIndexEffect.current) {
+      setCoReadOpen(false);
+    } else {
+      mountedIndexEffect.current = true;
+    }
   }, [index]);
 
   useEffect(() => {

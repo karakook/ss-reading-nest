@@ -80,7 +80,10 @@ describe("tool descriptors", () => {
       "finish_today_reading",
       "save_reading_record",
       "complete_reading_session",
-      "generate_diary_context"
+      "generate_diary_context",
+      "put_drawer_note",
+      "get_drawer",
+      "mark_drawer_seen"
     ] as const) {
       expect(TOOL_CONFIGS[name]._meta["openai/widgetAccessible"]).toBe(true);
     }
@@ -99,10 +102,18 @@ describe("tool descriptors", () => {
         return ui?.visibility === undefined || ui.visibility.includes("model");
       })
       .map(([name]) => name);
-    expect(modelVisibleTools).toEqual(["open_reading_nest", "read_shared_page_context"]);
+    expect(modelVisibleTools).toEqual([
+      "open_reading_nest",
+      "read_shared_page_context",
+      "put_drawer_note"
+    ]);
 
     for (const [name, config] of Object.entries(TOOL_CONFIGS)) {
-      if (name === "open_reading_nest" || name === "read_shared_page_context") continue;
+      if (
+        name === "open_reading_nest" ||
+        name === "read_shared_page_context" ||
+        name === "put_drawer_note"
+      ) continue;
       const meta = "_meta" in config ? (config._meta as Record<string, unknown>) : undefined;
       const ui = meta?.ui as { visibility?: readonly string[] } | undefined;
       expect(ui?.visibility, `${name} must stay hidden from the model`).toEqual(["app"]);
@@ -418,7 +429,7 @@ describe("tool descriptors", () => {
   });
 
   it("exposes the book-management tools and reaches twenty-six tools", () => {
-    expect(Object.keys(TOOL_CONFIGS)).toHaveLength(27);
+    expect(Object.keys(TOOL_CONFIGS)).toHaveLength(30);
     expect(TOOL_CONFIGS.get_novel_bookshelf.annotations.readOnlyHint).toBe(true);
     expect(TOOL_CONFIGS.rename_reading_session.annotations).toMatchObject({
       readOnlyHint: false,

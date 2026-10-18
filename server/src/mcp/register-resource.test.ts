@@ -40,7 +40,7 @@ describe("registerReadingResource", () => {
       registerAppResource.mock.calls[1 + READING_NEST_LEGACY_URIS.length];
 
     expect(READING_NEST_URI).toBe(
-      "ui://ss-reading-nest/app-v83-pdf-search-display.html"
+      "ui://ss-reading-nest/app-v84-quiet-drawer.html"
     );
     expect(READING_NEST_LEGACY_URIS).toEqual(
       expect.arrayContaining([
@@ -62,7 +62,7 @@ describe("registerReadingResource", () => {
     expect(registerAppResource).toHaveBeenCalledTimes(
       1 + READING_NEST_LEGACY_URIS.length + 1 + READING_NEST_COMPATIBILITY_LEGACY_URIS.length
     );
-    expect(uri).toBe("ui://ss-reading-nest/app-v83-pdf-search-display.html");
+    expect(uri).toBe("ui://ss-reading-nest/app-v84-quiet-drawer.html");
     expect(legacyUri).toBe(READING_NEST_LEGACY_URIS[0]);
     expect(descriptor._meta.ui.csp.connectDomains).toContain(
       "https://reading-nest.example.workers.dev"
@@ -73,7 +73,7 @@ describe("registerReadingResource", () => {
 
     const loaded = await loader();
     expect(loaded.contents[0].uri).toBe(
-      "ui://ss-reading-nest/app-v83-pdf-search-display.html"
+      "ui://ss-reading-nest/app-v84-quiet-drawer.html"
     );
     expect(loaded.contents[0].mimeType).toBe("text/html;profile=mcp-app");
     expect(loaded.contents[0]._meta.ui.csp.connectDomains).toContain(

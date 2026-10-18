@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="36" viewBox="0 0 192 36" fill="none">
+  <path d="M0 0H192V11H0Z" fill="#FFF9EA"/>
+  <path d="M0 10.5H192" stroke="#B98C66" stroke-width="1.2"/>
+  <path d="M0 10.5C8 10.5 8 28.5 16 28.5C24 28.5 24 10.5 32 10.5C40 10.5 40 28.5 48 28.5C56 28.5 56 10.5 64 10.5C72 10.5 72 28.5 80 28.5C88 28.5 88 10.5 96 10.5C104 10.5 104 28.5 112 28.5C120 28.5 120 10.5 128 10.5C136 10.5 136 28.5 144 28.5C152 28.5 152 10.5 160 10.5C168 10.5 168 28.5 176 28.5C184 28.5 184 10.5 192 10.5V0H0V10.5Z" fill="#FFF9EA" stroke="#B98C66" stroke-width="1.2" stroke-linejoin="round"/>
+  <g fill="#C29A73">
+    <circle cx="16" cy="20.5" r="2.2"/><circle cx="48" cy="20.5" r="2.2"/><circle cx="80" cy="20.5" r="2.2"/>
+    <circle cx="112" cy="20.5" r="2.2"/><circle cx="144" cy="20.5" r="2.2"/><circle cx="176" cy="20.5" r="2.2"/>
+  </g>
+  <g stroke="#C29A73" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 7.5l4 3 4-3M60 7.5l4 3 4-3M92 7.5l4 3 4-3M124 7.5l4 3 4-3M156 7.5l4 3 4-3"/>
+    <path d="M9 11.5l7 7 7-7M41 11.5l7 7 7-7M73 11.5l7 7 7-7M105 11.5l7 7 7-7M137 11.5l7 7 7-7M169 11.5l7 7 7-7" opacity=".55"/>
+  </g>
+</svg>

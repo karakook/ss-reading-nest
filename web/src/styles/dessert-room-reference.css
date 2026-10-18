@@ -1,0 +1,1823 @@
+/*
+ * Reference implementation for the hand-drawn dessert-room previews.
+ * This stylesheet is intentionally last in the cascade. It is a mobile-first
+ * composition layer; the underlying data, navigation and reading actions stay
+ * in the existing components.
+ */
+
+:root {
+  --dessert-cream: #fff8e8;
+  --dessert-paper: #fffdf5;
+  --dessert-paper-deep: #fff6df;
+  --dessert-blue: #b9d9ee;
+  --dessert-blue-light: #dceef6;
+  --dessert-blue-dark: #7eaccb;
+  --dessert-brown: #6e4b37;
+  --dessert-brown-soft: #9d795f;
+  --dessert-ink: #2e211b;
+  --dessert-muted: #8c7569;
+  --dessert-line: #d9b995;
+  --dessert-shadow: rgba(105, 74, 47, .18);
+}
+
+/* The four room skins intentionally remap the reference palette itself.
+   This keeps the hand-drawn layout while making the color picker visible. */
+.app.library-theme-blue {
+  --dessert-cream: #fff8e8;
+  --dessert-paper: #fffdf5;
+  --dessert-paper-deep: #fff6df;
+  --dessert-blue: #b9d9ee;
+  --dessert-blue-light: #dceef6;
+  --dessert-blue-dark: #7eaccb;
+}
+
+.app.library-theme-pink {
+  --dessert-cream: #fff5f1;
+  --dessert-paper: #fffaf6;
+  --dessert-paper-deep: #fce8df;
+  --dessert-blue: #e9b9c0;
+  --dessert-blue-light: #f8dfe1;
+  --dessert-blue-dark: #b87682;
+  --dessert-line: #d9a9a1;
+  --dessert-brown-soft: #a76d70;
+}
+
+.app.library-theme-beige {
+  --dessert-cream: #f4eddf;
+  --dessert-paper: #fffaf0;
+  --dessert-paper-deep: #eadcc5;
+  --dessert-blue: #d3bd91;
+  --dessert-blue-light: #efe3cc;
+  --dessert-blue-dark: #9b8056;
+  --dessert-line: #c9ad82;
+  --dessert-brown-soft: #8d6d4e;
+}
+
+.app.library-theme-green {
+  --dessert-cream: #eef3ea;
+  --dessert-paper: #fbfdf6;
+  --dessert-paper-deep: #e1eadb;
+  --dessert-blue: #a9c7b1;
+  --dessert-blue-light: #dceadf;
+  --dessert-blue-dark: #648875;
+  --dessert-line: #a9bea9;
+  --dessert-brown-soft: #6e8066;
+}
+
+body {
+  overflow-x: hidden;
+  background: var(--dessert-cream);
+}
+
+.app-screen-home,
+.app-screen-cover,
+.app-screen-novel {
+  --cream: var(--dessert-cream);
+  --paper: var(--dessert-paper);
+  --surface: var(--dessert-paper);
+  --ink: var(--dessert-ink);
+  --muted: var(--dessert-muted);
+  --line: var(--dessert-line);
+  --blue: var(--dessert-blue);
+  --blue-soft: var(--dessert-blue-light);
+  --blue-strong: var(--dessert-blue-dark);
+  --wine: var(--dessert-brown-soft);
+  --wine-dark: var(--dessert-brown);
+  --rose-gold: var(--dessert-brown-soft);
+  --rose-pale: #f6e7d2;
+  min-height: 100dvh;
+  color: var(--dessert-ink);
+  background:
+    radial-gradient(circle at 78% 6%, rgba(255, 255, 255, .9), transparent 260px),
+    repeating-linear-gradient(0deg, rgba(122, 83, 43, .018) 0 1px, transparent 1px 4px),
+    var(--dessert-cream);
+}
+
+/* Hand-drawn lace asset traced from the reference, repeated around every page. */
+.app-screen-home::before,
+.app-screen-home::after,
+.app-screen-cover::before,
+.app-screen-cover::after,
+.app-screen-novel::before,
+.app-screen-novel::after {
+  position: fixed;
+  right: 0;
+  left: 0;
+  z-index: 80;
+  height: 43px;
+  content: "";
+  pointer-events: none;
+  background: url("../assets/dessert-room/lace-strip.svg") top left / 168px 48px repeat-x;
+  filter: drop-shadow(0 1px 0 rgba(87, 58, 36, .22));
+}
+
+.app-screen-home::before,
+.app-screen-cover::before,
+.app-screen-novel::before { top: 0; }
+
+.app-screen-home::after,
+.app-screen-cover::after,
+.app-screen-novel::after {
+  bottom: 0;
+  transform: translateY(-82px) rotate(180deg);
+}
+
+/* The reading canvas stays clean: lace belongs to the room and cover views,
+   not above or below the book text. */
+.app-screen-novel::before,
+.app-screen-novel::after {
+  display: none;
+}
+
+/* Keep the book title in the header's middle grid column so long names can
+   ellipsize before reaching the tool buttons on either device size. */
+.app-screen-novel .reader-heading {
+  position: static;
+  width: auto;
+  min-width: 0;
+  text-align: center;
+  transform: none;
+}
+
+.app-screen-home .dessert-reading-room .library-rail {
+  background:
+    radial-gradient(circle at 12px 12px, rgba(255,255,255,.24) 0 2px, transparent 2.5px) 0 0 / 24px 24px,
+    var(--dessert-blue);
+}
+
+.app-screen-home .library-rail-brand::before {
+  background:
+    url("../assets/dessert-room/lace-strip.svg") top center / 126px 36px repeat-x,
+    var(--dessert-paper);
+}
+
+.app-screen-home .library-rail-brand > svg { display: none; }
+.app-screen-home .library-rail-brand::after {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  z-index: 2;
+  width: 58px;
+  height: 38px;
+  background: url("../assets/dessert-room/ribbon-bow.svg") center / contain no-repeat;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.app-screen-home .dessert-reading-room .continue-card,
+.app-screen-home .records-hero,
+.app-screen-home .drawer-intro,
+.app-screen-cover .cover-progress,
+.app-screen-novel .co-read-opening,
+.app-screen-home .settings-intro-card {
+  background:
+    radial-gradient(circle at 90% 14%, rgba(255,255,255,.38), transparent 180px),
+    linear-gradient(140deg, var(--dessert-blue), var(--dessert-blue-light));
+}
+
+.app-screen-home .dessert-reading-room .bookshelf-filters button[aria-pressed="true"],
+.app-screen-home .record-tabs button[aria-pressed="true"],
+.app-screen-novel .co-read-modes button[aria-pressed="true"] {
+  background: var(--dessert-blue);
+}
+
+.app-screen-novel .reader-actions { background: var(--dessert-blue); }
+
+.app-screen-novel .reader-scroll {
+  position: relative;
+  isolation: isolate;
+}
+
+.app-screen-novel .reader-scroll::before,
+.app-screen-novel .reader-scroll::after {
+  position: absolute;
+  z-index: 0;
+  width: 190px;
+  height: 190px;
+  background: url("../assets/dessert-room/botanical-corner.svg") center / contain no-repeat;
+  content: "";
+  opacity: .72;
+  pointer-events: none;
+}
+
+.app-screen-novel .reader-scroll::before { top: 76px; left: -36px; }
+.app-screen-novel .reader-scroll::after { right: -42px; bottom: 92px; transform: rotate(180deg); }
+.app-screen-novel .novel-paper { position: relative; z-index: 1; }
+
+.app-screen-novel .co-read-header::before {
+  position: absolute;
+  top: -44px;
+  right: 30px;
+  width: 92px;
+  height: 60px;
+  background: url("../assets/dessert-room/ribbon-bow.svg") center / contain no-repeat;
+  content: "";
+  pointer-events: none;
+}
+
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room.library-app-shell {
+    display: block;
+    width: 100%;
+    min-height: 100dvh;
+    padding: 0 0 88px;
+  }
+
+  .app-screen-home .dessert-reading-room .home-shell {
+    display: flex;
+    width: min(100%, 710px);
+    max-width: 710px;
+    flex-direction: column;
+    margin: 0 auto;
+    padding: 50px clamp(24px, 5.2vw, 37px) 38px;
+  }
+
+  .app-screen-home .library-mobile-brand {
+    position: relative;
+    z-index: 2;
+    order: 0;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 44px;
+    min-height: 64px;
+    align-items: center;
+    margin: 0;
+    padding: 7px 17px;
+    border: 1px dashed #bd9875;
+    border-radius: 34px;
+    background: rgba(255, 253, 245, .9);
+    box-shadow: 0 4px 0 rgba(105, 74, 47, .12);
+    color: var(--dessert-ink);
+    text-align: center;
+  }
+
+  .app-screen-home .library-mobile-brand > span {
+    overflow: hidden;
+    width: 35px;
+    height: 35px;
+    color: transparent;
+    font-size: 0;
+  }
+
+  .app-screen-home .library-mobile-brand > span::after {
+    color: var(--dessert-brown-soft);
+    content: "🎀";
+    font-size: 26px;
+    line-height: 35px;
+    filter: sepia(.35) saturate(.7);
+  }
+
+  .app-screen-home .library-mobile-brand strong {
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", "Songti SC", serif;
+    font-size: clamp(21px, 4.3vw, 28px);
+    letter-spacing: .02em;
+  }
+
+  .app-screen-home .library-mobile-brand button {
+    display: grid;
+    width: 44px;
+    min-height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--dessert-ink);
+  }
+
+  .app-screen-home .library-mobile-brand button svg { width: 28px; height: 28px; }
+
+  .app-screen-home .dessert-reading-room .library-header {
+    position: relative;
+    order: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(145px, 30vw, 215px);
+    gap: 12px;
+    min-height: 192px;
+    align-items: center;
+    margin: 24px 0 16px;
+    padding: 0 3px 27px;
+    border-bottom: 1px dashed #d9b792;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header-copy { min-width: 0; }
+  .app-screen-home .dessert-reading-room .library-kicker { display: none; }
+
+  .app-screen-home .dessert-reading-room .library-header h1 {
+    margin: 0 0 13px;
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", "Songti SC", serif;
+    font-size: clamp(40px, 7.5vw, 55px);
+    font-weight: 800;
+    letter-spacing: .035em;
+    line-height: 1.08;
+    white-space: nowrap;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header h1 span {
+    margin-left: 8px;
+    color: var(--dessert-brown-soft);
+    font-size: .55em;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header p {
+    max-width: 27ch;
+    margin: 0;
+    color: var(--dessert-muted);
+    font-family: "Songti SC", "STSong", serif;
+    font-size: clamp(16px, 2.7vw, 21px);
+    line-height: 1.65;
+    letter-spacing: .02em;
+  }
+
+  .app-screen-home .library-header-illustration {
+    position: relative;
+    display: grid;
+    width: 100%;
+    height: 155px;
+    place-items: end center;
+  }
+
+  .app-screen-home .library-header-illustration img {
+    width: 100%;
+    max-height: 150px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 2px rgba(81, 57, 39, .12));
+  }
+
+  .app-screen-home .header-sparkle { color: #c5a272; }
+  .app-screen-home .sparkle-one { top: 10px; left: 10px; font-size: 25px; }
+  .app-screen-home .sparkle-two { top: 43px; left: -2px; font-size: 15px; }
+
+  .app-screen-home .library-skin-switch {
+    position: absolute;
+    top: -5px;
+    right: 2px;
+    display: flex;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .app-screen-home .library-skin-switch .skin-star {
+    width: 31px;
+    min-height: 31px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .app-screen-home .library-skin-switch .skin-star svg {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+    stroke: #fff6e7;
+    stroke-width: 1.1;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs {
+    position: static;
+    z-index: 2;
+    order: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    margin: 16px 0 0;
+    padding: 5px;
+    border: 1px solid #d8b996;
+    border-radius: 19px;
+    background: rgba(255, 253, 245, .74);
+    box-shadow: none;
+  }
+
+  .app-screen-home.is-library-view .library-mobile-tabs,
+  .app-screen-home.is-settings-view .library-mobile-tabs { display: none; }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button {
+    display: grid;
+    min-height: 58px;
+    place-items: center;
+    gap: 2px;
+    padding: 3px 5px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--dessert-brown-soft);
+    font-family: "Songti SC", "STSong", serif;
+    font-size: clamp(15px, 2.4vw, 20px);
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button:last-child { display: none; }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button[aria-pressed="true"] {
+    background: var(--dessert-blue);
+    color: var(--dessert-ink);
+    box-shadow: none;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tab-icon { width: 27px; height: 27px; }
+
+  .app-screen-home .reading-dashboard,
+  .app-screen-home .reading-records-view,
+  .app-screen-home .drawer-view,
+  .app-screen-home .dessert-settings {
+    order: 3;
+  }
+
+  .app-screen-home .is-library-view .library-header { order: 1; }
+
+  .app-screen-home .reading-dashboard { display: grid; gap: 15px; }
+  .app-screen-home .dashboard-main-grid,
+  .app-screen-home .dashboard-bottom-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+  .app-screen-home .dashboard-side-stack { display: grid; grid-template-columns: 1fr; grid-template-rows: none; gap: 15px; }
+
+  .app-screen-home .dessert-reading-room .continue-card {
+    display: grid;
+    grid-template-columns: clamp(125px, 25vw, 178px) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    gap: 14px clamp(20px, 4vw, 30px);
+    min-height: clamp(350px, 52vw, 370px);
+    margin: 0;
+    padding: clamp(62px, 9vw, 70px) clamp(22px, 5vw, 42px) 24px;
+    border: 1px solid #aeb7b8;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 90% 14%, rgba(255, 255, 255, .35), transparent 180px),
+      linear-gradient(140deg, #b7dcef, #cde8f0);
+    box-shadow: 4px 5px 0 var(--dessert-shadow);
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card::after {
+    inset: 13px;
+    border: 1px dashed rgba(255, 251, 235, .86);
+    border-radius: 15px;
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card::before {
+    top: 14px;
+    left: -1px;
+    width: clamp(165px, 30vw, 215px);
+    height: 47px;
+    clip-path: polygon(0 0, 100% 0, 87% 50%, 100% 100%, 0 100%);
+    background: linear-gradient(90deg, #9b765b, #b38c6c);
+    content: "✿  正在读";
+    color: #fff9ed;
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(18px, 3vw, 25px);
+    line-height: 47px;
+    text-align: center;
+    letter-spacing: .12em;
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card .library-cover.compact {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: .72;
+    border: 1px solid #8f765f;
+    border-radius: 3px;
+    background:
+      radial-gradient(ellipse at 66% 72%, rgba(178, 146, 97, .48) 0 9%, transparent 9.5%),
+      radial-gradient(ellipse at 57% 64%, rgba(105, 119, 79, .58) 0 6%, transparent 6.5%),
+      linear-gradient(145deg, #fffaf0, #f4dfbd);
+    box-shadow: 4px 5px 0 rgba(72, 54, 42, .15);
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card .library-cover-title {
+    align-self: start;
+    margin-top: 22px;
+    color: #3c2d25;
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(16px, 2.8vw, 23px);
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card-body { align-content: center; gap: 12px; }
+  .app-screen-home .dessert-reading-room .continue-status { display: none; }
+  .app-screen-home .dessert-reading-room .continue-card h2 {
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(25px, 4vw, 34px);
+    line-height: 1.25;
+  }
+  .app-screen-home .dessert-reading-room .continue-card p { color: #67574e; font-family: "Songti SC", serif; font-size: clamp(14px, 2vw, 17px); }
+  .app-screen-home .dessert-reading-room .continue-progress-row { color: #5a4a43; font-size: clamp(12px, 1.9vw, 15px); }
+  .app-screen-home .dessert-reading-room .continue-progress-track { height: 14px; border: 1px solid rgba(133, 100, 75, .22); background: #fff8dd; }
+  .app-screen-home .dessert-reading-room .continue-progress-track span { background: linear-gradient(90deg, #9c765d, #b08b70); }
+  .app-screen-home .dessert-reading-room .continue-card-actions { grid-column: 2; display: flex; min-width: 0; gap: 10px; align-items: center; }
+  .app-screen-home .dessert-reading-room .continue-card-actions button { min-height: 47px; border-radius: 999px; }
+  .app-screen-home .dessert-reading-room .continue-card-actions .action-primary { width: 100%; min-width: 0; border: 1px solid #8d6e59; background: #a88770; color: #fff9eb; box-shadow: inset 0 0 0 2px rgba(255,255,255,.26); }
+  .app-screen-home .dessert-reading-room .continue-card-actions .action-primary svg { display: none; }
+  .app-screen-home .dessert-reading-room .continue-card-actions .library-quiet-action { display: none; }
+
+  .app-screen-home .dessert-stat-card {
+    min-height: clamp(148px, 22vw, 158px);
+    padding: 27px clamp(28px, 5vw, 39px);
+    border: 1px solid #d4b58f;
+    border-radius: 19px;
+    background: linear-gradient(145deg, #fffdf6, #fff8e9);
+    box-shadow: 3px 4px 0 rgba(112, 78, 46, .13);
+  }
+
+  .app-screen-home .dessert-stat-card::after,
+  .app-screen-home .bookshelf-section::after,
+  .app-screen-home .reading-reward-card::after {
+    inset: 12px;
+    border: 1px dashed rgba(199, 159, 120, .58);
+    border-radius: 13px;
+  }
+
+  .app-screen-home .dessert-stat-heading h2 {
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(21px, 3.4vw, 27px);
+  }
+  .app-screen-home .dessert-stat-heading h2::after { margin-left: 8px; content: "✿"; color: var(--dessert-brown-soft); font-size: .72em; }
+  .app-screen-home .today-reading-value { margin-top: 9px; color: var(--dessert-ink); }
+  .app-screen-home .today-reading-value strong { font-family: Georgia, serif; font-size: clamp(42px, 7vw, 52px); font-weight: 500; }
+  .app-screen-home .today-reading-value span { font-size: 16px; }
+  .app-screen-home .today-reading-stars { gap: 9px; margin-top: 14px; }
+  .app-screen-home .today-reading-stars svg { width: 27px; height: 27px; color: #5b463c; fill: currentColor; stroke: #fff6df; stroke-width: 1.2; }
+  .app-screen-home .today-reading-stars svg:nth-child(1) { color: #9bcce8; }
+  .app-screen-home .today-reading-stars svg:nth-child(2) { color: #a9927d; }
+  .app-screen-home .today-reading-stars svg:nth-child(3) { color: #f1ddb1; }
+  .app-screen-home .today-reading-stars svg:nth-child(4) { color: #4b362e; }
+
+  .app-screen-home .today-cookie-art {
+    right: clamp(24px, 5vw, 46px);
+    bottom: 34px;
+    width: clamp(72px, 12vw, 95px);
+    height: clamp(72px, 12vw, 95px);
+  }
+
+  .app-screen-home .weekly-goal-copy { margin-top: 9px; color: var(--dessert-ink); }
+  .app-screen-home .weekly-goal-copy strong { font-family: Georgia, serif; font-size: clamp(36px, 5.8vw, 45px); font-weight: 500; }
+  .app-screen-home .weekly-goal-copy span { font-size: 16px; }
+  .app-screen-home .weekly-goal-days { gap: 9px; margin-top: 10px; }
+  .app-screen-home .weekly-goal-days span { width: 30px; height: 30px; border: 1px solid #3e2c25; background: #fffef8; }
+  .app-screen-home .weekly-goal-days span.is-done { background: #5a3526; box-shadow: inset 0 0 0 3px #704836; }
+  .app-screen-home .weekly-books-art { right: clamp(22px, 5vw, 45px); bottom: 24px; width: clamp(105px, 17vw, 145px); height: auto; }
+
+  .app-screen-home .dessert-reading-room .bookshelf-section {
+    display: grid;
+    gap: 12px;
+    min-height: 243px;
+    padding: 25px clamp(24px, 5vw, 35px) 18px;
+    border: 1px solid #d4b58f;
+    border-radius: 19px;
+    background: linear-gradient(145deg, #fffdf6, #fff8e9);
+    box-shadow: 3px 4px 0 rgba(112, 78, 46, .13);
+  }
+
+  .app-screen-home .dessert-reading-room .section-heading h2 {
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(21px, 3.4vw, 27px);
+  }
+  .app-screen-home .dessert-reading-room .section-heading h2::after { margin-left: 8px; content: "✿"; color: var(--dessert-brown-soft); font-size: .72em; }
+  .app-screen-home .dessert-reading-room .section-heading > span { color: var(--dessert-muted); font-size: 13px; }
+  .app-screen-home .dessert-reading-room .bookshelf-filters { display: none; }
+  .app-screen-home .dessert-reading-room .library-book-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 2.2vw, 19px); overflow: visible; padding: 0; }
+  .app-screen-home .dessert-reading-room .library-book-card { display: grid; gap: 5px; min-width: 0; }
+  .app-screen-home .dessert-reading-room .library-book-card:nth-child(n+5) { display: none; }
+  .app-screen-home .dessert-reading-room .library-cover { width: 100%; min-height: 0; aspect-ratio: .68; border: 1px solid #9c816b; border-radius: 2px; box-shadow: 3px 4px 0 rgba(76,56,42,.13); }
+  .app-screen-home .dessert-reading-room .library-cover-0 { background: linear-gradient(150deg, #fff9e9, #eedcbc); }
+  .app-screen-home .dessert-reading-room .library-cover-1 { background: linear-gradient(165deg, #d9e9ef, #8eb6d4 62%, #4d7290); }
+  .app-screen-home .dessert-reading-room .library-cover-2 { background: linear-gradient(150deg, #fff0c9, #c7d9d0 55%, #8aa5a0); }
+  .app-screen-home .dessert-reading-room .library-cover-3 { background: linear-gradient(135deg, #dce8ec, #efd6b2 55%, #7c6658); }
+  .app-screen-home .dessert-reading-room .library-cover-title { color: #46352d; font-size: clamp(10px, 1.8vw, 14px); }
+  .app-screen-home .dessert-reading-room .library-cover-mark,
+  .app-screen-home .dessert-reading-room .library-book-more { display: none; }
+  .app-screen-home .dessert-reading-room .library-book-info strong { display: block; overflow: hidden; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: clamp(10px, 1.8vw, 14px); text-overflow: ellipsis; white-space: nowrap; }
+  .app-screen-home .dessert-reading-room .library-book-info small { color: var(--dessert-ink); font-size: clamp(9px, 1.6vw, 12px); }
+
+  .app-screen-home .dessert-reading-room .reading-reward-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 1fr);
+    grid-template-rows: auto 1fr;
+    min-height: 114px;
+    margin: 0;
+    padding: 18px clamp(20px, 4vw, 32px);
+    border: 1px solid #d4b58f;
+    border-radius: 19px;
+    background: linear-gradient(145deg, #fffdf6, #fff8e9);
+    box-shadow: 3px 4px 0 rgba(112, 78, 46, .13);
+  }
+
+  .app-screen-home .dessert-reward-heading { grid-column: 1 / -1; }
+  .app-screen-home .dessert-reward-heading h2 { color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: clamp(21px, 3.4vw, 27px); }
+  .app-screen-home .reward-bow { color: var(--dessert-brown-soft); font-size: 44px; }
+  .app-screen-home .reward-cookie-row { grid-column: 1; width: 100%; max-width: 260px; align-self: center; }
+  .app-screen-home .dessert-reward-message { grid-column: 2; align-self: center; padding: 0 0 0 22px; border-top: 0; border-left: 1px dashed #d8b996; text-align: left; }
+  .app-screen-home .dessert-reward-message p,
+  .app-screen-home .dessert-reward-message span { color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: clamp(13px, 2vw, 17px); line-height: 1.45; }
+
+  .app-screen-home .dashboard-utilities {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .app-screen-home .dashboard-utilities .shared-memory-note { display: none; }
+  .app-screen-home .dashboard-utilities .library-header-actions { display: contents; }
+  .app-screen-home .dashboard-utilities .library-header-actions .library-quiet-action { display: none; }
+  .app-screen-home .dashboard-utilities .library-add {
+    display: flex;
+    min-width: 0;
+    min-height: 53px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #8db9d3;
+    border-radius: 999px;
+    background: var(--dessert-blue);
+    box-shadow: 0 3px 0 rgba(84, 130, 157, .16);
+    color: var(--dessert-ink);
+    font-family: "Songti SC", serif;
+    font-size: 17px;
+  }
+
+  .app-screen-home .dashboard-utilities .library-add svg { width: 25px; height: 25px; }
+  .app-screen-home .dessert-reading-room .reference-bookshelf-filters { display: flex; gap: 10px; overflow-x: auto; order: 5; margin: 0; padding: 0 3px 4px; scrollbar-width: none; }
+  .app-screen-home .dessert-reading-room .reference-bookshelf-filters::-webkit-scrollbar { display: none; }
+  .app-screen-home .dessert-reading-room .reference-bookshelf-filters button { flex: 1 0 0; min-height: 43px; border: 1px solid #d8b996; border-radius: 999px; background: rgba(255,253,245,.85); color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 14px; white-space: nowrap; }
+  .app-screen-home .dessert-reading-room .reference-bookshelf-filters button[aria-pressed="true"] { background: var(--dessert-blue); color: var(--dessert-ink); }
+
+  .app-screen-home .dessert-reading-room:not(.is-library-view) .library-mobile-tabs {
+    position: static;
+    display: grid;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 75;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 10px 13px calc(8px + var(--safe-bottom));
+    border: 0;
+    border-radius: 0;
+    background: var(--dessert-blue);
+    box-shadow: 0 -5px 15px rgba(76, 63, 51, .10);
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button {
+    min-height: 67px;
+    font-size: clamp(14px, 2.4vw, 19px);
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button[aria-pressed="true"] {
+    background: rgba(133, 190, 221, .42);
+  }
+
+  .app-screen-home:not(.is-library-view)::after { display: none; }
+
+  .app-screen-home .is-library-view .library-header { margin-top: 24px; }
+
+  .app-screen-home.is-records-view .home-shell,
+  .app-screen-home.is-drawer-view .home-shell,
+  .app-screen-home.is-settings-view .home-shell { padding-top: 50px; }
+}
+
+@media (max-width: 520px) {
+  .app-screen-home .dessert-reading-room .home-shell { padding-inline: 21px; }
+  .app-screen-home .dessert-reading-room .library-header { grid-template-columns: minmax(0, 1fr) 115px; gap: 4px; min-height: 166px; }
+  .app-screen-home .dessert-reading-room .library-header h1 { font-size: 39px; }
+  .app-screen-home .dessert-reading-room .library-header p { font-size: 14px; }
+  .app-screen-home .library-header-illustration { height: 120px; }
+  .app-screen-home .library-header-illustration img { width: 155px; max-width: none; }
+  .app-screen-home .library-skin-switch { top: -39px; right: 0; gap: 5px; }
+  .app-screen-home .library-skin-switch .skin-star,
+  .app-screen-home .library-skin-switch .skin-star svg { width: 24px; min-height: 24px; height: 24px; }
+  .app-screen-home .dessert-reading-room .continue-card { grid-template-columns: 122px minmax(0, 1fr); gap: 13px 20px; min-height: 350px; padding: 63px 21px 23px; }
+  .app-screen-home .dessert-reading-room .continue-card h2 { font-size: 24px; }
+  .app-screen-home .dessert-reading-room .continue-card p { font-size: 12px; }
+  .app-screen-home .dessert-reading-room .continue-card-actions { grid-column: 1 / -1; }
+  .app-screen-home .dessert-reading-room .reading-reward-card { grid-template-columns: 1fr; grid-template-rows: auto auto auto; padding: 19px 23px; }
+  .app-screen-home .dessert-reward-heading,
+  .app-screen-home .reward-cookie-row,
+  .app-screen-home .dessert-reward-message { grid-column: 1; }
+  .app-screen-home .reward-cookie-row { max-width: 210px; }
+  .app-screen-home .dessert-reward-message { padding: 9px 0 0; border-top: 1px dashed #d8b996; border-left: 0; }
+}
+
+/* Book management is the settings-sheet preview. */
+@media (max-width: 800px) {
+  .app-screen-home .sheet-backdrop {
+    z-index: 95;
+    padding: 0;
+    background: rgba(45, 32, 26, .52);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+
+  .app-screen-home .management-sheet {
+    width: 100%;
+    max-height: 92dvh;
+    overflow-y: auto;
+    padding: 24px 23px calc(30px + var(--safe-bottom));
+    border: 1px solid #d4b58f;
+    border-radius: 30px 30px 0 0;
+    background: var(--dessert-cream);
+    box-shadow: 0 -14px 30px rgba(63, 41, 25, .20);
+  }
+
+  .app-screen-home .management-sheet .sheet-grip { width: 58px; height: 7px; margin: -8px auto 19px; border-radius: 999px; background: #d7b88d; }
+  .app-screen-home .management-sheet .sheet-header { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 12px; align-items: start; padding: 0 0 16px; border: 0; }
+  .app-screen-home .management-sheet .sheet-kicker { display: inline-block; width: fit-content; padding: 6px 22px; border: 1px dashed #c69f7b; border-radius: 999px; background: var(--dessert-paper); color: var(--dessert-brown); font-family: "STKaiti", "KaiTi", serif; font-size: 18px; }
+  .app-screen-home .management-sheet .sheet-header h2 { margin: 21px 0 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: clamp(34px, 7vw, 50px); line-height: 1.05; }
+  .app-screen-home .management-sheet .sheet-header p { margin: 9px 0 0; color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 15px; }
+  .app-screen-home .management-sheet .sheet-close { display: grid; width: 53px; min-height: 53px; place-items: center; border: 1px solid #d4b58f; border-radius: 50%; background: var(--dessert-paper); color: var(--dessert-brown); }
+  .app-screen-home .management-sheet .sheet-close svg { width: 27px; height: 27px; }
+  .app-screen-home .management-section { margin-top: 14px; padding: 20px 14px 16px; border: 1px solid #d4b58f; border-radius: 20px; background: linear-gradient(145deg, #fffdf6, #fff8e9); box-shadow: 3px 4px 0 rgba(112, 78, 46, .11); }
+  .app-screen-home .management-section-heading { display: flex; align-items: start; gap: 12px; padding: 0 4px 14px; border: 0; }
+  .app-screen-home .management-section-heading > svg { width: 26px; height: 26px; flex: none; color: var(--dessert-brown-soft); }
+  .app-screen-home .management-section-heading h3 { margin: 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 24px; }
+  .app-screen-home .management-section-heading p { margin: 4px 0 0; color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 13px; line-height: 1.5; }
+  .app-screen-home .management-section > label { display: grid; grid-template-columns: 63px minmax(0, 1fr); gap: 10px; align-items: center; margin: 9px 0; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 16px; }
+  .app-screen-home .management-section input:not([type="checkbox"]) { min-width: 0; height: 51px; padding: 0 16px; border: 1px solid #d4b58f; border-radius: 15px; background: #fffaf0; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 17px; }
+  .app-screen-home .management-section .sheet-action { display: flex; width: 100%; min-height: 49px; align-items: center; justify-content: center; gap: 8px; margin: 9px 0; border: 1px solid #89b4d0; border-radius: 999px; background: #8cbddd; color: #fffaf0; font-family: "Songti SC", serif; font-size: 17px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.26); }
+  .app-screen-home .record-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 3px; border: 1px solid #d4b58f; border-radius: 999px; background: var(--dessert-paper); }
+  .app-screen-home .record-tabs button { min-height: 43px; padding: 0 5px; border: 0; border-radius: 999px; background: transparent; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 15px; }
+  .app-screen-home .record-tabs button[aria-pressed="true"] { background: #8cbddd; color: #fffaf0; }
+  .app-screen-home .record-tabs button svg { display: none; }
+  .app-screen-home .record-list { display: grid; gap: 8px; margin-top: 12px; }
+  .app-screen-home .record-item { display: grid; grid-template-columns: 1fr auto; gap: 9px; align-items: center; padding: 14px 13px; border: 1px dashed #d4b58f; border-radius: 15px; background: rgba(255,253,245,.78); }
+  .app-screen-home .record-item span { color: var(--dessert-muted); font-size: 12px; }
+  .app-screen-home .record-item p { grid-column: 1 / -1; margin: 0; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 16px; line-height: 1.55; }
+  .app-screen-home .management-section.danger-zone { border-color: #d9b995; }
+  .app-screen-home .danger-zone .management-section-heading > svg { color: #ae5f4e; }
+  .app-screen-home .danger-button { display: flex; min-height: 49px; align-items: center; justify-content: center; gap: 8px; border: 1px solid #b04e45; border-radius: 999px; background: #bd5f54; color: #fffaf0; font-family: "Songti SC", serif; font-size: 17px; }
+}
+
+/* Reader canvas and the fixed action bar from the reference reader preview. */
+@media (max-width: 800px) {
+  .app-screen-novel {
+    overflow: hidden;
+    padding-top: 0;
+    background: var(--dessert-cream);
+  }
+
+  .app-screen-novel .reader-shell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+    background: var(--dessert-cream);
+  }
+
+  .app-screen-novel .reader-header {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    min-height: 72px;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 17px;
+    border: 0;
+    border-bottom: 1px dashed #d9b995;
+    background: rgba(255, 253, 245, .9);
+  }
+
+  .app-screen-novel .reader-header > .icon-button { display: grid; width: 42px; min-height: 42px; place-items: center; padding: 0; border: 0; background: transparent; color: var(--dessert-brown); }
+  .app-screen-novel .reader-header-icon { width: 28px; height: 28px; }
+  .app-screen-novel .reader-heading { min-width: 0; }
+  .app-screen-novel .reader-heading strong { display: block; overflow: hidden; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 20px; text-overflow: ellipsis; white-space: nowrap; }
+  .app-screen-novel .reader-heading span { display: block; margin-top: 4px; color: var(--dessert-muted); font-size: 12px; }
+  .app-screen-novel .header-buttons { display: flex; align-items: center; gap: 3px; }
+  .app-screen-novel .header-buttons .reader-dock-button,
+  .app-screen-novel .header-buttons .reader-collapse-button,
+  .app-screen-novel .header-buttons .reader-display-button,
+  .app-screen-novel .header-buttons .reader-toc-button { display: none; }
+  .app-screen-novel .header-buttons .reader-header-action { display: grid; width: 35px; min-height: 35px; place-items: center; padding: 0; border: 0; background: transparent; color: var(--dessert-ink); }
+  .app-screen-novel .header-buttons .reader-header-action span { display: none; }
+  .app-screen-novel .reader-header-action-icon { width: 23px; height: 23px; }
+
+  .app-screen-novel .sync-status { display: none; }
+  .app-screen-novel .reader-workspace { height: calc(100dvh - 72px); min-height: 0; }
+  .app-screen-novel .novel-reading-column { height: 100%; min-height: 0; }
+  .app-screen-novel .reader-scroll { height: 100%; padding: 0 clamp(24px, 7vw, 52px) 125px; background: var(--dessert-cream); }
+  .app-screen-novel .novel-paper { width: 100%; max-width: 620px; min-height: calc(100% - 70px); margin: 0 auto; padding: 45px 0 50px; color: var(--dessert-ink); font-family: "Songti SC", "STSong", serif; font-size: clamp(20px, 3.3vw, 25px); font-weight: var(--reader-font-weight, 400); line-height: 2.08; }
+  .app-screen-novel .novel-paper::before { top: 25px; right: 0; color: #bd946e; content: "✿"; font-size: 25px; }
+  .app-screen-novel .novel-paper p { margin: 0 0 24px; text-indent: 2em; }
+  .app-screen-novel .quote-highlight.user-annotation { border-bottom: 2px solid #a67c5d; background: rgba(197, 168, 126, .18); }
+  .app-screen-novel .quote-highlight.companion-annotation { border-bottom: 2px dotted #a67c5d; background: rgba(207, 226, 235, .58); }
+  .app-screen-novel .reader-selection-hint { display: none; }
+  .app-screen-novel .page-buttons { display: none; }
+
+  .app-screen-novel .reader-actions {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 75;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(105px, .8fr) minmax(0, 1fr);
+    gap: 8px;
+    min-height: 82px;
+    padding: 10px 17px calc(7px + var(--safe-bottom));
+    border: 0;
+    background: var(--dessert-blue);
+    box-shadow: 0 -5px 15px rgba(76, 63, 51, .10);
+  }
+
+  .app-screen-novel .reader-actions button { min-width: 0; min-height: 54px; border-radius: 999px; font-family: "Songti SC", serif; font-size: 15px; }
+  .app-screen-novel .reader-primary-action { border: 1px dashed rgba(255, 250, 240, .9); background: rgba(135, 188, 218, .62); color: var(--dessert-ink); box-shadow: none; }
+  .app-screen-novel .reader-primary-action svg { width: 25px; height: 25px; }
+  .app-screen-novel .reader-page-status { display: flex; align-items: center; justify-content: center; gap: 4px; border: 0; background: var(--dessert-paper); color: var(--dessert-ink); }
+  .app-screen-novel .reader-page-status span { display: none; }
+  .app-screen-novel .reader-page-status strong { font-weight: 400; }
+  .app-screen-novel .reader-finish-action { display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d6b38d; background: #fff4dc; color: var(--dessert-ink); }
+  .app-screen-novel .reader-action-icon { width: 21px; height: 21px; }
+
+  .app-screen-novel .co-read-backdrop {
+    z-index: 90;
+    padding: 0;
+    background: rgba(45, 32, 26, .44);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .app-screen-novel .co-read-panel {
+    position: relative;
+    width: 100%;
+    max-height: 83dvh;
+    gap: 15px;
+    padding: 28px 27px calc(24px + var(--safe-bottom));
+    overflow-y: auto;
+    border: 1px solid #d4b58f;
+    border-radius: 29px 29px 0 0;
+    background: var(--dessert-cream);
+    box-shadow: 0 -14px 30px rgba(63, 41, 25, .20);
+  }
+
+  .app-screen-novel .co-read-panel::before,
+  .app-screen-novel .co-read-panel::after {
+    position: absolute;
+    right: 0;
+    left: 0;
+    height: 31px;
+    content: "";
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 21px 15px at 21px 1px, transparent 0 12px, #c69f7b 12.5px 14px, transparent 14.5px) 0 0 / 42px 31px repeat-x,
+      radial-gradient(circle at 21px 20px, #b38b68 0 2px, transparent 2.6px) 0 0 / 42px 31px repeat-x,
+      var(--dessert-cream);
+  }
+
+  .app-screen-novel .co-read-panel::before { top: -1px; transform: rotate(180deg); }
+  .app-screen-novel .co-read-panel::after { bottom: -1px; }
+  .app-screen-novel .co-read-panel .sheet-grip { width: 58px; height: 7px; margin: -13px auto 4px; border-radius: 99px; background: #d7b88d; }
+  .app-screen-novel .co-read-header { position: relative; z-index: 1; align-items: center; padding-top: 14px; }
+  .app-screen-novel .co-read-header span { color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 14px; }
+  .app-screen-novel .co-read-header h2 { margin: 4px 0 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 32px; }
+  .app-screen-novel .co-read-close { width: 45px; min-height: 45px; border: 1px solid #d4b58f; background: var(--dessert-paper); color: var(--dessert-brown); }
+  .app-screen-novel .co-read-opening { position: relative; z-index: 1; margin: 0; padding: 18px 21px; border: 1px dashed rgba(255, 250, 238, .85); border-radius: 20px; background: linear-gradient(140deg, #b8dcf0, #d5edf1); color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 19px; line-height: 1.7; }
+  .app-screen-novel .co-read-modes { position: relative; z-index: 1; gap: 10px; }
+  .app-screen-novel .co-read-modes button { min-height: 89px; padding: 14px 17px; border: 1px solid #d4b58f; border-radius: 16px; background: var(--dessert-paper); box-shadow: 2px 3px 0 rgba(112, 78, 46, .10); }
+  .app-screen-novel .co-read-modes strong { color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 20px; }
+  .app-screen-novel .co-read-modes small { color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 13px; }
+  .app-screen-novel .co-read-modes button[aria-pressed="true"] { border-color: #9dbbd0; background: #d9edf5; box-shadow: inset 0 0 0 2px rgba(255,255,255,.65); }
+  .app-screen-novel .co-read-scope { position: relative; z-index: 1; padding: 8px 0; color: var(--dessert-muted); }
+  .app-screen-novel .co-read-scope svg { color: var(--dessert-brown-soft); }
+  .app-screen-novel .co-read-scope strong { color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 14px; }
+  .app-screen-novel .co-read-scope small { color: var(--dessert-muted); font-size: 12px; }
+  .app-screen-novel .co-read-primary,
+  .app-screen-novel .co-read-thoughts { position: relative; z-index: 1; min-height: 58px; border-radius: 999px; font-family: "STKaiti", "KaiTi", serif; font-size: 21px; }
+  .app-screen-novel .co-read-primary { background: #9b765b; color: #fff9ed; }
+  .app-screen-novel .co-read-thoughts { border: 1px solid #d4b58f; background: var(--dessert-paper); color: var(--dessert-ink); }
+}
+
+@media (max-width: 520px) {
+  .app-screen-novel .reader-header { grid-template-columns: 38px minmax(0, 1fr) auto; padding-inline: 10px; }
+  .app-screen-novel .reader-heading strong { font-size: 17px; }
+  .app-screen-novel .reader-header-action { width: 31px !important; }
+  .app-screen-novel .reader-scroll { padding-inline: 24px; }
+  .app-screen-novel .novel-paper { padding-top: 38px; font-size: 19px; line-height: 2.03; }
+  .app-screen-novel .reader-actions { grid-template-columns: minmax(0, 1.25fr) 94px minmax(0, .9fr); padding-inline: 9px; }
+  .app-screen-novel .reader-actions button { font-size: 13px; }
+  .app-screen-novel .co-read-panel { padding-inline: 21px; }
+  .app-screen-novel .co-read-header h2 { font-size: 28px; }
+  .app-screen-novel .co-read-modes strong { font-size: 17px; }
+}
+
+/* Book profile: a long cream page, with the cover and the blue progress card
+   arranged exactly like the reference rather than inside a generic panel. */
+@media (max-width: 800px) {
+  .app-screen-cover {
+    padding-top: 43px;
+    background: var(--dessert-cream);
+  }
+
+  .app-screen-cover .cover-shell {
+    width: min(100%, 710px);
+    max-width: 710px;
+    margin: 0 auto;
+    padding: 22px clamp(24px, 5.2vw, 37px) 58px;
+  }
+
+  .app-screen-cover .cover-toolbar {
+    display: flex;
+    min-height: 54px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 10px;
+  }
+
+  .app-screen-cover .cover-toolbar > span {
+    flex: 1;
+    color: var(--dessert-ink);
+    font-family: "Songti SC", serif;
+    font-size: 21px;
+    text-align: left;
+  }
+
+  .app-screen-cover .cover-back {
+    display: inline-flex;
+    width: auto;
+    min-height: 44px;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--dessert-brown);
+    font-family: "Songti SC", serif;
+    font-size: 19px;
+  }
+
+  .app-screen-cover .cover-back::after { content: "返回"; }
+  .app-screen-cover .cover-more,
+  .app-screen-cover .cover-toolbar-spacer { flex: 0 0 42px; }
+  .app-screen-cover .cover-more { display: none; }
+
+  .app-screen-cover .cover-stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .app-screen-cover .cover-stage::after { display: none; }
+  .app-screen-cover .cover-room-art { position: absolute; top: -16px; right: 0; z-index: 0; width: 190px; opacity: .9; object-fit: contain; }
+  .app-screen-cover .cover-book-area { position: relative; z-index: 1; display: grid; justify-items: center; margin: 5px 0 8px; }
+  .app-screen-cover .cover-book { position: relative; width: clamp(218px, 39vw, 278px); aspect-ratio: .72; min-height: 0; padding: 33px 20px 25px; border: 1px solid #9c816b; border-radius: 3px; background: linear-gradient(145deg, #fffaf0, #f4dfbd); box-shadow: 7px 10px 0 rgba(72, 54, 42, .16); color: var(--dessert-ink); }
+  .app-screen-cover .cover-book::before { position: absolute; inset: 13px; border: 1px solid rgba(154, 119, 89, .42); content: ""; }
+  .app-screen-cover .cover-book::after { right: 20px; bottom: 25px; color: #aa785d; content: "✿  ❧  ✿"; font-size: 20px; }
+  .app-screen-cover .cover-book-kicker { font-family: Georgia, serif; font-size: 11px; letter-spacing: .18em; }
+  .app-screen-cover .cover-book strong { display: block; margin-top: 20px; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: clamp(26px, 4.8vw, 36px); line-height: 1.25; }
+  .app-screen-cover .cover-book small { margin-top: 13px; color: var(--dessert-brown); font-family: "Songti SC", serif; font-size: 16px; }
+  .app-screen-cover .cover-tap-hint { display: none; }
+
+  .app-screen-cover .cover-details { position: relative; z-index: 1; display: grid; gap: 14px; min-width: 0; }
+  .app-screen-cover .cover-details-kicker { display: block; margin: 10px auto -4px; color: var(--dessert-brown-soft); font-family: Georgia, serif; font-size: 13px; letter-spacing: .23em; text-align: center; }
+  .app-screen-cover .cover-details-kicker::before,
+  .app-screen-cover .cover-details-kicker::after { display: inline-block; width: 72px; height: 1px; margin: 0 11px 4px; background: #d9b995; content: ""; }
+  .app-screen-cover .cover-details h1 { margin: 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: clamp(34px, 6vw, 47px); line-height: 1.15; text-align: center; }
+  .app-screen-cover .cover-progress { position: relative; display: flex; min-height: 116px; align-items: center; justify-content: center; margin: 8px 0 0; padding: 30px 30px 16px; border: 1px solid #aeb7b8; border-radius: 19px; background: linear-gradient(140deg, #b8dcf0, #d5edf1); color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: clamp(18px, 3vw, 23px); line-height: 1.7; text-align: center; box-shadow: 3px 4px 0 rgba(103, 88, 74, .12); }
+  .app-screen-cover .cover-progress::before { position: absolute; top: 13px; left: 0; padding: 5px 25px; background: #9b765b; clip-path: polygon(0 0, 100% 0, 91% 50%, 100% 100%, 0 100%); color: #fff9ed; content: "✿  阅读进度"; font-family: "STKaiti", "KaiTi", serif; font-size: 17px; }
+  .app-screen-cover .cover-companion-memory { display: grid; gap: 8px; min-height: 102px; margin: 0; padding: 23px 28px; border: 1px solid #d4b58f; border-left: 0; border-radius: 19px; background: linear-gradient(145deg, #fffdf6, #fff8e9); box-shadow: 3px 4px 0 rgba(112, 78, 46, .13); text-align: center; }
+  .app-screen-cover .cover-companion-memory strong { color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 20px; }
+  .app-screen-cover .cover-companion-memory span,
+  .app-screen-cover .cover-companion-memory small { color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 14px; }
+  .app-screen-cover .cover-memory-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .app-screen-cover .cover-memory-summary button { min-height: 76px; padding: 10px; border: 1px solid #d4b58f; border-radius: 16px; background: var(--dessert-paper); color: var(--dessert-ink); box-shadow: 2px 3px 0 rgba(112, 78, 46, .10); }
+  .app-screen-cover .cover-memory-summary strong { display: block; font-family: "Songti SC", serif; font-size: 16px; }
+  .app-screen-cover .cover-memory-summary span { display: block; margin-top: 6px; font-size: 13px; }
+  .app-screen-cover .cover-source-note { display: flex; min-height: 86px; flex-direction: column; justify-content: center; gap: 5px; padding: 17px 23px; border: 1px solid #d4b58f; border-radius: 19px; background: var(--dessert-paper); color: var(--dessert-ink); text-align: left; }
+  .app-screen-cover .cover-source-note strong { font-family: "STKaiti", "KaiTi", serif; font-size: 19px; }
+  .app-screen-cover .cover-source-note span { color: var(--dessert-muted); font-size: 13px; }
+  .app-screen-cover .cover-actions { display: grid; gap: 9px; }
+  .app-screen-cover .cover-actions button { width: 100%; min-height: 54px; border-radius: 999px; font-family: "Songti SC", serif; font-size: 18px; }
+  .app-screen-cover .cover-actions .action-primary { background: #9b765b; color: #fffaf0; }
+  .app-screen-cover .book-archive { margin-top: 14px; border: 1px solid #d4b58f; border-radius: 19px; background: var(--dessert-paper); }
+}
+
+@media (max-width: 520px) {
+  .app-screen-cover .cover-shell { padding-inline: 21px; }
+  .app-screen-cover .cover-room-art { width: 142px; }
+  .app-screen-cover .cover-book { width: 235px; }
+  .app-screen-cover .cover-details h1 { font-size: 35px; }
+  .app-screen-cover .cover-progress { font-size: 17px; }
+  .app-screen-cover .cover-details-kicker::before,
+  .app-screen-cover .cover-details-kicker::after { width: 42px; margin-inline: 7px; }
+}
+
+/* Reading records and the drawer use the same mobile canvas, but retain the
+   three-tab strip from the reference screens. */
+@media (max-width: 800px) {
+  .app-screen-home .is-records-view .library-header,
+  .app-screen-home .is-drawer-view .library-header {
+    margin-top: 25px;
+    margin-bottom: 17px;
+  }
+
+  .app-screen-home .is-records-view .library-header h1,
+  .app-screen-home .is-drawer-view .library-header h1 {
+    font-size: clamp(42px, 7.4vw, 55px);
+  }
+
+  .app-screen-home .is-records-view .library-header p,
+  .app-screen-home .is-drawer-view .library-header p {
+    font-size: clamp(16px, 2.8vw, 20px);
+  }
+
+  .app-screen-home .is-records-view .reading-records-view,
+  .app-screen-home .is-drawer-view .drawer-view {
+    display: grid;
+    gap: 15px;
+  }
+
+  .app-screen-home .records-hero,
+  .app-screen-home .drawer-intro {
+    position: relative;
+    overflow: hidden;
+    min-height: 300px;
+    padding: 37px clamp(28px, 5vw, 47px);
+    border: 1px solid #aeb7b8;
+    border-radius: 22px;
+    background: linear-gradient(140deg, #b8dcf0, #d5edf1);
+    box-shadow: 3px 4px 0 rgba(103, 88, 74, .12);
+  }
+
+  .app-screen-home .records-hero::after,
+  .app-screen-home .drawer-intro::after {
+    inset: 13px;
+    border: 1px dashed rgba(255, 250, 238, .78);
+    border-radius: 16px;
+  }
+
+  .app-screen-home .records-hero-copy,
+  .app-screen-home .drawer-intro > * { position: relative; z-index: 2; }
+
+  .app-screen-home .records-hero-copy > span,
+  .app-screen-home .drawer-kicker {
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(18px, 3vw, 23px);
+    font-weight: 700;
+  }
+
+  .app-screen-home .records-hero-copy h2 {
+    margin: 14px 0 0;
+    color: var(--dessert-ink);
+    font-family: Georgia, "Songti SC", serif;
+    font-size: clamp(46px, 8vw, 66px);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .app-screen-home .records-hero-copy p {
+    margin: 13px 0 0;
+    color: var(--dessert-ink);
+    font-family: "Songti SC", serif;
+    font-size: clamp(20px, 3.3vw, 26px);
+  }
+
+  .app-screen-home .records-hero-copy small {
+    display: block;
+    max-width: 27ch;
+    margin-top: 16px;
+    color: #67574e;
+    font-family: "Songti SC", serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .app-screen-home .records-hero blockquote {
+    position: absolute;
+    right: 38px;
+    bottom: 37px;
+    z-index: 2;
+    max-width: 240px;
+    margin: 0;
+    color: #604d43;
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .app-screen-home .records-hero-art {
+    position: absolute;
+    right: 20px;
+    bottom: 18px;
+    z-index: 1;
+    width: clamp(170px, 32vw, 255px);
+    opacity: .92;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 2px rgba(81, 57, 39, .10));
+  }
+
+  .app-screen-home .records-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+    margin: 0;
+  }
+
+  .app-screen-home .record-metric {
+    display: grid;
+    min-height: 115px;
+    align-content: center;
+    gap: 6px;
+    padding: 18px 23px;
+    border: 1px solid #d4b58f;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fffdf6, #fff8e9);
+    box-shadow: 3px 4px 0 rgba(112, 78, 46, .13);
+  }
+
+  .app-screen-home .record-metric span { color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 19px; }
+  .app-screen-home .record-metric strong { color: var(--dessert-ink); font-family: Georgia, serif; font-size: clamp(24px, 4.2vw, 36px); font-weight: 500; }
+  .app-screen-home .record-metric small { color: var(--dessert-muted); font-size: 11px; }
+
+  .app-screen-home .records-visual-grid { display: grid; gap: 15px; }
+  .app-screen-home .records-card,
+  .app-screen-home .records-timeline {
+    min-height: 0;
+    padding: 25px clamp(22px, 4.5vw, 35px);
+    border: 1px solid #d4b58f;
+    border-radius: 19px;
+    background: linear-gradient(145deg, #fffdf6, #fff8e9);
+    box-shadow: 3px 4px 0 rgba(112, 78, 46, .13);
+  }
+
+  .app-screen-home .records-card header,
+  .app-screen-home .records-timeline .section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .app-screen-home .records-card header span,
+  .app-screen-home .records-card header strong,
+  .app-screen-home .records-timeline h2 {
+    color: var(--dessert-ink);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: clamp(21px, 3.3vw, 27px);
+  }
+
+  .app-screen-home .records-card header span::before,
+  .app-screen-home .records-timeline h2::before { margin-right: 8px; color: var(--dessert-brown-soft); content: "✿"; font-size: .75em; }
+  .app-screen-home .records-card header strong { font-family: "Songti SC", serif; font-size: 13px; font-weight: 400; }
+  .app-screen-home .records-trend { display: block; width: 100%; height: auto; min-height: 185px; margin-top: 22px; }
+  .app-screen-home .records-trend-line { stroke: var(--dessert-blue-dark); stroke-width: 4; }
+  .app-screen-home .records-trend-area { fill: rgba(159, 205, 231, .28); }
+  .app-screen-home .records-trend-dot { fill: var(--dessert-blue-dark); }
+  .app-screen-home .records-trend-label { fill: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 11px; }
+
+  .app-screen-home .records-flow-card { display: none; }
+  .app-screen-home .records-timeline { padding-bottom: 18px; }
+  .app-screen-home .records-timeline .section-heading { margin-bottom: 14px; }
+  .app-screen-home .records-timeline .section-heading > span { color: var(--dessert-muted); font-size: 12px; }
+  .app-screen-home .records-list { display: grid; gap: 0; }
+  .app-screen-home .record-entry { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; padding: 13px 0; border: 0; border-top: 1px dashed #d9b995; border-radius: 0; background: transparent; box-shadow: none; }
+  .app-screen-home .record-date strong { display: block; color: var(--dessert-ink); font-family: Georgia, serif; font-size: 18px; }
+  .app-screen-home .record-date span { color: var(--dessert-muted); font-size: 11px; }
+  .app-screen-home .record-body h3 { margin: 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 19px; }
+  .app-screen-home .record-body p { margin: 3px 0 0; color: var(--dessert-muted); font-size: 12px; }
+  .app-screen-home .record-range,
+  .app-screen-home .record-body > small,
+  .app-screen-home .record-progress { display: none; }
+
+  .app-screen-home .is-drawer-view .drawer-intro {
+    min-height: 248px;
+    padding: 36px clamp(28px, 5vw, 47px);
+  }
+
+  .app-screen-home .is-drawer-view .drawer-intro p {
+    max-width: 22ch;
+    margin: 0;
+    color: #5d4d49;
+    font-family: "Songti SC", "STSong", serif;
+    font-size: clamp(21px, 3.4vw, 27px);
+    line-height: 1.7;
+  }
+
+  .app-screen-home .is-drawer-view .drawer-intro small { color: #685953; font-family: "Songti SC", serif; font-size: 15px; }
+  .app-screen-home .drawer-intro-art { position: absolute; right: 22px; bottom: 20px; z-index: 1; width: clamp(150px, 28vw, 225px); opacity: .92; object-fit: contain; }
+  .app-screen-home .is-drawer-view .drawer-empty { min-height: 300px; padding: 40px 44px; border: 1px dashed #d8cfc2; border-radius: 19px; background: rgba(255, 253, 247, .75); color: #9a8e84; font-family: "Songti SC", serif; font-size: 20px; line-height: 1.75; text-align: center; }
+  .app-screen-home .is-drawer-view .drawer-list { display: grid; gap: 15px; }
+  .app-screen-home .is-drawer-view .drawer-note { min-height: 145px; padding: 20px 24px; border: 1px solid #d4b58f; border-radius: 19px; background: linear-gradient(145deg, #fffdf6, #fff8e9); box-shadow: 3px 4px 0 rgba(112, 78, 46, .13); }
+  .app-screen-home .is-drawer-view .drawer-note-new { border-color: #9dbbd0; background: linear-gradient(145deg, #d6eef7, #eef8f2); }
+  .app-screen-home .is-drawer-view .drawer-note-top { color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 15px; }
+  .app-screen-home .is-drawer-view .drawer-note-mark { color: #9c6b45; font-size: 25px; }
+  .app-screen-home .is-drawer-view .drawer-note p { max-width: 35ch; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 21px; line-height: 1.65; }
+}
+
+@media (max-width: 520px) {
+  .app-screen-home .records-hero blockquote { right: 25px; bottom: 27px; max-width: 150px; font-size: 13px; }
+  .app-screen-home .records-hero-art { right: 4px; bottom: 10px; width: 155px; }
+  .app-screen-home .records-hero-copy small { max-width: 20ch; font-size: 13px; }
+  .app-screen-home .drawer-intro-art { right: 4px; bottom: 13px; width: 150px; }
+  .app-screen-home .is-drawer-view .drawer-intro p { font-size: 20px; }
+  .app-screen-home .is-drawer-view .drawer-note p { font-size: 18px; }
+}
+
+/*
+ * Final mobile positioning corrections from the reference screenshots.
+ * These selectors intentionally target the view class on the main element;
+ * the view class is not on .app-screen-home.
+ */
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room .library-header {
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header-illustration {
+    min-width: 0;
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .app-screen-home .dessert-reading-room .library-header-illustration img {
+    display: block;
+    width: min(100%, 205px);
+    max-width: calc(100% - 8px);
+    margin-inline: auto;
+    object-position: center bottom;
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card,
+  .app-screen-home .dessert-reading-room .dessert-stat-card,
+  .app-screen-home .dessert-reading-room .bookshelf-section,
+  .app-screen-home .dessert-reading-room .reading-reward-card {
+    position: relative;
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .app-screen-home .dessert-reading-room .continue-card-empty > svg {
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    justify-self: center;
+  }
+
+  .app-screen-home .dessert-reading-room .today-cookie-art,
+  .app-screen-home .dessert-reading-room .weekly-books-art {
+    right: clamp(32px, 7vw, 52px);
+    max-width: calc(100% - 64px);
+    z-index: 2;
+  }
+
+  /* Home uses the fixed bottom navigation from the reference, not a content card. */
+  .app-screen-home .dessert-reading-room.is-library-view {
+    padding-bottom: calc(112px + var(--safe-bottom)) !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .home-shell {
+    padding-bottom: calc(120px + var(--safe-bottom));
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs {
+    position: fixed !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 90 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 10px 13px calc(8px + var(--safe-bottom)) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background:
+      radial-gradient(circle at 12px 12px, rgba(255,255,255,.24) 0 2px, transparent 2.5px) 0 0 / 24px 24px,
+      var(--dessert-blue) !important;
+    box-shadow: 0 -5px 15px rgba(76, 63, 51, .10) !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button {
+    display: grid !important;
+    min-height: 67px !important;
+    place-items: center;
+    gap: 2px;
+    font-size: clamp(14px, 2.4vw, 19px);
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs button:last-child {
+    display: none !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button[aria-pressed="true"] {
+    background: rgba(133, 190, 221, .42);
+  }
+
+  /* Records and drawer keep their three-tab strip in the document flow. */
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    margin: 16px 0 0 !important;
+    padding: 5px !important;
+    border: 1px solid #d8b996 !important;
+    border-radius: 19px !important;
+    background: rgba(255, 253, 245, .74) !important;
+    box-shadow: none !important;
+  }
+
+  .app-screen-home .dessert-reading-room.is-settings-view .library-mobile-tabs {
+    display: none !important;
+  }
+}
+
+/* Final palette bindings and the fifth navigation destination. */
+.app-screen-home .dessert-reading-room .continue-card,
+.app-screen-home .records-hero,
+.app-screen-home .drawer-intro,
+.app-screen-cover .cover-progress,
+.app-screen-novel .co-read-opening,
+.app-screen-home .settings-intro-card {
+  background:
+    radial-gradient(circle at 90% 14%, rgba(255,255,255,.38), transparent 180px),
+    linear-gradient(140deg, var(--dessert-blue), var(--dessert-blue-light));
+}
+
+.app-screen-home .dessert-reading-room .library-rail {
+  border-color: color-mix(in srgb, var(--dessert-blue-dark) 55%, white);
+  background:
+    radial-gradient(circle at 12px 12px, rgba(255,255,255,.24) 0 2px, transparent 2.5px) 0 0 / 24px 24px,
+    var(--dessert-blue);
+}
+
+.app-screen-home .dessert-reading-room .bookshelf-filters button[aria-pressed="true"],
+.app-screen-home .record-tabs button[aria-pressed="true"],
+.app-screen-novel .co-read-modes button[aria-pressed="true"],
+.app-screen-novel .reader-actions {
+  background-color: var(--dessert-blue);
+}
+
+.excerpts-view {
+  display: grid;
+  gap: 20px;
+}
+
+.excerpts-intro {
+  position: relative;
+  display: flex;
+  min-height: 176px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 26px;
+  overflow: hidden;
+  padding: 30px 38px;
+  border: 1px solid color-mix(in srgb, var(--dessert-blue-dark) 44%, var(--dessert-line));
+  border-radius: 24px;
+  background:
+    url("../assets/dessert-room/botanical-corner.svg") right -38px bottom -76px / 225px 225px no-repeat,
+    linear-gradient(140deg, var(--dessert-blue), var(--dessert-blue-light));
+  box-shadow: 8px 9px 0 rgba(111, 89, 68, .09);
+}
+
+.excerpts-intro::after {
+  position: absolute;
+  inset: 10px;
+  border: 1px dashed rgba(255,253,245,.9);
+  border-radius: 17px;
+  content: "";
+  pointer-events: none;
+}
+
+.excerpts-intro > * { position: relative; z-index: 1; }
+.excerpts-intro > svg { width: 82px; height: 82px; flex: none; color: var(--dessert-brown); opacity: .78; }
+.excerpts-intro h2 { margin: 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: clamp(28px, 3.8vw, 46px); }
+.excerpts-intro p { margin: 9px 0 0; color: var(--dessert-muted); font-family: "Songti SC", serif; font-size: 15px; }
+.excerpts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+.excerpt-card {
+  position: relative;
+  display: grid;
+  min-height: 226px;
+  align-content: start;
+  gap: 14px;
+  padding: 27px 29px 23px;
+  overflow: hidden;
+  border: 1px solid var(--dessert-line);
+  border-radius: 21px;
+  background:
+    linear-gradient(90deg, transparent 0 31px, rgba(190,145,110,.14) 31px 32px, transparent 32px),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(190,145,110,.09) 31px 32px),
+    var(--dessert-paper);
+  box-shadow: 5px 6px 0 rgba(111, 89, 68, .08);
+}
+.excerpt-index { position: absolute; top: 15px; right: 19px; color: var(--dessert-brown-soft); font-family: Georgia, serif; font-size: 13px; letter-spacing: .12em; }
+.excerpt-card blockquote { margin: 0; padding: 10px 9px 0 18px; color: var(--dessert-ink); font-family: "Songti SC", serif; font-size: 19px; line-height: 1.75; }
+.excerpt-card blockquote::before { position: absolute; margin-left: -20px; color: var(--dessert-brown-soft); content: "“"; font-family: Georgia, serif; font-size: 32px; line-height: 1; }
+.excerpt-card > p { margin: 0; padding: 13px 16px; border-left: 3px solid var(--dessert-blue-dark); border-radius: 2px 13px 13px 2px; background: color-mix(in srgb, var(--dessert-blue-light) 66%, transparent); color: var(--dessert-muted); font-family: "STKaiti", "KaiTi", serif; font-size: 15px; line-height: 1.55; }
+.excerpt-card footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--dessert-line); color: var(--dessert-muted); font-size: 12px; }
+.excerpt-card footer strong { color: var(--dessert-brown); font-family: "Songti SC", serif; font-size: 14px; }
+.excerpt-card footer time { margin-left: auto; }
+.excerpts-empty {
+  display: grid;
+  min-height: 360px;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  padding: 40px;
+  border: 1px dashed var(--dessert-line);
+  border-radius: 24px;
+  background: var(--dessert-paper);
+  color: var(--dessert-muted);
+  text-align: center;
+}
+.excerpts-empty > svg { width: 58px; height: 58px; color: var(--dessert-brown-soft); }
+.excerpts-empty h2 { margin: 0; color: var(--dessert-ink); font-family: "STKaiti", "KaiTi", serif; font-size: 28px; }
+.excerpts-empty p { margin: 0; font-family: "Songti SC", serif; line-height: 1.7; }
+
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-excerpts-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-settings-view .library-mobile-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button,
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-excerpts-view .library-mobile-tabs button:last-child,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs button:last-child {
+    display: grid !important;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button { min-width: 0; font-size: clamp(10px, 2.05vw, 14px) !important; }
+  .app-screen-home .dessert-reading-room .library-mobile-tab-icon { width: 22px; height: 22px; }
+  .app-screen-home .excerpts-view { order: 3; }
+  .excerpts-intro { min-height: 210px; padding: 31px 28px; }
+  .excerpts-intro > svg { width: 62px; height: 62px; }
+  .excerpts-grid { grid-template-columns: 1fr; }
+  .excerpt-card { min-height: 190px; }
+}
+
+.app-screen-home .library-header-paw { display: none; }
+
+/* iPad and larger acceptance corrections. Keep these isolated from iPhone. */
+@media (min-width: 801px) {
+  /* The iPad canvas runs edge-to-edge behind the fixed lace. */
+  .app-screen-home .dessert-reading-room.library-app-shell {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .app-screen-home .dessert-reading-room .library-rail {
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .app-screen-home::before,
+  .app-screen-cover::before,
+  .app-screen-novel::before,
+  .app-screen-home::after,
+  .app-screen-cover::after,
+  .app-screen-novel::after {
+    position: fixed;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 36px;
+    background: url("../assets/dessert-room/lace-strip.svg") top left / 192px 36px repeat-x;
+    filter: drop-shadow(0 1px 0 rgba(87, 58, 36, .18));
+  }
+
+  .app-screen-home::before,
+  .app-screen-cover::before,
+  .app-screen-novel::before {
+    top: 0;
+    bottom: auto;
+    transform: none;
+  }
+
+  .app-screen-home::after,
+  .app-screen-cover::after,
+  .app-screen-novel::after {
+    top: auto;
+    bottom: 0;
+    transform: rotate(180deg);
+  }
+
+  .app-screen-home .library-header-illustration {
+    display: grid;
+    width: 280px;
+    max-width: 280px;
+    height: 150px;
+    overflow: hidden;
+    place-items: center;
+    contain: layout paint;
+  }
+
+  .app-screen-home .library-header-illustration img {
+    display: block;
+    width: 246px !important;
+    min-width: 0 !important;
+    max-width: 246px !important;
+    height: 142px !important;
+    max-height: 142px !important;
+    margin: 0 auto;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .app-screen-home .today-cookie-art {
+    right: 58px !important;
+    width: 82px !important;
+    height: 82px !important;
+  }
+
+  .app-screen-home .weekly-books-art {
+    right: 31px !important;
+    width: 136px !important;
+    height: 91px !important;
+    object-fit: contain;
+  }
+
+  /* The drawer art previously kept its 1536 x 1024 source dimensions on
+     iPad because its sizing rule existed only in the phone media query. */
+  .app-screen-home .drawer-intro {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .app-screen-home .drawer-intro > :not(.drawer-intro-art) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .app-screen-home .drawer-intro-art {
+    position: absolute !important;
+    right: 34px !important;
+    bottom: 22px !important;
+    z-index: 1 !important;
+    display: block;
+    width: 176px !important;
+    min-width: 0 !important;
+    max-width: 176px !important;
+    height: 118px !important;
+    max-height: 118px !important;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .app-screen-home .weekly-goal-days {
+    gap: 6px;
+  }
+
+  .app-screen-home .weekly-goal-days span {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Warm cocoa typography for every piece of UI. The imported novel body is
+     restored below so reading text keeps its dedicated book typeface. */
+  .app-screen-home,
+  .app-screen-cover,
+  .app-screen-novel {
+    --dessert-brown: #704a3d;
+    --dessert-brown-soft: #987064;
+    --dessert-ink: #5b3d34;
+    --dessert-muted: #87695d;
+    --room-cocoa: #69483b;
+    --room-ink: #5b3d34;
+    --room-muted: #87695d;
+    --ink: #5b3d34;
+    --muted: #87695d;
+    color: var(--dessert-ink);
+  }
+
+  .app-screen-home :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, time, label, button, input, textarea, select, blockquote),
+  .app-screen-cover :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, time, label, button, input, textarea, select, blockquote),
+  .app-screen-novel :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, time, label, button, input, textarea, select, blockquote) {
+    font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif !important;
+  }
+
+  .app-screen-novel .novel-paper,
+  .app-screen-novel .novel-paper :where(p, span, strong, em, blockquote) {
+    font-family: "Songti SC", "STSong", serif !important;
+  }
+
+  .app-screen-home .library-header-paw {
+    display: inline-block;
+    width: 31px;
+    height: 31px;
+    margin-left: 12px;
+    overflow: visible;
+    color: #0d0b0a;
+    fill: currentColor;
+    vertical-align: -.18em;
+    transform: rotate(-16deg);
+    transform-origin: 50% 58%;
+  }
+
+  .app-screen-home .library-header-paw-emoji { display: none; }
+}
+
+/* iPhone / iPad portrait corrections. These rules intentionally stay in the
+   compact breakpoint so the landscape iPad layout above remains independent. */
+@media (max-width: 800px) {
+  .app-screen-home::before,
+  .app-screen-home::after {
+    top: auto;
+    bottom: auto;
+    height: 36px;
+    background-size: 192px 36px;
+  }
+
+  /* Keep the lace attached to the viewport edges and use the same facing as
+     the iPad composition: the top strip is upright, the bottom strip is
+     mirrored vertically. */
+  .app-screen-home::before {
+    top: 0;
+    transform: none;
+  }
+
+  .app-screen-home::after {
+    bottom: 0;
+    transform: rotate(180deg);
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-header {
+    margin-top: 40px;
+  }
+
+  /* The skin stars belong in the open space below the welcome copy, never on
+     top of the heading. Stretching the copy column gives the auto margin a
+     stable bottom anchor on narrow screens. */
+  .app-screen-home .dessert-reading-room.is-library-view .library-header-copy {
+    display: flex;
+    min-height: 0;
+    align-self: stretch;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-skin-switch {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    align-self: flex-start;
+    justify-content: flex-start;
+    margin-top: auto !important;
+    padding-top: 16px;
+  }
+
+  /* Use the drawn black paw at every compact width, including iPhone. */
+  .app-screen-home .dessert-reading-room.is-library-view .library-header-paw-emoji {
+    display: none;
+  }
+
+  .app-screen-home .dessert-reading-room.is-library-view .library-header-paw {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    margin-left: 8px;
+    overflow: visible;
+    color: #0d0b0a;
+    fill: currentColor;
+    vertical-align: -.16em;
+    transform: rotate(-16deg);
+    transform-origin: 50% 58%;
+  }
+
+  /* Align the cookie's visual centre with the book-stack decoration below it.
+     Both values share the same right edge; the extra half-width is the
+     difference between the two transparent art boxes. */
+  .app-screen-home .today-cookie-art {
+    right: calc(clamp(22px, 5vw, 45px) + clamp(20px, 3vw, 28px));
+  }
+
+  .app-screen-home .weekly-books-art {
+    right: clamp(22px, 5vw, 45px);
+    width: clamp(114px, 18vw, 150px);
+  }
+}
+
+@media (max-width: 520px) {
+  .app-screen-home .today-cookie-art {
+    right: calc(22px + 20px);
+  }
+
+  .app-screen-home .weekly-books-art {
+    right: 13px;
+    width: 130px;
+  }
+
+  /* ChatGPT's iPhone preview adds its own close/share strip above the Site
+     and its own editor control below it.  The embedded canvas therefore has
+     different visible edges from an ordinary browser tab.  Reserve the lace
+     row inside that canvas so the mobile brand cannot slide behind it, and
+     avoid applying the host safe-bottom inset a second time inside our fixed
+     navigation.  Standalone Safari and the wider desktop preview keep their
+     existing safe-area behaviour. */
+  html[data-host-embedding="embedded"]
+    .app-screen-home
+    .dessert-reading-room.library-app-shell {
+    padding-top: 72px;
+  }
+
+  html[data-host-embedding="embedded"]
+    .app-screen-home
+    .dessert-reading-room.is-library-view
+    .library-header {
+    margin-top: 20px;
+  }
+
+  html[data-host-embedding="embedded"]
+    .app-screen-home
+    .dessert-reading-room.is-library-view
+    .library-mobile-tabs {
+    padding-bottom: 8px !important;
+  }
+}
+
+/* Keep the cocoa UI treatment consistent on the compact previews too. The
+   novel body is restored to its book typeface so imported reading text is not
+   changed by the surrounding room chrome. */
+.app-screen-home,
+.app-screen-cover,
+.app-screen-novel {
+  --dessert-brown: #704a3d;
+  --dessert-brown-soft: #987064;
+  --dessert-ink: #5b3d34;
+  --dessert-muted: #87695d;
+  --room-cocoa: #69483b;
+  --room-ink: #5b3d34;
+  --room-muted: #87695d;
+  --ink: #5b3d34;
+  --muted: #87695d;
+  color: var(--dessert-ink);
+}
+
+.app-screen-home :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, time, label, button, input, textarea, select, blockquote),
+.app-screen-cover :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, time, label, button, input, textarea, select, blockquote),
+.app-screen-novel :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, time, label, button, input, textarea, select, blockquote) {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif !important;
+}
+
+.app-screen-novel .novel-paper,
+.app-screen-novel .novel-paper :where(p, span, strong, em, blockquote) {
+  font-family: "Songti SC", "STSong", serif !important;
+}
+
+/* Interface typeface: use the user's requested Judou Hei when it is installed
+   on the device, with a dependable Chinese sans fallback. Keep the room
+   chrome light and readable rather than inheriting the old 650–800 weights. */
+.app-screen-home,
+.app-screen-cover,
+.app-screen-novel {
+  --room-ui-font: "句读黑体", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--room-ui-font);
+  font-synthesis: none;
+}
+
+.app-screen-home :where(*),
+.app-screen-cover :where(*),
+.app-screen-novel :where(*) {
+  font-family: var(--room-ui-font) !important;
+  font-weight: 400 !important;
+  font-synthesis: none;
+}
+
+.app-screen-home :where(h1, h2, h3, h4, h5, h6, strong, b, button, summary),
+.app-screen-cover :where(h1, h2, h3, h4, h5, h6, strong, b, button, summary),
+.app-screen-novel :where(h1, h2, h3, h4, h5, h6, strong, b, button, summary) {
+  font-weight: 500 !important;
+}
+
+/* Imported book正文 stays in its book typeface. The variable weight keeps
+   the reader's existing 正文加粗 toggle working. */
+.app-screen-novel .novel-paper,
+.app-screen-novel .novel-paper :where(*) {
+  font-family: "Songti SC", "STSong", serif !important;
+}
+
+.app-screen-novel .novel-paper {
+  font-weight: var(--reader-font-weight, 400) !important;
+}
+
+.app-screen-novel .novel-paper :where(p, span, em, blockquote) {
+  font-weight: inherit !important;
+}

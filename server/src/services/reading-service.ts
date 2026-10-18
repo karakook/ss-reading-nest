@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { DEFAULT_SESSION_PREFERENCES } from "@ss/shared";
 import type {
   Bookmark,
+  DrawerItem,
   Quote,
   Reaction,
   ReadingPosition,
@@ -91,6 +92,49 @@ export class ReadingService {
     return [...database.readingRecords]
       .sort((a, b) => b.endedAt.localeCompare(a.endedAt))
       .slice(0, Math.min(200, Math.max(1, limit)));
+  }
+
+  async listDrawerItems(limit = 100): Promise<DrawerItem[]> {
+    const database = await this.repository.read();
+    return sortDrawerItems(database.drawerItems ?? []).slice(0, Math.min(200, Math.max(1, limit)));
+  }
+
+  async putDrawerNote(input: {
+    content: string;
+    operationId?: string;
+  }): Promise<DrawerItem> {
+    const content = input.content.trim();
+    if (!content || content.length > 4_000) {
+      throw new AppError("INVALID_OPERATION", "抽屉便签不能为空或超过 4000 个字符。");
+    }
+    return this.repository.mutate((database) => {
+      const items = database.drawerItems ?? (database.drawerItems = []);
+      const existing = input.operationId
+        ? items.find((item) => item.operationId === input.operationId)
+        : undefined;
+      if (existing) return existing;
+      const item: DrawerItem = {
+        id: this.deps.id(),
+        content,
+        createdAt: this.deps.now().toISOString(),
+        seen: false,
+        ...(input.operationId ? { operationId: input.operationId } : {})
+      };
+      items.push(item);
+      return item;
+    });
+  }
+
+  async markDrawerSeen(ids: string[]): Promise<DrawerItem[]> {
+    const uniqueIds = [...new Set(ids)];
+    return this.repository.mutate((database) => {
+      const items = database.drawerItems ?? (database.drawerItems = []);
+      const idSet = new Set(uniqueIds);
+      for (const item of items) {
+        if (idSet.has(item.id)) item.seen = true;
+      }
+      return sortDrawerItems(items);
+    });
   }
 
   async getBookshelfSnapshot(includeReadingRecords = true): Promise<{
@@ -566,6 +610,13 @@ export class ReadingService {
       createdAt: this.deps.now().toISOString()
     };
   }
+}
+
+function sortDrawerItems(items: DrawerItem[]): DrawerItem[] {
+  return [...items].sort((left, right) => {
+    const created = right.createdAt.localeCompare(left.createdAt);
+    return created || right.id.localeCompare(left.id);
+  });
 }
 
 function durationSecondsBetween(startedAt: string, endedAt: string): number {

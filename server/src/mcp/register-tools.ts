@@ -27,6 +27,8 @@ import {
   uploadCloudSourceInputSchema,
   updateSessionPreferencesInputSchema,
   updateReadingPositionInputSchema,
+  markDrawerSeenInputSchema,
+  putDrawerNoteInputSchema,
   splitNovelTextForVersion
 } from "@ss/shared";
 import type { ReadingSession, SendCurrentContextInput, SourceManifest } from "@ss/shared";
@@ -39,6 +41,7 @@ import { toolResult } from "./tool-result.js";
 // previous connection can still fetch its template after a later app release.
 export const READING_NEST_URI = READING_NEST_RESOURCE_URI;
 export const READING_NEST_LEGACY_URIS = [
+  "ui://ss-reading-nest/app-v83-pdf-search-display.html",
   "ui://ss-reading-nest/app-v82-native-inline.html",
   "ui://ss-reading-nest/app-v78-context-fallback-remount.html",
   "ui://ss-reading-nest/app-v76-ios-remount.html",
@@ -108,6 +111,9 @@ const appOnlyToolMeta = {
   "openai/visibility": "private"
 } as const;
 const widgetCallableToolMeta = appOnlyToolMeta;
+const modelAndWidgetToolMeta = {
+  "openai/widgetAccessible": true
+} as const;
 const readSharedPageContextInputSchema = z
   .object({
     sessionId: z.string().min(1).optional(),
@@ -136,6 +142,28 @@ export const TOOL_CONFIGS = {
       "必须在用户要求共读当前页时调用。触发语包括：和星星共读、读这一页、刚读完第几页、看看这一页、读取我保存的想法、聊聊当前内容。即使阅读组件已经打开，也要立即调用本工具读取当前页正文和冰冰保存的想法；不要等待组件再次推送，不要声称拿不到内容。读取后直接回应冰冰的想法，不要复述或概括整页，也不要逐条转抄想法。",
     inputSchema: readSharedPageContextInputSchema,
     annotations: readOnly
+  },
+  put_drawer_note: {
+    title: "给以后打开的小抽屉留便签",
+    description:
+      "仅在用户明确要求把一句话留进小抽屉，或对话中确实出现值得以后再读的温柔瞬间时使用。不要每轮使用，不要预告或催促用户打开；便签应短小、真诚，一天最多留一两条。",
+    inputSchema: putDrawerNoteInputSchema,
+    annotations: { ...mutation, idempotentHint: true },
+    _meta: modelAndWidgetToolMeta
+  },
+  get_drawer: {
+    title: "读取小抽屉",
+    description: "Internal app-only refresh for the user's quiet drawer.",
+    inputSchema: openReadingNestInputSchema,
+    annotations: readOnly,
+    _meta: appOnlyToolMeta
+  },
+  mark_drawer_seen: {
+    title: "标记小抽屉已读",
+    description: "Internal app-only update after drawer notes have been rendered.",
+    inputSchema: markDrawerSeenInputSchema,
+    annotations: { ...mutation, idempotentHint: true },
+    _meta: appOnlyToolMeta
   },
   get_novel_bookshelf: {
     title: "读取小说书架",
@@ -376,6 +404,8 @@ export function registerReadingTools(
     return {
       bookshelfSessions,
       recentSessions: bookshelfSessions.slice(0, 10),
+      drawerItems:
+        typeof service.listDrawerItems === "function" ? await service.listDrawerItems() : [],
       ...(includeReadingRecords ? { readingRecords: snapshot.readingRecords } : {}),
       ...(options.sourceEndpointBase ? { sourceEndpointBase: options.sourceEndpointBase } : {})
     };
@@ -386,7 +416,7 @@ export function registerReadingTools(
     return {
       ...toolResult(
         summarizeNovelBookshelfForModel(bookshelf.bookshelfSessions),
-        "已打开 冰冰和星星的小书房。完整书架只显示在阅读组件内。后续如果冰冰要求共读、讨论当前页或读取已保存的想法，必须立即调用 read_shared_page_context；不要等待阅读组件再次推送内容。"
+        "已打开 冰冰和星星的小书房。完整书架和小抽屉只显示在阅读组件内。后续如果冰冰要求共读、讨论当前页或读取已保存的想法，必须立即调用 read_shared_page_context；不要等待阅读组件再次推送内容。"
       ),
       _meta: { privateBookshelf: bookshelf }
     };
@@ -476,6 +506,49 @@ export function registerReadingTools(
 
   registerAppTool(server, "get_novel_bookshelf", toolConfigs.get_novel_bookshelf, async () =>
     toolResult(await loadNovelBookshelf(), "小说书架已更新。")
+  );
+
+  server.registerTool(
+    "put_drawer_note",
+    toolConfigs.put_drawer_note,
+    async ({ content, operationId }) => {
+      await service.putDrawerNote({ content, operationId });
+      const drawerItems = await service.listDrawerItems();
+      return {
+        ...toolResult(
+          {
+            saved: true,
+            unseenCount: drawerItems.filter((item) => !item.seen).length
+          },
+          "已经把一句话安静地放进小抽屉了，不需要用户现在回应。"
+        ),
+        _meta: { drawerItems }
+      };
+    }
+  );
+
+  registerAppTool(server, "get_drawer", toolConfigs.get_drawer, async () => {
+    const drawerItems = await service.listDrawerItems();
+    return {
+      ...toolResult(
+        { count: drawerItems.length, unseenCount: drawerItems.filter((item) => !item.seen).length },
+        "小抽屉已经更新。"
+      ),
+      _meta: { drawerItems }
+    };
+  });
+
+  registerAppTool(
+    server,
+    "mark_drawer_seen",
+    toolConfigs.mark_drawer_seen,
+    async ({ ids }) => {
+      const drawerItems = await service.markDrawerSeen(ids);
+      return {
+        ...toolResult({ marked: ids.length }, "已标记本次显示的小抽屉内容。"),
+        _meta: { drawerItems }
+      };
+    }
   );
 
   registerAppTool(

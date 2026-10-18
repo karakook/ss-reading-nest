@@ -4,16 +4,28 @@ import {
   BookOpen,
   Eye,
   Ellipsis,
+  House,
   History,
+  NotebookPen,
   LoaderCircle,
   Maximize2,
+  MessageSquareText,
+  Palette,
   Plus,
   RefreshCw,
+  Settings,
   Settings2,
   Sparkles,
+  Star,
   type LucideIcon
 } from "lucide-react";
+import teaBooksArt from "../assets/dessert-room/tea-books.webp";
+import catBooksArt from "../assets/dessert-room/cat-books.webp";
+import cookieRowArt from "../assets/dessert-room/cookie-row.webp";
+import weeklyBooksArt from "../assets/dessert-room/weekly-books.webp";
 import type {
+  DrawerItem,
+  Quote as StoredQuote,
   ReadingRecord as StoredReadingRecord,
   SessionBundle,
   SourceAvailability
@@ -28,7 +40,7 @@ export type BookshelfItem = SessionBundle & {
 };
 
 type Filter = "all" | "active" | "completed" | "missing";
-type LibraryView = "library" | "records";
+export type LibraryView = "library" | "records" | "excerpts" | "drawer" | "settings";
 export type LibrarySkin = "blue" | "pink" | "beige" | "green";
 
 type ReadingRecordView = {
@@ -74,11 +86,15 @@ const FILTERS: Array<{ value: Filter; label: string }> = [
 
 const LIBRARY_NAV: Array<{
   label: string;
+  accessibleLabel: string;
   icon: LucideIcon;
   view: LibraryView;
 }> = [
-  { label: "我的书房", icon: BookOpen, view: "library" },
-  { label: "阅读记录", icon: History, view: "records" }
+  { label: "我的书房", accessibleLabel: "我的书房", icon: House, view: "library" },
+  { label: "阅读记录", accessibleLabel: "阅读记录", icon: History, view: "records" },
+  { label: "我的摘录", accessibleLabel: "我的摘录", icon: NotebookPen, view: "excerpts" },
+  { label: "小抽屉", accessibleLabel: "小抽屉", icon: MessageSquareText, view: "drawer" },
+  { label: "设置", accessibleLabel: "设置", icon: Settings, view: "settings" }
 ];
 
 export function Home(props: {
@@ -93,13 +109,16 @@ export function Home(props: {
   onReimport: (item: BookshelfItem) => void;
   onManage: (item: BookshelfItem) => void;
   onExpand?: () => void;
+  drawerItems?: DrawerItem[];
+  onDrawerOpen?: () => void;
   skin: LibrarySkin;
   onSkinChange: (skin: LibrarySkin) => void;
   partner?: ReadingPartnerCopy;
+  initialView?: LibraryView;
 }) {
   const partner = props.partner ?? DEFAULT_READING_PARTNER_COPY;
   const [filter, setFilter] = useState<Filter>("all");
-  const [view, setView] = useState<LibraryView>("library");
+  const [view, setView] = useState<LibraryView>(props.initialView ?? "library");
   const novels = useMemo(
     () => props.bookshelf.filter((item) => item.session.type === "novel"),
     [props.bookshelf]
@@ -136,23 +155,51 @@ export function Home(props: {
     () => buildReadingReward(props.readingRecords ?? []),
     [props.readingRecords]
   );
+  const weeklyDays = useMemo(
+    () => buildWeeklyReadingDays(props.readingRecords ?? []),
+    [props.readingRecords]
+  );
+  const excerpts = useMemo(
+    () => buildExcerptViews(novels),
+    [novels]
+  );
+  const hasUnseenDrawer = props.drawerItems?.some((item) => !item.seen) ?? false;
   const headerCopy =
-    view === "records"
+    view === "drawer"
+      ? {
+          title: "小抽屉",
+          subtitle: "有些话不急着当下说，想起来的时候再来看看。"
+        }
+      : view === "records"
       ? {
           title: "阅读记录",
           subtitle: "看见每一次停在书页里的时间。"
+        }
+      : view === "excerpts"
+      ? {
+          title: "我的摘录",
+          subtitle: "把舍不得忘记的句子，留在这里慢慢重读。"
+        }
+      : view === "settings"
+      ? {
+          title: "书房设置",
+          subtitle: "把这间小书房调成最舒服的样子。"
         }
       : {
           title: continueItem
             ? continueReadingHeading(continueItem, partner)
             : `${partner.viewerName}的私人书房`,
-          subtitle: "继续翻开上次停下的地方，书页和想法都还在。"
+          subtitle: "今天也在书页里，慢慢走一会儿吧。"
         };
 
   return (
-    <main className="library-app-shell">
+    <main className={`library-app-shell dessert-reading-room is-${view}-view`}>
       <aside className="library-rail" aria-label="小书房导航">
-        <strong>{partner.roomName}</strong>
+        <div className="library-rail-brand">
+          <Sparkles aria-hidden="true" />
+          <strong>{partner.roomName}</strong>
+          <span aria-hidden="true">✦ · ✧ · ✦</span>
+        </div>
         <nav>
           {LIBRARY_NAV.map((item) => {
             const Icon = item.icon;
@@ -161,137 +208,127 @@ export function Home(props: {
                 key={item.label}
                 type="button"
                 className="library-rail-item"
+                aria-label={item.accessibleLabel}
                 aria-current={item.view === view ? "page" : undefined}
-                onClick={() => setView(item.view)}
+                onClick={() => {
+                  setView(item.view);
+                  if (item.view === "drawer") props.onDrawerOpen?.();
+                }}
               >
-                <Icon className="library-rail-icon" aria-hidden="true" strokeWidth={1.75} />
+                <Icon
+                  className={`library-rail-icon${item.view === "drawer" && hasUnseenDrawer ? " drawer-icon-has-unseen" : ""}`}
+                  aria-hidden="true"
+                  strokeWidth={1.75}
+                />
                 <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
+        <div className="library-rail-mascot" aria-hidden="true">
+          <span className="rail-star rail-star-one">✦</span>
+          <span className="rail-star rail-star-two">✧</span>
+          <img src={catBooksArt} alt="" />
+        </div>
       </aside>
 
       <section className="home-shell">
+        <div className="library-mobile-brand">
+          <span aria-hidden="true">✦</span>
+          <strong>{partner.roomName}</strong>
+          <button type="button" aria-label="打开设置" onClick={() => setView("settings")}>
+            <Settings aria-hidden="true" />
+          </button>
+        </div>
+
         <header className="library-header">
-          <div>
+          <div className="library-header-copy">
             <span className="visually-hidden">{partner.roomName}</span>
-            <span className="library-kicker">{partner.roomName}</span>
-            <h1>{headerCopy.title}</h1>
-            <p>{headerCopy.subtitle}</p>
-          </div>
-          {view === "library" ? (
-            <div className="library-header-actions">
-              {props.onExpand ? (
-                <button type="button" className="library-quiet-action" onClick={props.onExpand}>
-                  <Maximize2 className="library-action-icon" aria-hidden="true" strokeWidth={1.8} />
-                  <span>展开书房</span>
-                </button>
+            <span className="library-kicker">
+              {view === "library" ? "✦ MY READING NOOK ✦" : partner.roomName}
+            </span>
+            <h1 aria-label={headerCopy.title}>
+              {view === "library" ? `欢迎回来，${partner.viewerName}` : headerCopy.title}
+              {view === "library" ? (
+                <>
+                  <span className="library-header-paw-emoji" aria-hidden="true">🐾</span>
+                  <HeaderPaw />
+                </>
               ) : null}
-              <button
-                type="button"
-                className="library-add"
-                aria-label="小说共读：导入小说"
-                onClick={props.onNew}
-              >
-                <Plus className="library-action-icon" aria-hidden="true" strokeWidth={1.9} />
-                <span>导入小说</span>
-              </button>
+            </h1>
+            <p>{headerCopy.subtitle}</p>
+            <div className="library-skin-switch" aria-label="界面皮肤">
+              <button type="button" className="skin-star skin-star-blue" aria-label="水蓝" aria-pressed={props.skin === "blue"} onClick={() => props.onSkinChange("blue")}><Star aria-hidden="true" /></button>
+              <button type="button" className="skin-star skin-star-pink" aria-label="粉桃" aria-pressed={props.skin === "pink"} onClick={() => props.onSkinChange("pink")}><Star aria-hidden="true" /></button>
+              <button type="button" className="skin-star skin-star-beige" aria-label="米白" aria-pressed={props.skin === "beige"} onClick={() => props.onSkinChange("beige")}><Star aria-hidden="true" /></button>
+              <button type="button" className="skin-star skin-star-green" aria-label="墨绿" aria-pressed={props.skin === "green"} onClick={() => props.onSkinChange("green")}><Star aria-hidden="true" /></button>
+            </div>
+          </div>
+          {view !== "settings" ? (
+            <div className="library-header-illustration" aria-hidden="true">
+              <span className="header-sparkle sparkle-one">✦</span>
+              <span className="header-sparkle sparkle-two">✧</span>
+              <img src={teaBooksArt} alt="" />
             </div>
           ) : null}
         </header>
 
-        <div className="library-skin-switch" aria-label="界面皮肤">
-          <span>换肤</span>
-          <button
-            type="button"
-            aria-pressed={props.skin === "blue"}
-            onClick={() => props.onSkinChange("blue")}
-          >
-            水蓝
-          </button>
-          <button
-            type="button"
-            aria-pressed={props.skin === "pink"}
-            onClick={() => props.onSkinChange("pink")}
-          >
-            粉桃
-          </button>
-          <button
-            type="button"
-            aria-pressed={props.skin === "beige"}
-            onClick={() => props.onSkinChange("beige")}
-          >
-            米白
-          </button>
-          <button
-            type="button"
-            aria-pressed={props.skin === "green"}
-            onClick={() => props.onSkinChange("green")}
-          >
-            墨绿
-          </button>
-        </div>
-
         <div className="library-mobile-tabs" aria-label="小书房视图">
-          <button
-            type="button"
-            aria-pressed={view === "library"}
-            onClick={() => setView("library")}
-          >
-            我的书房
-          </button>
-          <button
-            type="button"
-            aria-pressed={view === "records"}
-            onClick={() => setView("records")}
-          >
-            阅读记录
-          </button>
+          {LIBRARY_NAV.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.label}
+                type="button"
+                aria-label={item.accessibleLabel}
+                aria-pressed={view === item.view}
+                onClick={() => {
+                  setView(item.view);
+                  if (item.view === "drawer") props.onDrawerOpen?.();
+                }}
+              >
+                <Icon className="library-mobile-tab-icon" aria-hidden="true" strokeWidth={1.8} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {view === "library" ? (
-          <>
-            {filter === "all" && continueItem ? (
-              <ContinueReadingCard
-                item={continueItem}
-                onOpen={props.onOpen}
-                onContinue={props.onContinue}
-                onManage={props.onManage}
-                partner={partner}
-              />
-            ) : null}
+          <div className="reading-dashboard">
+            {filter === "all" ? <div className="dashboard-main-grid">
+              {continueItem ? (
+                <ContinueReadingCard
+                  item={continueItem}
+                  onOpen={props.onOpen}
+                  onContinue={props.onContinue}
+                  onManage={props.onManage}
+                  partner={partner}
+                />
+              ) : (
+                <section className="continue-card continue-card-empty" aria-label="继续阅读">
+                  <BookOpen aria-hidden="true" />
+                  <h2>从一本新书开始</h2>
+                  <p>导入一本小说，我们就从第一页慢慢读起。</p>
+                  <button type="button" className="action-primary" onClick={props.onNew}><Plus aria-hidden="true" />导入小说</button>
+                </section>
+              )}
+              <div className="dashboard-side-stack">
+                <TodayReadingCard reward={reward} />
+                <WeeklyGoalCard days={weeklyDays} />
+              </div>
+            </div> : null}
 
-            {filter === "all" ? (
-              <ReadingRewardCard reward={reward} partner={partner} />
-            ) : null}
-
-            {filter === "all" && continueItem && hasSharedMemory(continueItem) ? (
-              <section className="shared-memory-note" aria-label="我们上次聊到这里">
-                <span className="shared-memory-kicker">我们上次聊到这里</span>
-                <p>{latestSharedMemory(continueItem, partner)}</p>
-                <small>{partner.companionName}会记得这句，等你下次翻到这里。</small>
-              </section>
-            ) : null}
-
-            <section className="bookshelf-section" aria-label="小说书架">
+            <div className="dashboard-bottom-grid">
+              <section className="bookshelf-section" aria-label="小说书架">
+              <h2 className="visually-hidden">书架</h2>
               <div className="section-heading">
-                <h2>书架</h2>
+                <div>
+                  <span className="dessert-card-kicker">RECENT READS</span>
+                  <h2>最近读过</h2>
+                </div>
                 <span>{novels.length} 本小说</span>
               </div>
-              <div className="bookshelf-filters" aria-label="书架筛选">
-                {FILTERS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    aria-pressed={filter === option.value}
-                    onClick={() => setFilter(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
               {props.loading && novels.length === 0 ? (
                 <div className="empty-nest empty-nest-status" role="status">
                   <LoaderCircle className="empty-nest-icon is-spinning" aria-hidden="true" strokeWidth={1.8} />
@@ -324,13 +361,267 @@ export function Home(props: {
                   ))}
                 </div>
               )}
-            </section>
-          </>
+              </section>
+              {filter === "all" ? <ReadingRewardCard reward={reward} partner={partner} /> : null}
+            </div>
+
+            <div className="dashboard-utilities">
+              {filter === "all" && continueItem && hasSharedMemory(continueItem) ? (
+                <section className="shared-memory-note" aria-label="我们上次聊到这里">
+                  <span className="shared-memory-kicker">我们上次聊到这里</span>
+                  <p>{latestSharedMemory(continueItem, partner)}</p>
+                  <small>{partner.companionName}会记得这句，等你下次翻到这里。</small>
+                </section>
+              ) : null}
+              <div className="library-header-actions">
+                {props.onExpand ? (
+                  <button type="button" className="library-quiet-action" onClick={props.onExpand}>
+                    <Maximize2 className="library-action-icon" aria-hidden="true" strokeWidth={1.8} />
+                    <span>展开书房</span>
+                  </button>
+                ) : null}
+                <button type="button" className="library-add" aria-label="小说共读：导入小说" onClick={props.onNew}>
+                  <Plus className="library-action-icon" aria-hidden="true" strokeWidth={1.9} />
+                  <span>导入小说</span>
+                </button>
+              </div>
+            </div>
+            <div className="bookshelf-filters reference-bookshelf-filters" aria-label="书架筛选">
+              {FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={filter === option.value}
+                  onClick={() => setFilter(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : view === "excerpts" ? (
+          <ExcerptsView excerpts={excerpts} />
+        ) : view === "drawer" ? (
+          <DrawerView items={props.drawerItems ?? []} />
+        ) : view === "settings" ? (
+          <SettingsView skin={props.skin} onSkinChange={props.onSkinChange} />
         ) : (
           <ReadingRecordsView records={records} />
         )}
       </section>
     </main>
+  );
+}
+
+type ExcerptView = StoredQuote & {
+  bookTitle: string;
+};
+
+function buildExcerptViews(items: BookshelfItem[]): ExcerptView[] {
+  return items
+    .flatMap((item) => item.quotes.map((quote) => ({
+      ...quote,
+      bookTitle: item.session.title
+    })))
+    .sort((left, right) => {
+      const created = right.createdAt.localeCompare(left.createdAt);
+      return created || right.id.localeCompare(left.id);
+    });
+}
+
+function ExcerptsView(props: { excerpts: ExcerptView[] }) {
+  if (props.excerpts.length === 0) {
+    return (
+      <section className="excerpts-empty" aria-label="我的摘录">
+        <NotebookPen aria-hidden="true" strokeWidth={1.6} />
+        <h2>还没有摘录</h2>
+        <p>在阅读页划线、写下清思后，喜欢的句子会安静收在这里。</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="excerpts-view" aria-label="我的摘录">
+      <div className="excerpts-intro">
+        <div>
+          <span className="dessert-card-kicker">SAVED LINES</span>
+          <h2>书页里留下的光</h2>
+          <p>共 {props.excerpts.length} 条摘录，每一条都可以慢慢重读。</p>
+        </div>
+        <NotebookPen aria-hidden="true" strokeWidth={1.45} />
+      </div>
+      <div className="excerpts-grid">
+        {props.excerpts.map((excerpt, index) => (
+          <article className="excerpt-card" key={excerpt.id}>
+            <span className="excerpt-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+            <blockquote>{excerpt.content}</blockquote>
+            {excerpt.note || excerpt.clearThought ? (
+              <p>{excerpt.clearThought ?? excerpt.note}</p>
+            ) : null}
+            <footer>
+              <strong>《{excerpt.bookTitle}》</strong>
+              <span>{excerpt.position.label}</span>
+              <time dateTime={excerpt.createdAt}>{formatExcerptDate(excerpt.createdAt)}</time>
+            </footer>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function formatExcerptDate(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(date);
+}
+
+function DrawerView(props: { items: DrawerItem[] }) {
+  const items = [...props.items].sort((left, right) => {
+    const created = right.createdAt.localeCompare(left.createdAt);
+    return created || right.id.localeCompare(left.id);
+  });
+
+  return (
+    <section className="drawer-view" aria-label="小抽屉">
+      <div className="drawer-intro">
+        <span className="drawer-kicker">留给以后打开</span>
+        <p>有些话不急着在当下说，想起来的时候再来看看。</p>
+        <small>这里不会弹通知，也不会催你。</small>
+        <img className="drawer-intro-art" src={weeklyBooksArt} alt="" aria-hidden="true" />
+      </div>
+
+      {items.length === 0 ? (
+        <div className="empty-nest drawer-empty">
+          抽屉还是空的。巴巴有想留的话，会安静放在这里。
+        </div>
+      ) : (
+        <div className="drawer-list">
+          {items.map((item) => (
+            <article
+              key={item.id}
+              className={`drawer-note${item.seen ? "" : " drawer-note-new"}`}
+            >
+              <div className="drawer-note-top">
+                <span className="drawer-note-mark" aria-hidden="true">♡</span>
+                <time dateTime={item.createdAt}>{formatDrawerTime(item.createdAt)}</time>
+              </div>
+              <p>{item.content}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HeaderPaw() {
+  return (
+    <svg
+      className="library-header-paw"
+      viewBox="0 0 40 40"
+      aria-hidden="true"
+    >
+      <ellipse cx="20" cy="26" rx="10" ry="8.5" />
+      <ellipse cx="8.5" cy="18" rx="4.2" ry="5.1" transform="rotate(-25 8.5 18)" />
+      <ellipse cx="15.5" cy="10" rx="4.2" ry="5.3" transform="rotate(-9 15.5 10)" />
+      <ellipse cx="25.2" cy="9.5" rx="4.2" ry="5.3" transform="rotate(9 25.2 9.5)" />
+      <ellipse cx="32.2" cy="17.5" rx="4.2" ry="5.1" transform="rotate(25 32.2 17.5)" />
+    </svg>
+  );
+}
+
+function formatDrawerTime(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function TodayReadingCard(props: { reward: ReadingReward }) {
+  const minutes = Math.max(0, Math.round(props.reward.todaySeconds / 60));
+  const filledStars = Math.min(5, Math.max(0, Math.ceil(minutes / 5)));
+
+  return (
+    <section className="dessert-stat-card today-reading-card" aria-label="今日阅读">
+      <div className="dessert-stat-heading">
+        <span className="dessert-card-kicker">TODAY'S READING</span>
+        <h2>今日阅读</h2>
+      </div>
+      <div className="today-reading-value">
+        <strong>{minutes}</strong>
+        <span>分钟</span>
+      </div>
+      <div className="today-reading-stars" aria-label={`今日阅读星星 ${Math.min(4, filledStars)} / 4`}>
+        {Array.from({ length: 4 }, (_, index) => (
+          <Star key={index} aria-hidden="true" className={index < filledStars ? "is-filled" : undefined} />
+        ))}
+      </div>
+      <p>{props.reward.todayQualified ? "今天的阅读目标完成啦" : "再读一会儿，就能点亮小星星"}</p>
+      <span className="today-cookie-art" style={{ backgroundImage: `url(${cookieRowArt})` }} aria-hidden="true" />
+    </section>
+  );
+}
+
+function WeeklyGoalCard(props: { days: boolean[] }) {
+  const completed = props.days.filter(Boolean).length;
+  const target = 5;
+
+  return (
+    <section className="dessert-stat-card weekly-goal-card" aria-label="本周目标">
+      <div className="dessert-stat-heading">
+        <span className="dessert-card-kicker">WEEKLY GOAL</span>
+        <h2>本周目标</h2>
+      </div>
+      <div className="weekly-goal-copy"><strong>{completed}</strong><span> / {target} 天</span></div>
+      <div className="weekly-goal-days" aria-label={`本周已阅读 ${completed} 天`}>
+        {props.days.slice(0, 5).map((done, index) => (
+          <span key={index} className={done ? "is-done" : undefined} aria-hidden="true">
+            {done ? "✦" : index + 1}
+          </span>
+        ))}
+      </div>
+      <p>{completed >= target ? "本周的小目标已经完成" : "每一次翻页，都算数"}</p>
+      <img className="weekly-books-art" src={weeklyBooksArt} alt="" aria-hidden="true" />
+    </section>
+  );
+}
+
+function SettingsView(props: {
+  skin: LibrarySkin;
+  onSkinChange: (skin: LibrarySkin) => void;
+}) {
+  const skins: Array<{ value: LibrarySkin; label: string; note: string }> = [
+    { value: "blue", label: "奶油水蓝", note: "参考稿的默认甜点书房" },
+    { value: "pink", label: "草莓粉桃", note: "更软、更甜一点" },
+    { value: "beige", label: "饼干米白", note: "温暖安静的纸张感" },
+    { value: "green", label: "抹茶墨绿", note: "更深、更沉静的阅读色" }
+  ];
+
+  return (
+    <section className="dessert-settings" aria-label="书房设置">
+      <div className="settings-intro-card">
+        <Palette aria-hidden="true" />
+        <div><span className="dessert-card-kicker">ROOM COLORS</span><h2>选择书房配色</h2><p>首页上方的小星星也可以随时切换。</p></div>
+      </div>
+      <div className="settings-skin-grid">
+        {skins.map((skin) => (
+          <button key={skin.value} type="button" className={`settings-skin-card skin-${skin.value}`} aria-pressed={props.skin === skin.value} onClick={() => props.onSkinChange(skin.value)}>
+            <span className="settings-skin-swatch"><i /><i /><i /></span>
+            <strong>{skin.label}</strong>
+            <small>{skin.note}</small>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -348,55 +639,24 @@ function ReadingRewardCard(props: {
 
   return (
     <section className="reading-reward-card" aria-label={`${partner.viewerName}的阅读奖励`}>
-      <div className="reading-reward-summary">
-        <span className="reading-reward-kicker">轻轻读，也会被记住</span>
-        <div className="reading-reward-total">
-          <span className="reading-reward-paw" aria-hidden="true">🐾</span>
-          <strong>{reward.pawCount} 枚猫爪</strong>
+      <div className="dessert-reward-heading">
+        <div>
+          <span className="dessert-card-kicker">READING TREAT</span>
+          <h2>阅读小奖励 <span aria-hidden="true">✿</span></h2>
         </div>
-        <p>
-          {reward.todayQualified
-            ? "今天的猫爪已经盖好啦。"
-            : `再读 ${remainingMinutes} 分钟，或者再翻 ${remainingPages} 页，就能盖下今天的猫爪。`}
-        </p>
-        <small>
-          今天已读 {formatRewardMinutes(reward.todaySeconds)} · {reward.todayPages} 页
-        </small>
+        <span className="reward-bow" aria-hidden="true">⌁</span>
       </div>
-
-      <div className="reading-reward-progress">
-        <div className="reading-reward-progress-heading">
-          <span>
-            {reward.unlockedLetters > 0 && reward.cycleProgress < 7
-              ? "下一张小纸条"
-              : `${partner.companionName}的小纸条`}
-          </span>
-          <strong>{reward.cycleProgress} / 7</strong>
-        </div>
-        <div
-          className="reading-reward-paw-row"
-          aria-label={`本轮已经收集 ${reward.cycleProgress} 枚猫爪，共需 7 枚`}
-        >
-          {Array.from({ length: 7 }, (_, index) => (
-            <span
-              key={index}
-              className={index < reward.cycleProgress ? "is-collected" : undefined}
-              aria-hidden="true"
-            >
-              🐾
-            </span>
-          ))}
-        </div>
-        {latestLetter ? (
-          <blockquote className="reading-reward-letter">
-            <span>{partner.companionName}的小纸条 · 第 {reward.unlockedLetters} 封</span>
-            <p>{latestLetter}</p>
-          </blockquote>
-        ) : (
-          <p className="reading-reward-hint">
-            再收集 {remainingPaws} 枚，{partner.companionName}就留一张小纸条。
-          </p>
-        )}
+      <img className="reward-cookie-row" src={cookieRowArt} alt="四块不同形状的小饼干" />
+      <div className="dessert-reward-message">
+        <p>{reward.todayQualified ? "今天的小饼干已经烤好啦！" : `再读 ${Math.max(1, remainingMinutes)} 分钟`}</p>
+        <span>{reward.todayQualified ? "明天再来收下一块" : "可以获得一块小饼干！"}</span>
+      </div>
+      <div className="visually-hidden">
+        <span>{reward.pawCount} 枚猫爪</span>
+        <span>{reward.cycleProgress} / 7</span>
+        <p>{reward.todayQualified ? "今天的猫爪已经盖好啦。" : `再读 ${remainingMinutes} 分钟，或者再翻 ${remainingPages} 页，就能盖下今天的猫爪。`}</p>
+        <small>今天已读 {formatRewardMinutes(reward.todaySeconds)} · {reward.todayPages} 页</small>
+        {latestLetter ? <><span>{partner.companionName}的小纸条 · 第 {reward.unlockedLetters} 封</span><p>{latestLetter}</p></> : <p>再收集 {remainingPaws} 枚，{partner.companionName}就留一张小纸条。</p>}
       </div>
     </section>
   );
@@ -427,6 +687,7 @@ function ReadingRecordsView(props: { records: ReadingRecordView[] }) {
   return (
     <section className="reading-records-view" aria-label="阅读记录">
       <div className="records-hero">
+        <img className="records-hero-art" src={teaBooksArt} alt="" aria-hidden="true" />
         <div className="records-hero-copy">
           <span>14 天累计 · 真实数据</span>
           <h2>{formatDuration(totalSeconds)}</h2>
@@ -799,6 +1060,20 @@ function buildReadingReward(records: StoredReadingRecord[], now = new Date()): R
     todayPages: today.pages,
     todayQualified: today.seconds >= 5 * 60 || today.pages >= 3
   };
+}
+
+function buildWeeklyReadingDays(records: StoredReadingRecord[], now = new Date()): boolean[] {
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekday = start.getDay() || 7;
+  start.setDate(start.getDate() - weekday + 1);
+  const readDates = new Set(
+    records
+      .filter((record) => record.durationSeconds > 0 || record.pagesRead > 0)
+      .map((record) => new Date(record.endedAt))
+      .filter(isValidDate)
+      .map(dateKey)
+  );
+  return Array.from({ length: 7 }, (_, index) => readDates.has(dateKey(offsetDate(start, index))));
 }
 
 function formatRewardMinutes(seconds: number): string {

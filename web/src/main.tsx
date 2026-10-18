@@ -5,11 +5,23 @@ import { Boot } from "./Boot.js";
 import { initializeReadingHostBridge } from "./bridge/host.js";
 import "./styles/tokens.css";
 import "./styles/app.css";
+import "./styles/dessert-room-v2.css";
+import "./styles/dessert-room-reference.css";
 
 const rootElement = document.getElementById("root");
 
-document.documentElement.dataset.hostEmbedding =
-  window.parent === window ? "standalone" : "embedded";
+const syncHostEmbedding = () => {
+  // ChatGPT's mobile Site viewer can host us as a top-level WebView rather
+  // than an iframe.  `window.parent === window` therefore does not mean the
+  // page is standalone on iPhone; the injected `window.openai` object is the
+  // reliable second signal.  Re-run this when the host globals arrive because
+  // some WebViews install them after the document module has started.
+  document.documentElement.dataset.hostEmbedding =
+    window.parent !== window || Boolean(window.openai) ? "embedded" : "standalone";
+};
+
+syncHostEmbedding();
+window.addEventListener("openai:set_globals", syncHostEmbedding);
 
 if (rootElement) {
   createRoot(rootElement).render(

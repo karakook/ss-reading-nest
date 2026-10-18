@@ -8,6 +8,7 @@ import {
 } from "react";
 import { ArrowLeft, BookOpen, LoaderCircle } from "lucide-react";
 import type {
+  DrawerItem,
   NovelLocalCache,
   Quote,
   ReadingCommentMode,
@@ -69,7 +70,7 @@ import type { ReadingSyncJob } from "./features/reading-sync/types.js";
 import { useLiveReading } from "./hooks/useLiveReading.js";
 import { useReadingHostLayout } from "./hooks/useReadingHostLayout.js";
 import { BookCover, type ArchiveDeleteTarget } from "./pages/BookCover.js";
-import { Home, type BookshelfItem, type LibrarySkin } from "./pages/Home.js";
+import { Home, type BookshelfItem, type LibrarySkin, type LibraryView } from "./pages/Home.js";
 import { NovelReader } from "./pages/NovelReader.js";
 import {
   resolveReadingPartnerCopy,
@@ -121,6 +122,7 @@ type OpenOutput = {
   bookshelfSessions?: Array<SessionBundle & { cacheState?: string }>;
   recentSessions?: Array<SessionBundle & { cacheState?: string }>;
   readingRecords?: ReadingRecord[];
+  drawerItems?: DrawerItem[];
   sourceEndpointBase?: string;
 };
 
@@ -152,13 +154,162 @@ const MAX_EPUB_FILE_SIZE = 50 * 1024 * 1024;
 const LARGE_NOVEL_TEXTAREA_PREVIEW_BYTES = 2 * 1024 * 1024;
 const LARGE_NOVEL_TEXTAREA_PREVIEW_CHARS = 1200;
 
+function previewOpenOutput(): OpenOutput | undefined {
+  if (typeof window === "undefined") return undefined;
+  if (new URLSearchParams(window.location.search).get("preview") !== "1") return undefined;
+
+  const now = new Date();
+  const isoDaysAgo = (days: number, hour: number) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() - days);
+    date.setHours(hour, 0, 0, 0);
+    return date.toISOString();
+  };
+  const previewBook = (
+    id: string,
+    title: string,
+    index: number,
+    total: number,
+    daysAgo: number,
+    status: "active" | "completed" = "active"
+  ): SessionBundle => ({
+    session: {
+      id,
+      title,
+      type: "novel",
+      status,
+      userCurrentPosition: { kind: "paragraph", index, total, label: `第 ${index} 页` },
+      assistantSyncedPosition: id === "preview-1"
+        ? { kind: "paragraph", index: Math.max(1, index - 2), total, label: `第 ${Math.max(1, index - 2)} 页` }
+        : null,
+      liveReadingEnabled: false,
+      sessionPreferences: DEFAULT_SESSION_PREFERENCES,
+      sourceManifest: null,
+      createdAt: isoDaysAgo(30 + daysAgo, 10),
+      updatedAt: isoDaysAgo(daysAgo, 21),
+      lastReadAt: isoDaysAgo(daysAgo, 21)
+    },
+    quotes: id === "preview-1" ? [{
+      id: "preview-quote",
+      sessionId: id,
+      content: "夜色落在窗边，也落在还没读完的句子上。",
+      position: { kind: "paragraph", index, total, label: `第 ${index} 页` },
+      note: "我们上次说到：温柔不是退让，是愿意再多理解一会儿。",
+      createdAt: isoDaysAgo(daysAgo, 21)
+    }] : [],
+    reactions: [],
+    bookmarks: []
+  });
+
+  const bookshelfSessions = [
+    previewBook("preview-1", "山茶文具店", 42, 100, 0),
+    previewBook("preview-2", "也许你该找个人聊聊", 100, 100, 1, "completed"),
+    previewBook("preview-3", "我与地坛", 100, 100, 3, "completed"),
+    previewBook("preview-4", "云边有个小卖部", 85, 100, 4),
+    previewBook("preview-5", "猫的告别", 60, 100, 6)
+  ];
+  const readingRecords: ReadingRecord[] = [0, 1, 3].map((daysAgo, index) => ({
+    id: `preview-record-${index}`,
+    sessionId: bookshelfSessions[index]?.session.id ?? "preview-1",
+    bookTitle: bookshelfSessions[index]?.session.title ?? "夜晚的潜水艇",
+    startedAt: isoDaysAgo(daysAgo, 20),
+    endedAt: isoDaysAgo(daysAgo, 21),
+    durationSeconds: index === 0 ? 26 * 60 : (14 + index * 8) * 60,
+    startPosition: { kind: "paragraph", index: 30 + index * 12, total: 100, label: `第 ${30 + index * 12} 页` },
+    endPosition: { kind: "paragraph", index: 42 + index * 12, total: 100, label: `第 ${42 + index * 12} 页` },
+    pagesRead: 12,
+    operationId: `preview-operation-${index}`,
+    createdAt: isoDaysAgo(daysAgo, 21)
+  }));
+
+  return {
+    bookshelfSessions,
+    readingRecords,
+    drawerItems: [
+      { id: "preview-drawer-note-1", content: "虽然今天有点累，但看到喜欢的书还是觉得生活很温柔。", createdAt: isoDaysAgo(0, 16), seen: false },
+      { id: "preview-drawer-note-2", content: "想记住这个傍晚的风，和窗台上那只打盹的小猫。", createdAt: isoDaysAgo(1, 21), seen: true },
+      { id: "preview-drawer-note-3", content: "读到一句很喜欢的话：\n“慢慢来，就是最好的答案。”", createdAt: isoDaysAgo(7, 10), seen: true },
+      { id: "preview-drawer-note-4", content: "今天的晚霞很好看，好像所有不开心都被染成了橘色。", createdAt: isoDaysAgo(11, 19), seen: true },
+      { id: "preview-drawer-note-5", content: "想试着更勇敢一点，去做那些一直想做的事情。", createdAt: isoDaysAgo(14, 14), seen: true }
+    ]
+  };
+}
+
+function previewLibraryView(): LibraryView | undefined {
+  if (typeof window === "undefined") return undefined;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("preview") !== "1") return undefined;
+  const view = params.get("view");
+  return view === "library" || view === "records" || view === "excerpts" || view === "drawer" || view === "settings"
+    ? view
+    : undefined;
+}
+
+type PreviewScreen = "cover" | "reader" | "coread" | "management";
+
+function previewScreen(): PreviewScreen | undefined {
+  if (typeof window === "undefined") return undefined;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("preview") !== "1") return undefined;
+  const value = params.get("screen");
+  return value === "cover" || value === "reader" || value === "coread" || value === "management"
+    ? value
+    : undefined;
+}
+
+function previewReaderChunks(): string[] {
+  const specialPages: Record<number, string> = {
+    1: "第一章 山茶色的早晨\n\n清晨的光落进文具店，玻璃柜里的信纸像一排安静的云。小猫把新书放到桌上，决定今天只读一点点，也认真读一点点。",
+    12: "山茶花在窗边开着。她忽然发现，温柔不是把所有声音都压低，而是愿意为重要的人多停留一会儿。",
+    26: "蓝色书签夹在这一页。纸张边缘留着淡淡的茶香，也留着昨天没有说完的那句话。",
+    42: "窗外开始下雨，书页被灯光照得很暖。她把喜欢的句子轻轻划下来：慢慢读，也是在好好生活。\n\n巴巴没有催她翻页，只把热茶推近一点，说今晚的故事可以停在任何让人安心的地方。",
+    58: "全文搜索会同时找到正文、划线和清思。试着搜索“山茶”“温柔”或“蓝色书签”，再从结果跳回这一页。",
+    73: "夜色落在窗边，也落在还没读完的句子上。字可以放大、加粗，行距和页面宽度也都能慢慢调到最舒服。",
+    90: "最后一章 灯还亮着\n\n书房没有催促谁完成目标。每天翻开一页，攒下一枚小猫爪，也算认真地来过。",
+    100: "验收完成。合上书以前，她把最后一张书签收进抽屉，等下一次想读的时候再回来。"
+  };
+  return Array.from({ length: 100 }, (_, index) => {
+    const page = index + 1;
+    return specialPages[page] ?? `第 ${page} 页\n\n午后的书房很安静。小猫读完一小段，把此刻的心情留在页边，然后继续往下一页走。`;
+  });
+}
+
+function previewReaderItem(): BookshelfItem {
+  const output = previewOpenOutput();
+  const base = output?.bookshelfSessions?.[0];
+  if (!base) throw new Error("Preview book is unavailable");
+  const createdAt = base.session.lastReadAt;
+  return {
+    ...base,
+    quotes: [{
+      id: "preview-reader-quote",
+      sessionId: base.session.id,
+      content: "慢慢读，也是在好好生活。",
+      note: "今晚不赶进度，只记住这一页的暖光。",
+      clearThought: "温柔不是催促，而是愿意陪对方停在安心的地方。",
+      position: { kind: "paragraph", index: 42, total: 100, label: "第 42 页" },
+      createdAt
+    }],
+    bookmarks: [{
+      id: "preview-reader-bookmark",
+      sessionId: base.session.id,
+      label: "蓝色书签",
+      position: { kind: "paragraph", index: 42, total: 100, label: "第 42 页" },
+      createdAt
+    }],
+    sourceAvailability: "available_local"
+  };
+}
+
 export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}) {
+  const previewTarget = previewScreen();
+  const previewItem = useMemo(() => previewTarget ? previewReaderItem() : null, [previewTarget]);
   const readingPartner = useMemo(
     () => resolveReadingPartnerCopy(props.readingPartner),
     [props.readingPartner]
   );
   const [openOutput, setOpenOutput] = useState<OpenOutput | undefined>(() =>
-    normalizeOpenOutput(initialToolOutput<OpenOutput>())
+    normalizeOpenOutput(previewOpenOutput() ?? initialToolOutput<OpenOutput>())
   );
   const [bookshelfState, setBookshelfState] = useState<"loading" | "ready" | "failed">(() =>
     Array.isArray(openOutput?.bookshelfSessions ?? openOutput?.recentSessions) ? "ready" : "loading"
@@ -169,9 +320,11 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     [sourceEndpointBase]
   );
   const [restoredWidgetState] = useState(() => initialWidgetState());
-  const [screen, setScreen] = useState<Screen>(() =>
-    restoredWidgetState?.screen === "novel" && restoredWidgetState.sessionId ? "novel" : "home"
-  );
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (previewTarget === "cover" || previewTarget === "management") return "cover";
+    if (previewTarget === "reader" || previewTarget === "coread") return "novel";
+    return restoredWidgetState?.screen === "novel" && restoredWidgetState.sessionId ? "novel" : "home";
+  });
   const [existingSession, setExistingSession] = useState<ReadingSession | null>(null);
   const [title, setTitle] = useState("");
   const [sourceText, setSourceText] = useState("");
@@ -188,11 +341,20 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
   const [readingRecords, setReadingRecords] = useState<ReadingRecord[]>(() =>
     sortReadingRecords(openOutput?.readingRecords ?? [])
   );
-  const [sessionBundle, setSessionBundle] = useState<SessionBundle | null>(null);
-  const [selectedBook, setSelectedBook] = useState<BookshelfItem | null>(null);
+  const [drawerItems, setDrawerItems] = useState<DrawerItem[]>(() => openOutput?.drawerItems ?? []);
+  const [sessionBundle, setSessionBundle] = useState<SessionBundle | null>(() =>
+    previewTarget === "reader" || previewTarget === "coread" ? previewItem : null
+  );
+  const [selectedBook, setSelectedBook] = useState<BookshelfItem | null>(() =>
+    previewTarget === "cover" || previewTarget === "management" ? previewItem : null
+  );
   const [readerReturnScreen, setReaderReturnScreen] = useState<"home" | "cover">("home");
-  const [chunks, setChunks] = useState<string[]>([]);
-  const [overlay, setOverlay] = useState<Overlay>(null);
+  const [chunks, setChunks] = useState<string[]>(() =>
+    previewTarget === "reader" || previewTarget === "coread" ? previewReaderChunks() : []
+  );
+  const [overlay, setOverlay] = useState<Overlay>(() =>
+    previewTarget === "management" ? "management" : null
+  );
   const [toast, setToast] = useState("");
   const [startReadingInFlight, setStartReadingInFlight] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress>({ stage: "idle" });
@@ -204,11 +366,13 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     restoredWidgetState?.collapsed ?? false
   );
   const [syncRequestInFlight, setSyncRequestInFlight] = useState(false);
-  const [managedBook, setManagedBook] = useState<BookshelfItem | null>(null);
+  const [managedBook, setManagedBook] = useState<BookshelfItem | null>(() =>
+    previewTarget === "management" ? previewItem : null
+  );
   const [syncChoiceOpen, setSyncChoiceOpen] = useState(false);
   const [syncJob, setSyncJob] = useState<ReadingSyncJob | null>(null);
   const [sourceAvailability, setSourceAvailability] =
-    useState<SourceAvailability>("unknown");
+    useState<SourceAvailability>(() => previewTarget ? "available_local" : "unknown");
   const [readerScrollTop, setReaderScrollTop] = useState(restoredWidgetState?.scrollTop ?? 0);
   const restoreAttempted = useRef(false);
   const navigationRequestRef = useRef(0);
@@ -288,9 +452,35 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     }
   }, [cloudSourceClient, sourceEndpointBase]);
 
+  const markDrawerSeen = useCallback(async (ids: string[]) => {
+    const uniqueIds = [...new Set(ids)];
+    if (uniqueIds.length === 0) return;
+    try {
+      const result = await callTool("mark_drawer_seen", { ids: uniqueIds });
+      const nextItems = result._meta?.drawerItems;
+      if (Array.isArray(nextItems)) {
+        setDrawerItems(nextItems as DrawerItem[]);
+        setOpenOutput((current) =>
+          current ? { ...current, drawerItems: nextItems as DrawerItem[] } : current
+        );
+        return;
+      }
+      setDrawerItems((current) =>
+        current.map((item) => (uniqueIds.includes(item.id) ? { ...item, seen: true } : item))
+      );
+    } catch {
+      setToast("小抽屉的已读状态没有保存成功，请重试。");
+    }
+  }, []);
+
+  const openDrawer = useCallback(() => {
+    void markDrawerSeen(drawerItems.filter((item) => !item.seen).map((item) => item.id));
+  }, [drawerItems, markDrawerSeen]);
+
   useEffect(() => {
+    if (previewTarget) return;
     void refreshNovelBookshelf();
-  }, [refreshNovelBookshelf]);
+  }, [previewTarget, refreshNovelBookshelf]);
 
   useEffect(() => {
     const sessions = openOutput?.bookshelfSessions ?? openOutput?.recentSessions;
@@ -316,6 +506,10 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
       setReadingRecords(sortReadingRecords(openOutput.readingRecords));
     }
   }, [openOutput?.readingRecords]);
+
+  useEffect(() => {
+    if (Array.isArray(openOutput?.drawerItems)) setDrawerItems(openOutput.drawerItems);
+  }, [openOutput?.drawerItems]);
 
   useEffect(() => {
     if (screen !== "novel" || !sessionBundle) return;
@@ -357,6 +551,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
   }, [hostLayout.revision]);
 
   useEffect(() => {
+    if (previewTarget) return;
     if (screen !== "home" && screen !== "cover") return;
     let cancelled = false;
     Promise.all(
@@ -416,7 +611,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
     return () => {
       cancelled = true;
     };
-  }, [cloudSourceClient, recent.length, screen, sourceEndpointBase]);
+  }, [cloudSourceClient, previewTarget, recent.length, screen, sourceEndpointBase]);
 
   useEffect(() => {
     setSelectedBook((current) => {
@@ -1978,6 +2173,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
         <Home
           bookshelf={recent}
           readingRecords={readingRecords}
+          drawerItems={drawerItems}
           loading={bookshelfState === "loading"}
           loadError={bookshelfState === "failed"}
           skin={librarySkin}
@@ -1996,7 +2192,9 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
           onReimport={prepareReimport}
           onManage={(item) => void openBookManagement(item)}
           onExpand={() => void requestReaderFullscreen()}
+          onDrawerOpen={openDrawer}
           partner={readingPartner}
+          initialView={previewLibraryView()}
         />
       ) : null}
       {screen === "cover" && selectedBook ? (
@@ -2122,6 +2320,7 @@ export function App(props: { readingPartner?: Partial<ReadingPartnerCopy> } = {}
           onScrollPosition={setReaderScrollTop}
           partner={readingPartner}
           layout={hostLayout.layout}
+          initialCoReadOpen={previewTarget === "coread"}
           {...readerProps}
         />
       ) : null}

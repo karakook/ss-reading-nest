@@ -7,6 +7,7 @@ import { IndexedDbReadingCache } from "./storage/indexeddb-cache.js";
 
 describe("App", () => {
   beforeEach(async () => {
+    window.history.replaceState({}, "", "/");
     await deleteTestDatabase("ss-reading-nest");
     localStorage.clear();
     sessionStorage.clear();
@@ -20,6 +21,7 @@ describe("App", () => {
   });
 
   afterEach(() => {
+    window.history.replaceState({}, "", "/");
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -29,6 +31,26 @@ describe("App", () => {
     expect(screen.getAllByText("小猫和巴巴的私人书房").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /小说共读/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "书架" })).toBeInTheDocument();
+  });
+
+  it("opens a deterministic populated reader for visual acceptance", () => {
+    window.history.replaceState({}, "", "/?preview=1&screen=reader");
+
+    render(<App />);
+
+    expect(screen.getByText("山茶文具店")).toBeInTheDocument();
+    expect(screen.getByText(/窗外开始下雨/)).toBeInTheDocument();
+    expect(screen.getAllByText("42 / 100").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "全文搜索" })).toBeInTheDocument();
+  });
+
+  it("can open the same acceptance reader with the co-reading panel expanded", () => {
+    window.history.replaceState({}, "", "/?preview=1&screen=coread");
+
+    render(<App />);
+
+    expect(screen.getByRole("dialog", { name: "巴巴来陪小猫读" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "巴巴，陪我读这一页" })).toBeInTheDocument();
   });
 
   it("applies and remembers the selected bookshelf color theme", () => {

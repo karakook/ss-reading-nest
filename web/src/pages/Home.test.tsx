@@ -33,7 +33,9 @@ describe("Home novel bookshelf", () => {
       ...items[0]!,
       session: {
         ...items[0]!.session,
-        lastReadAt: "2026-07-19T20:30:00.000Z"
+        // Build 20:30 on the previous local calendar day so this assertion is
+        // stable in every test-runner timezone.
+        lastReadAt: new Date(2026, 6, 19, 20, 30).toISOString()
       }
     };
 
@@ -65,17 +67,64 @@ describe("Home novel bookshelf", () => {
     expect(screen.queryByText(/这里像伏笔/)).not.toBeInTheDocument();
   });
 
-  it("only shows navigation entries backed by real views", () => {
+  it("shows the five requested navigation entries backed by real views", () => {
     const { container } = renderHome();
 
     expect(screen.getAllByRole("button", { name: "我的书房" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: "阅读记录" }).length).toBeGreaterThan(0);
-    expect(container.querySelectorAll("svg.library-rail-icon")).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "我的摘录" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "小抽屉" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "设置" }).length).toBeGreaterThan(0);
+    expect(container.querySelectorAll("svg.library-rail-icon")).toHaveLength(5);
     expect(container).not.toHaveTextContent("▣");
     expect(container).not.toHaveTextContent("◷");
     expect(screen.queryByRole("button", { name: "书摘笔记" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "书单收藏" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "回收站" })).not.toBeInTheDocument();
+  });
+
+  it("collects saved lines into the excerpts view", () => {
+    const excerptBook: BookshelfItem = {
+      ...items[0]!,
+      quotes: [{
+        id: "quote-a",
+        sessionId: items[0]!.session.id,
+        content: "夜色落在窗边，也落在还没读完的句子上。",
+        position: { kind: "paragraph", index: 8, label: "第 8 段" },
+        note: "这里像伏笔。",
+        createdAt: "2026-07-20T10:00:00.000Z"
+      }]
+    };
+    renderHome({ bookshelf: [excerptBook, ...items.slice(1)] });
+
+    fireEvent.click(screen.getAllByRole("button", { name: "我的摘录" })[0]!);
+
+    expect(screen.getByRole("heading", { name: "我的摘录", level: 1 })).toBeInTheDocument();
+    expect(screen.getByText("夜色落在窗边，也落在还没读完的句子上。")).toBeInTheDocument();
+    expect(screen.getByText("这里像伏笔。")).toBeInTheDocument();
+    expect(screen.getByText("《可继续的小说》")).toBeInTheDocument();
+  });
+
+  it("opens the quiet drawer and shows unseen notes without adding a popup", () => {
+    const onDrawerOpen = vi.fn();
+    renderHome({
+      drawerItems: [
+        {
+          id: "drawer-1",
+          content: "留给以后再看的话。",
+          createdAt: "2026-07-20T10:00:00.000Z",
+          seen: false
+        }
+      ],
+      onDrawerOpen
+    });
+
+    fireEvent.click(screen.getAllByRole("button", { name: "小抽屉" })[0]!);
+
+    expect(onDrawerOpen).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("heading", { name: "小抽屉" })).toBeInTheDocument();
+    expect(screen.getByText("留给以后再看的话。")).toBeInTheDocument();
+    expect(document.querySelector("svg.drawer-icon-has-unseen")).toBeInTheDocument();
   });
 
   it("supports novel status filters", () => {

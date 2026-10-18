@@ -313,6 +313,19 @@ export const generateDiaryContextInputSchema = z.object({
   sessionId: sessionIdSchema
 });
 
+export const putDrawerNoteInputSchema = z
+  .object({
+    content: z.string().trim().min(1).max(4_000),
+    operationId: z.string().trim().min(1).max(200).optional()
+  })
+  .strict();
+
+export const markDrawerSeenInputSchema = z
+  .object({
+    ids: z.array(z.string().trim().min(1).max(200)).max(100)
+  })
+  .strict();
+
 export type SendCurrentContextInput = z.infer<typeof sendCurrentContextInputSchema>;
 export type UploadCloudSourceInput = z.infer<typeof uploadCloudSourceInputSchema>;
 export type SaveReadingRecordInput = z.infer<typeof saveReadingRecordInputSchema>;
