@@ -16,6 +16,8 @@ declare global {
       toolOutput?: unknown;
       toolResponseMetadata?: Record<string, unknown>;
       theme?: "light" | "dark";
+      displayMode?: "inline" | "pip" | "fullscreen";
+      maxHeight?: number;
       safeArea?: { top?: number; right?: number; bottom?: number; left?: number };
       callTool?: (name: string, args: Record<string, unknown>) => Promise<ToolCallResult>;
       getFileDownloadUrl?: (input: { fileId: string }) => Promise<{ download_url: string }>;
