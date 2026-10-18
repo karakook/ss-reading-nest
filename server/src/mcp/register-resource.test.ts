@@ -67,6 +67,7 @@ describe("registerReadingResource", () => {
     expect(descriptor._meta.ui.csp.connectDomains).toContain(
       "https://reading-nest.example.workers.dev"
     );
+    expect(descriptor._meta["openai/ui"].availableDisplayModes).toEqual(["fullscreen"]);
     expect(descriptor._meta["openai/widgetCSP"].connect_domains).toContain(
       "https://reading-nest.example.workers.dev"
     );
