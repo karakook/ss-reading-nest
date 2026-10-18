@@ -15,6 +15,7 @@ export function useReadingHostLayout() {
     height: window.visualViewport?.height ?? window.innerHeight
   }));
   const [revision, setRevision] = useState(0);
+  const [nativeDisplayMode, setNativeDisplayMode] = useState(() => window.openai?.displayMode);
 
   useEffect(() => {
     const visualViewport = window.visualViewport;
@@ -26,6 +27,10 @@ export function useReadingHostLayout() {
       document.documentElement.style.setProperty("--viewport-height", `${height}px`);
       setRevision((value) => value + 1);
     };
+    const syncNativeDisplayMode = () => {
+      setNativeDisplayMode(window.openai?.displayMode);
+    };
+    window.addEventListener("openai:set_globals", syncNativeDisplayMode);
     const unsubscribe = subscribeHostContext((next) => {
       setContext((current) => ({ ...current, ...next }));
       setRevision((value) => value + 1);
@@ -36,6 +41,7 @@ export function useReadingHostLayout() {
     measure();
     return () => {
       unsubscribe();
+      window.removeEventListener("openai:set_globals", syncNativeDisplayMode);
       window.removeEventListener("resize", measure);
       window.removeEventListener("orientationchange", measure);
       visualViewport?.removeEventListener("resize", measure);
@@ -62,11 +68,11 @@ export function useReadingHostLayout() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.displayMode = context.displayMode ?? "inline";
+    root.dataset.displayMode = nativeDisplayMode ?? context.displayMode ?? "inline";
     return () => {
       delete root.dataset.displayMode;
     };
-  }, [context.displayMode]);
+  }, [context.displayMode, nativeDisplayMode]);
 
   const width =
     context.containerDimensions?.width ??
@@ -83,7 +89,7 @@ export function useReadingHostLayout() {
   return {
     layout,
     revision,
-    displayMode: context.displayMode ?? "inline",
+    displayMode: nativeDisplayMode ?? context.displayMode ?? "inline",
     canRequestPip: available?.includes("pip") ?? false
   };
 }

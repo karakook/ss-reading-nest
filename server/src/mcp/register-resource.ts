@@ -54,6 +54,12 @@ function createResourceMeta(
       domain: widgetDomain,
       csp: resourceCsp
     },
+    // A reading room is a full-screen app, not a 640px conversation card.
+    // On iPhone, the inline host can reserve additional chat chrome below
+    // the iframe; fixed navigation cannot extend into that host-owned space.
+    "openai/ui": {
+      availableDisplayModes: ["fullscreen"]
+    },
     "openai/widgetCSP": openaiWidgetCsp,
     "openai/widgetDomain": widgetDomain,
     "openai/widgetDescription": description,

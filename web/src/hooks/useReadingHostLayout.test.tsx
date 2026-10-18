@@ -25,6 +25,27 @@ describe("useReadingHostLayout", () => {
     expect(result.current.layout).toBe("compact");
   });
 
+  it("prefers native ChatGPT displayMode and updates when globals change", () => {
+    Object.defineProperty(window, "openai", {
+      configurable: true,
+      value: { displayMode: "fullscreen", hostContext: { displayMode: "inline" } }
+    });
+    const { result } = renderHook(() => useReadingHostLayout());
+    expect(result.current.displayMode).toBe("fullscreen");
+    expect(document.documentElement.dataset.displayMode).toBe("fullscreen");
+
+    act(() => {
+      Object.defineProperty(window, "openai", {
+        configurable: true,
+        value: { displayMode: "inline", hostContext: { displayMode: "inline" } }
+      });
+      window.dispatchEvent(new Event("openai:set_globals"));
+    });
+
+    expect(result.current.displayMode).toBe("inline");
+    expect(document.documentElement.dataset.displayMode).toBe("inline");
+  });
+
   it("uses the visual viewport after browser chrome changes", () => {
     const visualViewport = new EventTarget() as VisualViewport;
     Object.defineProperty(visualViewport, "width", { configurable: true, value: 834, writable: true });

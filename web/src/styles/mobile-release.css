@@ -212,3 +212,43 @@
     padding-bottom: 8px !important;
   }
 }
+
+/*
+ * The ChatGPT iPhone fullscreen Site viewer must own the WHOLE reading-room
+ * viewport. Do not anchor tabs to an artificially capped inline card.
+ * ChatGPT's composer belongs to the host and overlays this viewport.
+ */
+@media (max-width: 800px) {
+  html[data-display-mode="fullscreen"] .app-screen-home {
+    height: var(--viewport-height, 100dvh);
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  html[data-display-mode="fullscreen"] .app-screen-home .dessert-reading-room.library-app-shell {
+    position: relative;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+
+  html[data-display-mode="fullscreen"] .app-screen-home .dessert-reading-room .home-shell {
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  html[data-display-mode="fullscreen"] .app-screen-home .dessert-reading-room .library-mobile-tabs {
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

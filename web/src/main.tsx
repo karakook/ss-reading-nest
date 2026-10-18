@@ -22,7 +22,7 @@ const syncHostEmbedding = () => {
   // ChatGPT measures inline widgets before React effects run. Expose the
   // display mode synchronously so the first layout is already phone-sized.
   document.documentElement.dataset.displayMode =
-    window.openai?.hostContext?.displayMode ?? "inline";
+    window.openai?.displayMode ?? window.openai?.hostContext?.displayMode ?? "inline";
 };
 
 syncHostEmbedding();
