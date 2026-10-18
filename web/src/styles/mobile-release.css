@@ -1,0 +1,198 @@
+/*
+ * Mobile release integration from the accepted quiet-drawer preview.
+ * Loaded AFTER dessert-room-reference.css so the final responsive rules
+ * cannot undo the usable phone layout. Desktop/iPad landscape are unchanged.
+ * Keep the five destinations (including My Excerpts) added in app-v88.
+ */
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room.library-app-shell {
+    min-width: 0;
+    min-height: 100dvh;
+  }
+
+  .app-screen-home .dessert-reading-room .home-shell {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+    padding-bottom: calc(106px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-brand {
+    grid-template-columns: 30px minmax(0, 1fr) 44px 44px;
+    gap: 2px;
+    padding-inline: 9px;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-brand > span {
+    width: 28px;
+    min-width: 0;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-brand strong {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: clamp(17px, 4.2vw, 25px);
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-brand button,
+  .app-screen-home .dessert-reading-room .library-mobile-brand .library-mobile-expand {
+    display: grid !important;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    place-items: center;
+    touch-action: manipulation;
+  }
+
+  /* All five tabs remain reachable from every page; neither Settings nor
+     Excerpts disappears or moves into the scrolling body. */
+  .app-screen-home .dessert-reading-room .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-excerpts-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-settings-view .library-mobile-tabs {
+    position: fixed !important;
+    inset: auto 0 0 !important;
+    z-index: 90 !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 7px 5px calc(7px + env(safe-area-inset-bottom, 0px)) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--dessert-blue) !important;
+    box-shadow: 0 -4px 14px rgba(76, 63, 51, .10) !important;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button,
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button:last-child {
+    display: grid !important;
+    min-width: 0;
+    min-height: 56px !important;
+    place-items: center;
+    gap: 2px;
+    padding: 5px 1px;
+    font-size: clamp(10px, 2.4vw, 13px) !important;
+    touch-action: manipulation;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tab-icon {
+    width: 23px;
+    height: 23px;
+  }
+
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button[aria-pressed="true"] {
+    background: rgba(133, 190, 221, .42);
+  }
+
+  /* Statistics decorations may not cover progress circles or other content. */
+  .app-screen-home .dessert-reading-room .weekly-goal-days {
+    flex-wrap: wrap;
+    width: auto;
+    max-width: 100%;
+    gap: 6px;
+  }
+
+  .app-screen-home .dessert-reading-room .weekly-books-art {
+    position: relative !important;
+    display: block;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(120px, 45%);
+    max-width: 100%;
+    height: auto;
+    margin: 8px 0 0 auto;
+    object-fit: contain;
+  }
+
+  /* Narrow book cards scroll horizontally; extra books are not hidden. */
+  .app-screen-home .dessert-reading-room .library-book-grid {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 3px 12px;
+  }
+
+  .app-screen-home .dessert-reading-room .library-book-card {
+    flex: 0 0 108px;
+    min-width: 0;
+  }
+
+  .app-screen-home .dessert-reading-room .library-book-card:nth-child(n+5) {
+    display: grid;
+  }
+
+  .app-screen-home .dessert-reading-room .bookshelf-section,
+  .app-screen-home .dessert-reading-room .continue-card,
+  .app-screen-home .dessert-reading-room .reading-reward-card {
+    min-height: 0;
+  }
+
+  /* Drawer and records should grow with real content, not a tall mockup. */
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-header {
+    min-height: 0;
+    margin-top: 16px;
+  }
+
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-header h1 {
+    font-size: clamp(30px, 8vw, 44px);
+  }
+
+  .app-screen-home .dessert-reading-room.is-drawer-view .drawer-intro {
+    min-height: 0;
+    padding: 24px;
+  }
+
+  .app-screen-home .dessert-reading-room.is-drawer-view .drawer-intro p {
+    font-size: clamp(16px, 4vw, 20px);
+    line-height: 1.65;
+  }
+
+  .app-screen-home .dessert-reading-room.is-drawer-view .drawer-empty {
+    min-height: 0;
+    padding: 28px 22px;
+    font-size: 16px;
+  }
+
+  .app-screen-home .dessert-reading-room.is-excerpts-view .excerpts-intro,
+  .app-screen-home .dessert-reading-room.is-records-view .records-hero {
+    min-height: 0;
+  }
+}
+
+/* Inline ChatGPT widgets scroll INSIDE the phone-sized host viewport.
+   The bottom tabs are anchored to that viewport rather than the document. */
+@media (max-width: 800px) {
+  html[data-display-mode="inline"] .app-screen-home .dessert-reading-room.library-app-shell {
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+
+  html[data-display-mode="inline"] .app-screen-home .dessert-reading-room .home-shell {
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 92px !important;
+  }
+
+  html[data-display-mode="inline"] .app-screen-home .dessert-reading-room .library-mobile-tabs {
+    position: absolute !important;
+    padding-bottom: 8px !important;
+  }
+}
