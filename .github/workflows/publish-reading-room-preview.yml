@@ -1,0 +1,49 @@
+name: Publish reading room preview
+
+on:
+  push:
+    branches: [feature/quiet-drawer]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: reading-room-pages-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out preview branch
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build shared package
+        run: pnpm --filter @ss/shared build
+      - name: Build standalone reading room
+        run: pnpm --filter @ss/web build
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+      - name: Publish preview
+        id: deployment
+        uses: actions/deploy-pages@v4
