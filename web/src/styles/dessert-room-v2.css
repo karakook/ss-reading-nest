@@ -485,9 +485,18 @@
   .app-screen-home .dessert-reading-room .continue-card-actions .library-quiet-action { display: none; }
   .app-screen-home .dessert-stat-card { min-height: 188px; padding: 29px 29px; }
   .app-screen-home .today-cookie-art { right: 20px; width: 76px; height: 76px; }
-  .app-screen-home .weekly-goal-card { padding-bottom: 112px; }
-  .app-screen-home .weekly-goal-days { gap: clamp(5px, 2vw, 8px); }
-  .app-screen-home .weekly-books-art { right: 13px; bottom: 12px; width: 120px; height: 92px; }
+  /* Reserve a separate illustration row so all five day indicators remain visible. */
+  .app-screen-home .weekly-goal-card { padding-bottom: 20px; }
+  .app-screen-home .weekly-goal-days { gap: clamp(5px, 2vw, 8px); width: max-content; max-width: 100%; }
+  .app-screen-home .weekly-books-art {
+    position: relative !important;
+    display: block;
+    width: 120px;
+    height: 92px;
+    margin: 4px 0 0 auto;
+    right: auto;
+    bottom: auto;
+  }
   .app-screen-home .dessert-reading-room .bookshelf-section { padding-inline: 25px; }
   .app-screen-home .dessert-reading-room .reading-reward-card { grid-template-columns: 1fr; grid-template-rows: auto auto auto; padding: 25px; }
   .app-screen-home .dessert-reward-heading,
@@ -601,10 +610,11 @@
     filter: drop-shadow(0 1px 0 rgba(100, 71, 47, .12));
   }
 
-  .app-screen-home.is-drawer-view .drawer-view::before { top: 176px; }
+  /* Anchor lace to the viewport edges, not a guessed iPhone screen height. */
+  .app-screen-home.is-drawer-view .drawer-view::before { top: 0; }
 
   .app-screen-home.is-drawer-view .drawer-view::after {
-    bottom: 75px;
+    bottom: calc(132px + var(--safe-bottom, 0px));
     transform: rotate(180deg);
   }
 
