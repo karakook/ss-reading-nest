@@ -249,7 +249,7 @@ body {
     z-index: 2;
     order: 1;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
     margin: 16px 0 0;
     padding: 5px;
@@ -276,7 +276,6 @@ body {
     font-size: clamp(15px, 2.4vw, 20px);
   }
 
-  .app-screen-home .dessert-reading-room .library-mobile-tabs button:last-child { display: none; }
 
   .app-screen-home .dessert-reading-room .library-mobile-tabs button[aria-pressed="true"] {
     background: var(--dessert-blue);
@@ -522,7 +521,7 @@ body {
     left: 0;
     z-index: 75;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
     margin: 0;
     padding: 10px 13px calc(8px + var(--safe-bottom));
@@ -1155,7 +1154,7 @@ body {
     left: 0 !important;
     z-index: 90 !important;
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 0 !important;
     margin: 0 !important;
     padding: 10px 13px calc(8px + var(--safe-bottom)) !important;
@@ -1173,11 +1172,6 @@ body {
     font-size: clamp(14px, 2.4vw, 19px);
   }
 
-  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button:last-child,
-  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs button:last-child,
-  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs button:last-child {
-    display: none !important;
-  }
 
   .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs button[aria-pressed="true"] {
     background: rgba(133, 190, 221, .42);
@@ -1188,7 +1182,7 @@ body {
   .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs {
     position: static !important;
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     margin: 16px 0 0 !important;
     padding: 5px !important;
     border: 1px solid #d8b996 !important;
@@ -1199,5 +1193,137 @@ body {
 
   .app-screen-home .dessert-reading-room.is-settings-view .library-mobile-tabs {
     display: none !important;
+  }
+}
+
+/*
+ * Consolidated mobile navigation and card layout fixes.
+ * The view modifier belongs on .dessert-reading-room, not on .app-screen-home.
+ * This is the final reference layer and must not hide settings or tabs.
+ */
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room .library-mobile-brand {
+    grid-template-columns: 30px minmax(0, 1fr) 44px 44px;
+    gap: 2px;
+    padding: 7px 9px;
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-brand strong {
+    min-width: 0;
+    font-size: clamp(17px, 4.2vw, 25px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-brand > span {
+    width: 28px;
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-brand button {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  .app-screen-home .dessert-reading-room .home-shell {
+    min-height: 0;
+    padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-screen-home .dessert-reading-room.is-library-view,
+  .app-screen-home .dessert-reading-room.is-records-view,
+  .app-screen-home .dessert-reading-room.is-drawer-view,
+  .app-screen-home .dessert-reading-room.is-settings-view {
+    min-height: 100dvh;
+    padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .app-screen-home .dessert-reading-room.is-library-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-records-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-mobile-tabs,
+  .app-screen-home .dessert-reading-room.is-settings-view .library-mobile-tabs {
+    position: fixed !important;
+    inset: auto 0 0 !important;
+    z-index: 90 !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom, 0px)) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--dessert-blue) !important;
+    box-shadow: 0 -4px 14px rgba(76, 63, 51, .10) !important;
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button,
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button:last-child {
+    display: grid !important;
+    min-width: 0;
+    min-height: 56px !important;
+    gap: 3px;
+    place-items: center;
+    padding: 5px 1px;
+    font-size: clamp(10px, 2.7vw, 14px) !important;
+    touch-action: manipulation;
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-tabs button[aria-pressed="true"] {
+    background: rgba(133,190,221,.42);
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-tab-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .app-screen-home::after { display: none !important; }
+  .app-screen-home .dessert-reading-room .weekly-books-art {
+    position: relative !important;
+    display: block;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 8px 0 0 auto;
+    width: min(120px, 45%);
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+  .app-screen-home .dessert-reading-room .weekly-goal-days {
+    flex-wrap: wrap;
+    width: auto;
+    max-width: 100%;
+    gap: 6px;
+  }
+  .app-screen-home .dessert-reading-room .library-book-grid {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 3px 12px;
+  }
+  .app-screen-home .dessert-reading-room .library-book-card {
+    flex: 0 0 108px;
+  }
+  .app-screen-home .dessert-reading-room .library-book-card:nth-child(n+5) {
+    display: grid;
+  }
+  .app-screen-home .dessert-reading-room .bookshelf-section,
+  .app-screen-home .dessert-reading-room .continue-card,
+  .app-screen-home .dessert-reading-room .reading-reward-card {
+    min-height: 0;
+  }
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-header {
+    margin-top: 16px;
+    min-height: 0;
+  }
+  .app-screen-home .dessert-reading-room.is-drawer-view .library-header h1 {
+    font-size: clamp(30px, 8vw, 44px);
+  }
+  .app-screen-home .dessert-reading-room.is-drawer-view .drawer-intro {
+    min-height: 0;
+    padding: 24px;
+  }
+  .app-screen-home .dessert-reading-room.is-drawer-view .drawer-intro p {
+    font-size: clamp(16px, 4vw, 20px);
+    line-height: 1.65;
+  }
+  .app-screen-home .dessert-reading-room.is-drawer-view .drawer-empty {
+    min-height: 0;
+    padding: 28px 22px;
+    font-size: 16px;
   }
 }
