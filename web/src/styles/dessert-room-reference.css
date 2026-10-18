@@ -622,7 +622,7 @@ body {
 
   .app-screen-home .dashboard-utilities .shared-memory-note { display: none; }
   .app-screen-home .dashboard-utilities .library-header-actions { display: contents; }
-  .app-screen-home .dashboard-utilities .library-header-actions .library-quiet-action { display: none; }
+  .app-screen-home .dashboard-utilities .library-header-actions .library-quiet-action,
   .app-screen-home .dashboard-utilities .library-add {
     display: flex;
     min-width: 0;
@@ -636,6 +636,11 @@ body {
     color: var(--dessert-ink);
     font-family: "Songti SC", serif;
     font-size: 17px;
+  }
+
+  .app-screen-home .dashboard-utilities .library-header-actions .library-quiet-action {
+    border-color: #d4b58f;
+    background: rgba(255, 253, 245, .88);
   }
 
   .app-screen-home .dashboard-utilities .library-add svg { width: 25px; height: 25px; }
@@ -1752,6 +1757,44 @@ body {
     .app-screen-home
     .dessert-reading-room.library-app-shell {
     padding-top: 72px;
+  }
+
+  /* Inline ChatGPT cards must behave like a phone-sized app viewport, not a
+     document whose iframe grows to the full height of every dashboard card. */
+  html[data-host-embedding="embedded"][data-display-mode="inline"]
+    .app-screen-home {
+    --embedded-home-height: clamp(480px, calc(var(--viewport-height, 100dvh) - 170px), 700px);
+    height: var(--embedded-home-height);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  html[data-host-embedding="embedded"][data-display-mode="inline"]
+    .app-screen-home
+    .dessert-reading-room.library-app-shell {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+
+  html[data-host-embedding="embedded"][data-display-mode="inline"]
+    .app-screen-home
+    .dessert-reading-room.is-library-view
+    .home-shell {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-host-embedding="embedded"][data-display-mode="inline"]
+    .app-screen-home
+    .dessert-reading-room.is-library-view
+    .library-mobile-tabs {
+    position: absolute !important;
   }
 
   html[data-host-embedding="embedded"]
