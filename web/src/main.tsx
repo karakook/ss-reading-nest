@@ -7,6 +7,7 @@ import "./styles/tokens.css";
 import "./styles/app.css";
 import "./styles/dessert-room-v2.css";
 import "./styles/dessert-room-reference.css";
+import "./styles/mobile-release.css";
 
 const rootElement = document.getElementById("root");
 
