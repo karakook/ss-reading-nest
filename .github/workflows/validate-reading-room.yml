@@ -1,0 +1,38 @@
+name: Validate reading room preview
+
+on:
+  push:
+    branches: [feature/quiet-drawer]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm with Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Type-check
+        run: pnpm typecheck
+      - name: Build embedded MCP UI and server
+        run: pnpm build
+      - name: Save built HTML for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: reading-room-preview
+          path: web/dist/index.html
+          if-no-files-found: error
+          retention-days: 7
