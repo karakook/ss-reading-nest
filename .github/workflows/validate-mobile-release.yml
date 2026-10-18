@@ -1,0 +1,38 @@
+name: Validate mobile reading room release
+
+on:
+  push:
+    branches: [release/mobile-reading-room-20261018]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Run tests
+        run: pnpm test
+      - name: Build web and MCP resource
+        run: pnpm build
+      - name: Save release HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: reading-room-v89
+          path: web/dist/index.html
+          retention-days: 7
+          if-no-files-found: error
