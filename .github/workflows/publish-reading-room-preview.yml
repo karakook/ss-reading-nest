@@ -40,6 +40,8 @@ jobs:
         run: pnpm --filter @ss/web build
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload static page
         uses: actions/upload-pages-artifact@v3
         with:
