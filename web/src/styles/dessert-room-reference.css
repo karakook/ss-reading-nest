@@ -1742,8 +1742,29 @@ body {
   }
 
   .app-screen-home .weekly-books-art {
-    right: 13px;
-    width: 130px;
+    right: 0;
+    width: 110px;
+  }
+
+  .app-screen-home .library-mobile-brand {
+    grid-template-columns: auto minmax(0, 1fr) 38px 38px;
+  }
+
+  .app-screen-home .library-mobile-brand .library-mobile-expand {
+    display: grid;
+    width: 38px;
+    min-height: 38px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--dessert-ink);
+  }
+
+  .app-screen-home .library-mobile-brand .library-mobile-expand svg {
+    width: 24px;
+    height: 24px;
   }
 
   /* ChatGPT's iPhone preview adds its own close/share strip above the Site
@@ -1761,15 +1782,16 @@ body {
 
   /* Inline ChatGPT cards must behave like a phone-sized app viewport, not a
      document whose iframe grows to the full height of every dashboard card. */
-  html[data-host-embedding="embedded"][data-display-mode="inline"]
+  html[data-display-mode="inline"]
     .app-screen-home {
-    --embedded-home-height: clamp(480px, calc(var(--viewport-height, 100dvh) - 170px), 700px);
+    --embedded-home-height: clamp(500px, calc(var(--viewport-height, 100dvh) - 170px), 640px);
     height: var(--embedded-home-height);
+    max-height: var(--embedded-home-height);
     min-height: 0;
     overflow: hidden;
   }
 
-  html[data-host-embedding="embedded"][data-display-mode="inline"]
+  html[data-display-mode="inline"]
     .app-screen-home
     .dessert-reading-room.library-app-shell {
     position: relative;
@@ -1779,18 +1801,20 @@ body {
     padding-bottom: 0 !important;
   }
 
-  html[data-host-embedding="embedded"][data-display-mode="inline"]
+  html[data-display-mode="inline"]
     .app-screen-home
     .dessert-reading-room.is-library-view
     .home-shell {
     height: 100%;
+    max-height: 100%;
     min-height: 0;
     overflow-y: auto;
+    padding-bottom: 94px !important;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
 
-  html[data-host-embedding="embedded"][data-display-mode="inline"]
+  html[data-display-mode="inline"]
     .app-screen-home
     .dessert-reading-room.is-library-view
     .library-mobile-tabs {

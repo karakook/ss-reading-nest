@@ -236,6 +236,17 @@ export function Home(props: {
         <div className="library-mobile-brand">
           <span aria-hidden="true">✦</span>
           <strong>{partner.roomName}</strong>
+          {props.onExpand ? (
+            <button
+              type="button"
+              className="library-mobile-expand"
+              aria-label="展开书房"
+              title="展开书房"
+              onClick={props.onExpand}
+            >
+              <Maximize2 aria-hidden="true" />
+            </button>
+          ) : null}
           <button type="button" aria-label="打开设置" onClick={() => setView("settings")}>
             <Settings aria-hidden="true" />
           </button>
@@ -375,7 +386,12 @@ export function Home(props: {
               ) : null}
               <div className="library-header-actions">
                 {props.onExpand ? (
-                  <button type="button" className="library-quiet-action" onClick={props.onExpand}>
+                  <button
+                    type="button"
+                    className="library-quiet-action"
+                    aria-label="在页面底部展开书房"
+                    onClick={props.onExpand}
+                  >
                     <Maximize2 className="library-action-icon" aria-hidden="true" strokeWidth={1.8} />
                     <span>展开书房</span>
                   </button>
