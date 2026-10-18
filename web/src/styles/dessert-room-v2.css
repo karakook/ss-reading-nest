@@ -707,3 +707,18 @@
   .app-screen-home.is-drawer-view .drawer-intro p { font-size: 23px; }
   .app-screen-home.is-drawer-view .drawer-empty { padding-inline: 38px; font-size: 20px; }
 }
+
+/* Keep the room expansion control accessible at the top of every mobile view. */
+@media (max-width: 800px) {
+  .app-screen-home .library-mobile-brand {
+    grid-template-columns: 27px minmax(0, 1fr) 42px 42px;
+  }
+  .app-screen-home .library-mobile-brand .library-mobile-expand {
+    position: relative;
+    z-index: 4;
+    touch-action: manipulation;
+  }
+  .app-screen-home.is-drawer-view .library-mobile-brand {
+    grid-template-columns: 27px minmax(0, 1fr) 42px 42px;
+  }
+}
