@@ -722,3 +722,127 @@
     grid-template-columns: 27px minmax(0, 1fr) 42px 42px;
   }
 }
+
+/* Mobile usability pass: prefer predictable content flow over screenshot-sized cards. */
+@media (max-width: 800px) {
+  .app-screen-home .dessert-reading-room.library-app-shell {
+    min-height: 100dvh;
+    padding-top: max(20px, var(--safe-top, 0px));
+    padding-bottom: calc(100px + var(--safe-bottom, 0px));
+  }
+  .app-screen-home .dessert-reading-room .home-shell {
+    width: 100%;
+    min-width: 0;
+  }
+  .app-screen-home .dessert-reading-room .continue-card {
+    min-height: 0;
+  }
+  .app-screen-home .dessert-reading-room .bookshelf-section {
+    min-height: 0;
+  }
+  .app-screen-home .dessert-reading-room .library-book-grid {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 4px 12px;
+  }
+  .app-screen-home .dessert-reading-room .library-book-card {
+    flex: 0 0 105px;
+  }
+  .app-screen-home .dessert-reading-room .library-book-card:nth-child(n+5) {
+    display: grid;
+  }
+  .app-screen-home .dessert-reading-room .bookshelf-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .app-screen-home .dessert-reading-room .library-mobile-tabs {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-screen-home .library-mobile-brand strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .app-screen-home.is-drawer-view .home-shell {
+    padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-screen-home.is-drawer-view .library-mobile-brand {
+    min-height: 74px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+  }
+  .app-screen-home.is-drawer-view .library-header {
+    padding-top: 22px;
+  }
+  .app-screen-home.is-drawer-view .library-header h1 {
+    font-size: clamp(32px, 9vw, 44px);
+    margin-bottom: 12px;
+  }
+  .app-screen-home.is-drawer-view .library-header p {
+    font-size: 15px;
+  }
+  .app-screen-home.is-drawer-view .drawer-view {
+    gap: 18px;
+    padding-top: 18px;
+  }
+  .app-screen-home.is-drawer-view .drawer-intro {
+    min-height: 0;
+    padding: 24px;
+    gap: 10px;
+  }
+  .app-screen-home.is-drawer-view .drawer-intro p {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .app-screen-home.is-drawer-view .drawer-empty {
+    min-height: 0;
+    padding: 28px 22px;
+    font-size: 16px;
+  }
+  .app-screen-home.is-drawer-view .library-mobile-tabs {
+    min-height: 0;
+    padding-top: 9px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-screen-home.is-drawer-view .library-mobile-tabs button {
+    min-height: 62px;
+    font-size: 11px;
+  }
+  .app-screen-home.is-drawer-view .library-mobile-tab-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .app-screen-home.is-drawer-view .drawer-view::after {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 520px) {
+  .app-screen-home .dessert-reading-room .continue-card {
+    grid-template-columns: minmax(0, 105px) minmax(0, 1fr);
+    gap: 12px;
+    padding: 54px 16px 18px;
+  }
+  .app-screen-home .dessert-reading-room .continue-card .library-cover.compact {
+    width: 100%;
+    min-height: 155px;
+  }
+  .app-screen-home .dessert-reading-room .continue-card h2 {
+    overflow-wrap: anywhere;
+  }
+  .app-screen-home .dessert-stat-card {
+    padding-inline: 22px;
+  }
+  .app-screen-home .weekly-goal-days {
+    gap: 5px;
+  }
+  .app-screen-home .weekly-goal-days span {
+    flex-basis: 27px;
+    width: 27px;
+    height: 27px;
+  }
+}
