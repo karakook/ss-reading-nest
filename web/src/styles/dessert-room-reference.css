@@ -763,12 +763,25 @@ body {
     background: var(--dessert-cream);
   }
 
+  /* ChatGPT's iPhone chrome is overlaid on top of the embedded canvas. Keep
+     the reader toolbar below that host-owned strip instead of letting it sit
+     invisibly behind the close/title/menu controls. */
+  html[data-host-embedding="embedded"] .app-screen-novel {
+    --embedded-reader-top-offset: 92px;
+    padding-top: var(--embedded-reader-top-offset);
+  }
+
   .app-screen-novel .reader-shell {
     width: 100%;
     height: 100dvh;
     min-height: 100dvh;
     border-radius: 0;
     background: var(--dessert-cream);
+  }
+
+  html[data-host-embedding="embedded"] .app-screen-novel .reader-shell {
+    height: calc(var(--viewport-height, 100dvh) - var(--embedded-reader-top-offset));
+    min-height: calc(100dvh - var(--embedded-reader-top-offset));
   }
 
   .app-screen-novel .reader-header {
@@ -799,6 +812,9 @@ body {
 
   .app-screen-novel .sync-status { display: none; }
   .app-screen-novel .reader-workspace { height: calc(100dvh - 72px); min-height: 0; }
+  html[data-host-embedding="embedded"] .app-screen-novel .reader-workspace {
+    height: calc(var(--viewport-height, 100dvh) - var(--embedded-reader-top-offset) - 72px);
+  }
   .app-screen-novel .novel-reading-column { height: 100%; min-height: 0; }
   .app-screen-novel .reader-scroll { height: 100%; padding: 0 clamp(24px, 7vw, 52px) 125px; background: var(--dessert-cream); }
   .app-screen-novel .novel-paper { width: 100%; max-width: 620px; min-height: calc(100% - 70px); margin: 0 auto; padding: 45px 0 50px; color: var(--dessert-ink); font-family: "Songti SC", "STSong", serif; font-size: clamp(20px, 3.3vw, 25px); font-weight: var(--reader-font-weight, 400); line-height: 2.08; }
