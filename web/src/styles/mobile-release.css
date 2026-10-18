@@ -170,13 +170,28 @@
   }
 }
 
-/* Inline ChatGPT widgets scroll INSIDE the phone-sized host viewport.
-   The bottom tabs are anchored to that viewport rather than the document. */
+/*
+ * ChatGPT inline Site viewer uses the full embedded visual viewport.
+ * Previously the preview capped the app at 500-640px and absolutely anchored
+ * the navigation in that short box, leaving unused space below it on iPhone.
+ *
+ * Use the host's measured visual viewport (with 100dvh as initial fallback)
+ * and fix the tab bar to the viewport, not to an arbitrary preview height.
+ * Only .home-shell scrolls, so all five tabs stay at the bottom on every view.
+ */
 @media (max-width: 800px) {
-  html[data-display-mode="inline"] .app-screen-home .dessert-reading-room.library-app-shell {
-    height: 100%;
+  html[data-display-mode="inline"] .app-screen-home {
+    height: var(--viewport-height, 100dvh);
+    max-height: none;
     min-height: 0;
+    overflow: hidden;
+  }
+
+  html[data-display-mode="inline"] .app-screen-home .dessert-reading-room.library-app-shell {
     position: relative;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
     overflow: hidden;
     padding-bottom: 0 !important;
   }
@@ -188,11 +203,12 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 92px !important;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   html[data-display-mode="inline"] .app-screen-home .dessert-reading-room .library-mobile-tabs {
-    position: absolute !important;
+    position: fixed !important;
+    bottom: 0 !important;
     padding-bottom: 8px !important;
   }
 }
