@@ -223,6 +223,11 @@ export function Home(props: {
         <div className="library-mobile-brand">
           <span aria-hidden="true">✦</span>
           <strong>{partner.roomName}</strong>
+          {props.onExpand ? (
+            <button type="button" className="library-mobile-expand" aria-label="展开书房" title="展开书房" onClick={props.onExpand}>
+              <Maximize2 aria-hidden="true" />
+            </button>
+          ) : null}
           <button type="button" aria-label="打开设置" onClick={() => setView("settings")}>
             <Settings aria-hidden="true" />
           </button>
