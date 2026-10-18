@@ -58,8 +58,7 @@ function createResourceMeta(
     // On iPhone, the inline host can reserve additional chat chrome below
     // the iframe; fixed navigation cannot extend into that host-owned space.
     "openai/ui": {
-      availableDisplayModes: ["fullscreen", "inline"],
-      preferredDisplayMode: "fullscreen"
+      availableDisplayModes: ["fullscreen"]
     },
     "openai/widgetCSP": openaiWidgetCsp,
     "openai/widgetDomain": widgetDomain,
