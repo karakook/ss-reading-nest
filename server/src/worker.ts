@@ -1,5 +1,5 @@
 import { createMcpHandler } from "agents/mcp";
-import { READING_NEST_APP_VERSION } from "@ss/shared";
+import { READING_NEST_APP_VERSION, READING_NEST_RESOURCE_VERSION } from "@ss/shared";
 import { createReaderWidgetHtml } from "./mcp/reader-widget.js";
 import { createMcpProbeResponse, normalizeMcpRequest } from "./mcp/request-compat.js";
 import { createMcpServerFromRepository } from "./mcp/server-factory.js";
@@ -21,7 +21,8 @@ export default {
       return Response.json({
         ok: true,
         app: "冰冰和星星的小书房",
-        version: READING_NEST_APP_VERSION
+        version: READING_NEST_APP_VERSION,
+        resourceVersion: READING_NEST_RESOURCE_VERSION
       }, {
         headers: { "cache-control": "no-store" }
       });

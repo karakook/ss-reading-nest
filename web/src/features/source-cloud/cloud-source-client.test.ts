@@ -285,8 +285,8 @@ describe("CloudSourceClient", () => {
     });
     const message = result.diagnostics.directUploadError ?? "";
 
-    expect(message).toContain("resourceVersion=app-v93-reading-focus-nudge");
-    expect(message).toContain("appVersion=0.3.34");
+    expect(message).toContain("resourceVersion=app-v94-reading-nudge-check");
+    expect(message).toContain("appVersion=0.3.35");
     expect(message).toContain("sourceEndpointBase=present");
     expect(message).toContain("uploadOrigin=https://worker.example.test");
     expect(message).toContain("uploadPath=/source/<token>/upload");

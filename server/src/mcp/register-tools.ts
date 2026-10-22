@@ -3,6 +3,7 @@ import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
 import {
   READING_NEST_RESOURCE_URI,
+  READING_NEST_RESOURCE_VERSION,
   completeReadingSessionInputSchema,
   deleteBookArchiveEntryInputSchema,
   deleteQuoteInputSchema,
@@ -41,6 +42,7 @@ import { toolResult } from "./tool-result.js";
 // previous connection can still fetch its template after a later app release.
 export const READING_NEST_URI = READING_NEST_RESOURCE_URI;
 export const READING_NEST_LEGACY_URIS = [
+  "ui://ss-reading-nest/app-v93-reading-focus-nudge.html",
   "ui://ss-reading-nest/app-v92-composer-safe-tabs.html",
   "ui://ss-reading-nest/app-v91-host-fullscreen-nav.html",
   "ui://ss-reading-nest/app-v90-inline-nav-viewport.html",
@@ -420,7 +422,10 @@ export function registerReadingTools(
     const bookshelf = await loadNovelBookshelf(false);
     return {
       ...toolResult(
-        summarizeNovelBookshelfForModel(bookshelf.bookshelfSessions),
+        {
+          ...summarizeNovelBookshelfForModel(bookshelf.bookshelfSessions),
+          resourceVersion: READING_NEST_RESOURCE_VERSION
+        },
         "已打开 冰冰和星星的小书房。完整书架和小抽屉只显示在阅读组件内。后续如果冰冰要求共读、讨论当前页或读取已保存的想法，必须立即调用 read_shared_page_context；不要等待阅读组件再次推送内容。"
       ),
       _meta: { privateBookshelf: bookshelf }
