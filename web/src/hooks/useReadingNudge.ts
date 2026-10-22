@@ -72,8 +72,9 @@ export function useReadingNudge({
         // just as iOS moves ChatGPT into the background.
         if (document.visibilityState === "hidden") return;
         const count = READING_NUDGE_MESSAGES.length;
-        const candidate = Math.floor(Math.random() * (count - 1));
-        const next = candidate >= lastMessageIndex.current ? candidate + 1 : candidate;
+        const previous = lastMessageIndex.current;
+        const candidate = Math.floor(Math.random() * (count - (previous >= 0 ? 1 : 0)));
+        const next = previous >= 0 && candidate >= previous ? candidate + 1 : candidate;
         lastMessageIndex.current = next;
         setMessage(READING_NUDGE_MESSAGES[next] ?? READING_NUDGE_MESSAGES[0]);
       }, delayMs);
