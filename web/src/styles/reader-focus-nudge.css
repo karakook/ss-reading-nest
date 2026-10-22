@@ -1,0 +1,124 @@
+/*
+ * Reading-only focus nudge. No timer UI appears on the bookshelf, cover, or
+ * ChatGPT conversation. Keep the popup well above the native iOS composer.
+ */
+.reader-nudge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(20px, var(--safe-top, 0px)) 20px max(96px, var(--safe-bottom, 0px));
+  background: rgba(56, 43, 35, .27);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.reader-nudge-card {
+  position: relative;
+  width: min(100%, 390px);
+  max-height: min(75dvh, 520px);
+  overflow-y: auto;
+  padding: 27px 23px 24px;
+  border: 1px solid #d6b99c;
+  border-radius: 24px;
+  background: linear-gradient(150deg, #fffdf6, #fff2e4);
+  box-shadow: 0 18px 50px rgba(65, 46, 31, .23), inset 0 0 0 6px rgba(255, 255, 255, .45);
+  color: #63483d;
+  text-align: center;
+}
+
+.reader-nudge-card::before {
+  position: absolute;
+  inset: 11px;
+  border: 1px dashed rgba(160, 115, 89, .42);
+  border-radius: 17px;
+  content: "";
+  pointer-events: none;
+}
+
+.reader-nudge-kicker {
+  display: block;
+  color: #ab8670;
+  font-size: 12px;
+  letter-spacing: .14em;
+}
+
+.reader-nudge-cat {
+  display: block;
+  margin: 13px 0 5px;
+  font-size: 35px;
+  line-height: 1.25;
+}
+
+.reader-nudge-card h2 {
+  margin: 8px 0 13px;
+  color: #63483d;
+  font-family: "STKaiti", "KaiTi", "Songti SC", serif;
+  font-size: clamp(23px, 5vw, 29px);
+}
+
+.reader-nudge-card p {
+  margin: 0 auto 23px;
+  max-width: 29ch;
+  color: #73594c;
+  font-family: "Songti SC", "PingFang SC", serif;
+  font-size: 16px;
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+.reader-nudge-actions {
+  display: grid;
+  gap: 9px;
+  position: relative;
+  z-index: 1;
+}
+
+.reader-nudge-actions button {
+  min-height: 46px;
+  width: 100%;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+.reader-nudge-actions .reader-nudge-continue {
+  border-color: #a17d6e;
+  background: #a88676;
+  color: #fffaf4;
+}
+
+.reader-nudge-actions .reader-nudge-disable {
+  border-color: transparent;
+  background: transparent;
+  color: #886e63;
+}
+
+.reader-night-mode .reader-nudge-card {
+  border-color: #71594d;
+  background: linear-gradient(145deg, #392e2b, #47372e);
+  color: #f7e7d7;
+}
+
+.reader-night-mode .reader-nudge-card h2,
+.reader-night-mode .reader-nudge-card p,
+.reader-night-mode .reader-nudge-kicker,
+.reader-night-mode .reader-nudge-disable {
+  color: #f1ded1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reader-nudge-card {
+    animation: reader-nudge-appear 220ms ease-out both;
+  }
+  @keyframes reader-nudge-appear {
+    from { opacity: 0; transform: translateY(8px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+@media (max-width: 520px) {
+  .reader-nudge-overlay { padding-inline: 18px; }
+  .reader-nudge-card { padding: 24px 22px 20px; }
+}
