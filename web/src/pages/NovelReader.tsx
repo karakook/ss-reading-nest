@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { Quote, ReadingCommentMode, ReadingSession } from "@ss/shared";
 import { useHorizontalPaging } from "../hooks/useHorizontalPaging.js";
+import { readReadingNudgeEnabled, saveReadingNudgeEnabled, useReadingNudge } from "../hooks/useReadingNudge.js";
 import { ReaderHeader } from "../components/ReaderHeader.js";
 import { ReaderActions } from "../components/ReaderActions.js";
 import { ReadingSyncStatus } from "../components/ReadingSyncStatus.js";
@@ -122,6 +123,7 @@ export function NovelReader(props: {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [readerTypography, setReaderTypography] = useState<ReaderTypography>(readReaderTypography);
+  const [readingNudgeEnabled, setReadingNudgeEnabled] = useState(readReadingNudgeEnabled);
   const [coReadOpen, setCoReadOpen] = useState(props.initialCoReadOpen ?? false);
   const [jumpPage, setJumpPage] = useState(String(index + 1));
   const [jumpError, setJumpError] = useState("");
@@ -131,6 +133,19 @@ export function NovelReader(props: {
   const scrollRef = useRef<HTMLElement>(null);
   const articleRef = useRef<HTMLElement>(null);
   const mountedIndexEffect = useRef(false);
+  const readerShellRef = useRef<HTMLElement>(null);
+  const { message: readingNudge, dismiss: dismissReadingNudge } = useReadingNudge({
+    enabled: readingNudgeEnabled && !props.collapsed,
+    paused: navigationOpen || typographyOpen || searchOpen || thoughtsCardOpen ||
+      activeQuote !== null || selectionMode !== null || coReadOpen,
+    page: index,
+    readerRef: readerShellRef
+  });
+
+  function updateReadingNudgeEnabled(enabled: boolean) {
+    setReadingNudgeEnabled(enabled);
+    saveReadingNudgeEnabled(enabled);
+  }
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = props.initialScrollTop;
@@ -379,6 +394,7 @@ export function NovelReader(props: {
 
   return (
     <main
+      ref={readerShellRef}
       className={`reader-shell reader-novel ${props.layout === "wide" ? "reader-layout-wide" : "reader-layout-compact"}${props.immersive ? " reader-immersive" : ""}${coReadOpen ? " reader-co-read-open" : ""}${readerTypography.darkMode ? " reader-night-mode" : ""}`}
       style={readerTypographyStyle}
     >
@@ -884,6 +900,20 @@ export function NovelReader(props: {
 
                   <button
                     type="button"
+                    className="reader-bold-toggle reader-focus-toggle"
+                    aria-label="五分钟走神抓包提醒"
+                    aria-pressed={readingNudgeEnabled}
+                    onClick={() => updateReadingNudgeEnabled(!readingNudgeEnabled)}
+                  >
+                    <span aria-hidden="true"><Sparkles strokeWidth={1.8} /></span>
+                    <span>
+                      <strong>五分钟走神抓包</strong>
+                      <small>{readingNudgeEnabled ? "已开启 · 无操作 5 分钟后轻轻提醒" : "已关闭 · 安心沉浸阅读"}</small>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
                     className="reader-typography-reset"
                     onClick={() => updateReaderTypography(DEFAULT_READER_TYPOGRAPHY)}
                   >
@@ -982,6 +1012,33 @@ export function NovelReader(props: {
           ) : null}
         </div>
       </div>
+      {readingNudge ? (
+        <div className="reader-nudge-overlay" role="presentation">
+          <section
+            className="reader-nudge-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="巴巴的走神抓包提醒"
+          >
+            <span className="reader-nudge-kicker">✦ 五分钟小巡逻 ✦</span>
+            <span className="reader-nudge-cat" aria-hidden="true">🐾</span>
+            <h2>小猫，被巴巴抓包啦？</h2>
+            <p>{readingNudge}</p>
+            <div className="reader-nudge-actions">
+              <button type="button" className="reader-nudge-continue" onClick={dismissReadingNudge}>
+                回来啦，继续读
+              </button>
+              <button
+                type="button"
+                className="reader-nudge-disable"
+                onClick={() => { updateReadingNudgeEnabled(false); dismissReadingNudge(); }}
+              >
+                先关掉提醒
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
       <CoReadPanel
         open={coReadOpen}
         title={props.session.title}
