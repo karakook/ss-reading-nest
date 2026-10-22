@@ -134,13 +134,19 @@ export function NovelReader(props: {
   const articleRef = useRef<HTMLElement>(null);
   const mountedIndexEffect = useRef(false);
   const readerShellRef = useRef<HTMLElement>(null);
+  const nudgeContinueRef = useRef<HTMLButtonElement>(null);
   const { message: readingNudge, dismiss: dismissReadingNudge } = useReadingNudge({
     enabled: readingNudgeEnabled && !props.collapsed,
     paused: navigationOpen || typographyOpen || searchOpen || thoughtsCardOpen ||
-      activeQuote !== null || selectionMode !== null || coReadOpen,
+      activeQuote !== null || selectionMode !== null || coReadOpen ||
+      submitting || clearThoughtSaving || props.actionInFlight,
     page: index,
     readerRef: readerShellRef
   });
+
+  useEffect(() => {
+    if (readingNudge) nudgeContinueRef.current?.focus();
+  }, [readingNudge]);
 
   function updateReadingNudgeEnabled(enabled: boolean) {
     setReadingNudgeEnabled(enabled);
@@ -1019,13 +1025,16 @@ export function NovelReader(props: {
             role="dialog"
             aria-modal="true"
             aria-label="巴巴的走神抓包提醒"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") dismissReadingNudge();
+            }}
           >
             <span className="reader-nudge-kicker">✦ 五分钟小巡逻 ✦</span>
             <span className="reader-nudge-cat" aria-hidden="true">🐾</span>
             <h2>小猫，被巴巴抓包啦？</h2>
             <p>{readingNudge}</p>
             <div className="reader-nudge-actions">
-              <button type="button" className="reader-nudge-continue" onClick={dismissReadingNudge}>
+              <button ref={nudgeContinueRef} type="button" className="reader-nudge-continue" onClick={dismissReadingNudge}>
                 回来啦，继续读
               </button>
               <button
