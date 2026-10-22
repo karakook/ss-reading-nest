@@ -94,6 +94,23 @@ describe("NovelReader", () => {
     expect(restoredReader).toHaveClass("reader-night-mode");
   });
 
+  it("lets the reader toggle the five-minute catch-up reminder and remembers the choice", () => {
+    const props = makeProps();
+    const first = render(<NovelReader {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "字体设置" }));
+    const toggle = screen.getByRole("button", { name: "五分钟走神抓包提醒" });
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(localStorage.getItem("reading-nest-focus-nudge-enabled")).toBe("false");
+
+    first.unmount();
+    render(<NovelReader {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "字体设置" }));
+    expect(screen.getByRole("button", { name: "五分钟走神抓包提醒" })).toHaveAttribute("aria-pressed", "false");
+  });
+
   it("migrates older saved font preferences to the new display defaults", () => {
     localStorage.setItem("reading-nest-reader-typography", JSON.stringify({
       fontSize: 21,
