@@ -267,6 +267,7 @@ describe("tool descriptors", () => {
     };
 
     expect(result.structuredContent).toMatchObject({
+      resourceVersion: "app-v94-reading-nudge-check",
       count: 1,
       bookshelf: [
         expect.objectContaining({
