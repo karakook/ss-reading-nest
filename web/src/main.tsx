@@ -8,6 +8,7 @@ import "./styles/app.css";
 import "./styles/dessert-room-v2.css";
 import "./styles/dessert-room-reference.css";
 import "./styles/mobile-release.css";
+import "./styles/reader-focus-nudge.css";
 
 const rootElement = document.getElementById("root");
 
