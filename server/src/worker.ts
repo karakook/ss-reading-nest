@@ -2,6 +2,7 @@ import { createMcpHandler } from "agents/mcp";
 import { READING_NEST_APP_VERSION, READING_NEST_RESOURCE_VERSION } from "@ss/shared";
 import { createReaderWidgetHtml } from "./mcp/reader-widget.js";
 import { createMcpProbeResponse, normalizeMcpRequest } from "./mcp/request-compat.js";
+import { createKittyDrawerMcpServer } from "./mcp/kitty-drawer.js";
 import { createMcpServerFromRepository } from "./mcp/server-factory.js";
 import { sanitizeBookshelfBundle } from "./privacy/sanitize-bookshelf.js";
 import { D1ReadingRepository } from "./repositories/d1-reading-repository.js";
@@ -36,6 +37,14 @@ export default {
     }
 
     try {
+      if (route === "drawer") {
+        const probeResponse = createMcpProbeResponse(request);
+        if (probeResponse) return probeResponse;
+        return createMcpHandler(createKittyDrawerMcpServer(), {
+          route: url.pathname,
+          enableJsonResponse: true
+        })(normalizeMcpRequest(request), env, ctx);
+      }
       const repository = new D1ReadingRepository(env.DB);
       const sourceService = env.SOURCES_BUCKET
         ? new CloudSourceService(repository, new R2SourceObjectStorage(env.SOURCES_BUCKET))
