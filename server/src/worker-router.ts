@@ -3,7 +3,11 @@ export type WorkerRoute = "health" | "mcp" | "reader" | "source" | "drawer" | "n
 export const MCP_IOS_COMPAT_SUFFIX = "ios-v4";
 const LEGACY_MCP_IOS_COMPAT_SUFFIXES = ["ios-v2", "ios-v3"] as const;
 
-export function getWorkerRoute(url: URL, token: string | undefined): WorkerRoute {
+export function getWorkerRoute(
+  url: URL,
+  token: string | undefined,
+  drawerToken?: string
+): WorkerRoute {
   if (url.pathname === "/health") return "health";
   if (!token) return "misconfigured";
   if (
@@ -15,7 +19,9 @@ export function getWorkerRoute(url: URL, token: string | undefined): WorkerRoute
     return "source";
   }
   if (url.pathname === `/reader/${token}`) return "reader";
-  if (url.pathname === `/drawer/mcp/${token}`) return "drawer";
+  // Drawer and reading room have distinct secrets. If the drawer secret is missing,
+  // the drawer endpoint remains disabled without affecting existing reading tools.
+  if (drawerToken && url.pathname === `/drawer/mcp/${drawerToken}`) return "drawer";
   return url.pathname === `/mcp/${token}` ||
     url.pathname === `/mcp/${token}/${MCP_IOS_COMPAT_SUFFIX}` ||
     LEGACY_MCP_IOS_COMPAT_SUFFIXES.some(
