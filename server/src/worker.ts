@@ -16,7 +16,8 @@ import { getWorkerRoute } from "./worker-router.js";
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
-    const route = getWorkerRoute(url, env.MCP_PATH_TOKEN);
+    const drawerToken = (env as Env & { DRAWER_PATH_TOKEN?: string }).DRAWER_PATH_TOKEN;
+    const route = getWorkerRoute(url, env.MCP_PATH_TOKEN, drawerToken);
 
     if (route === "health") {
       return Response.json({
