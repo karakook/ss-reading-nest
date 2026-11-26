@@ -6,7 +6,7 @@ export function addDrawerHostBridge(html: string): string {
     "function heightChanged(){",
     "window.addEventListener('openai:set_globals',render);",
     "render();\n})();"
-  ];
+  ] as const;
   for (const anchor of anchors) {
     if (!html.includes(anchor)) throw new Error("Drawer bridge anchor missing: " + anchor);
   }
