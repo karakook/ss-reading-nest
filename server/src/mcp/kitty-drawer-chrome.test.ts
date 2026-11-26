@@ -5,7 +5,7 @@ const oldCat = '<div class="cat-portrait"><span class="cat-ear left"></span><spa
 const oldStars = '<div class="tiny-stars">✦ ୨୧ <em>✦</em> ୨୧ ✦</div>';
 const source = '<!doctype html><html><head><style>body{margin:0}</style></head><body><section class="drawer" data-appearance="rose-noir">' + oldStars + '<div class="top-right">' + oldCat + '</div><button data-choose="ribbon-pearl">丝带珍珠</button><div id="thinking">TEXT</div></section></body></html>';
 
-describe("cloud kitty drawer chrome v2", () => {
+describe("cloud kitty drawer chrome v3", () => {
   it("replaces the odd CSS polygon cat and its overlapping text badge", () => {
     const output = polishKittyDrawerHtml(source);
     expect(output).toContain('class="kitty-icon"');
@@ -13,7 +13,7 @@ describe("cloud kitty drawer chrome v2", () => {
     expect(output).not.toContain('class="cat-ear left"');
     expect(output).not.toContain('class="cat-bow"');
     expect(output).toContain('class="tiny-stars tiny-stars-v2"');
-    expect(output).toContain('id="kitty-cloud-chrome-v2"');
+    expect(output).toContain('id="kitty-cloud-chrome-v3"');
   });
   it("preserves all functional markup, including theme switching and body", () => {
     const output = polishKittyDrawerHtml(source);
@@ -22,6 +22,14 @@ describe("cloud kitty drawer chrome v2", () => {
     expect(output).toContain('data-appearance="rose-noir"');
     expect(output).toContain('</head>');
     expect(output).toContain('@media (max-width:380px)');
+  });
+  it("includes the pearl kitten palette while retaining the original rose-noir vector", () => {
+    const output = polishKittyDrawerHtml(source);
+    expect(output).toContain('stop-color="#30232d"');
+    expect(output).toContain('.drawer[data-appearance="ribbon-pearl"] .kitty-icon #kitty-fur stop:nth-child(1){stop-color:#fffefa}');
+    expect(output).toContain('[fill="#f5c6d8"]{fill:#654b5c}');
+    expect(output).toContain('color:transparent;');
+    expect(output.match(/class="kitty-icon"/g)).toHaveLength(1);
   });
   it("fails explicitly if the original markup changes so the polish cannot silently break", () => {
     expect(() => polishKittyDrawerHtml('<html><head></head><body>missing</body></html>')).toThrow(/cat markup/);

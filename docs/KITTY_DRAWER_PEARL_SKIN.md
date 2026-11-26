@@ -1,0 +1,3 @@
+# Thinking drawer: pearl kitten skin
+
+Keep the rose-noir black cat exactly as it was. Ribbon-pearl recolors the same inline SVG to cream-white fur, mauve eyes, soft pink satin and a pearl charm; its header dividers use tiny pearl dots. No extra network requests, scripts, or image assets. The original SVG silhouette, responsive dimensions, controls and lightweight summary policy remain unchanged. New resource URI v3 with legacy v1/v2 aliases. Verify real mobile/desktop theme switching after production deployment.
