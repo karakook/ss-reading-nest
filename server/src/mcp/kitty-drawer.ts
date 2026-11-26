@@ -4,7 +4,8 @@ import { z } from "zod";
 import { COMPRESSED_WIDGET } from "./kitty-drawer-widget.js";
 import { polishKittyDrawerHtml } from "./kitty-drawer-chrome.js";
 
-export const KITTY_DRAWER_URI = "ui://widget/kitty-thinking-drawer-cloud-v2.html";
+export const KITTY_DRAWER_URI = "ui://widget/kitty-thinking-drawer-cloud-v3.html";
+export const PREVIOUS_KITTY_DRAWER_URI = "ui://widget/kitty-thinking-drawer-cloud-v2.html";
 export const LEGACY_KITTY_DRAWER_URI = "ui://widget/kitty-thinking-drawer-cloud-v1.html";
 let widgetHtmlPromise: Promise<string> | undefined;
 
@@ -26,7 +27,7 @@ const Args = z.object({
 });
 
 export function createKittyDrawerMcpServer(): McpServer {
-  const server = new McpServer({ name: "巴巴和小猫的思考抽屉", version: "1.1.1" });
+  const server = new McpServer({ name: "巴巴和小猫的思考抽屉", version: "1.2.0" });
   registerAppTool(server, "render_thinking_block", {
     title: "展开可见思路说明",
     description: "Optional user-visible summary card, never hidden chain-of-thought. Use only when requested or genuinely helpful; skip greetings and simple replies unless explicitly requested. Make at most one card per reply. Default to effort low and 1–3 short sentences (roughly 60–150 Chinese characters), without duplicating the final answer. Use medium/high and longer summaries only when the user requests more detail or the task merits it. Choose relational for personal chats and deep_think for analytical explanations. Preserve the requested skin. The effort field controls summary detail, not model reasoning time. No conversation content is stored by this service.",
@@ -47,9 +48,9 @@ export function createKittyDrawerMcpServer(): McpServer {
       style: args.style, thinking: args.thinking, effort: args.effort, skin: args.skin
     }
   }));
-  // Keep the v1 resource URI available for previously created conversation cards.
-  // New calls get a v2 URI so ChatGPT does not reuse its cached widget HTML.
-  for (const resourceUri of [KITTY_DRAWER_URI, LEGACY_KITTY_DRAWER_URI]) {
+  // Keep v1/v2 resource aliases available for older cards.
+  // New calls use v3 to distinguish the updated theme artwork.
+  for (const resourceUri of [KITTY_DRAWER_URI, PREVIOUS_KITTY_DRAWER_URI, LEGACY_KITTY_DRAWER_URI]) {
     registerAppResource(server, "胭脂夜猫和丝带珍珠双皮肤", resourceUri, {
       description: "一张可折叠、可换装的中文可见思路说明卡",
       _meta: {
