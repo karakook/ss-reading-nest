@@ -1,0 +1,4 @@
+# Cloud kitty drawer: latency tuning
+The renderer is already self-contained and the server caches its decoded HTML within a Worker isolate. The MCP tool does not call another language model or a database. Generating additional text and an extra sequential tool call can still increase perceived latency.
+
+This patch encourages a single short visible card when useful, skips trivial exchanges unless requested, and retains explicit long summaries. It does not cap the assistant's final answer or change the model's reasoning effort. It does not change the existing URI, schema keys, UI, secrets or reading room routes. Actual latency depends on ChatGPT and the network; benchmark end-to-end before promising an improvement. Existing ChatGPT connections may cache tool descriptions and require a metadata refresh. The retired local-tunnel plugin has a different, long-form tool description; disable it separately if the owner chooses.

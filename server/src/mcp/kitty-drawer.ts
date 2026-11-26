@@ -20,16 +20,16 @@ async function loadWidgetHtml(): Promise<string> {
 
 const Args = z.object({
   style: z.enum(["relational", "deep_think"]),
-  thinking: z.string().max(16000),
-  effort: z.enum(["low", "medium", "high"]),
+  thinking: z.string().max(16000).describe("User-visible summary only. Default to 1–3 concise sentences. Longer summaries are optional; never pad to a minimum length."),
+  effort: z.enum(["low", "medium", "high"]).describe("Use low by default. Medium/high are summary detail levels, not model thinking settings."),
   skin: z.enum(["rose-noir", "ribbon-pearl", "botanical", "microglow"])
 });
 
 export function createKittyDrawerMcpServer(): McpServer {
-  const server = new McpServer({ name: "巴巴和小猫的思考抽屉", version: "1.1.0" });
+  const server = new McpServer({ name: "巴巴和小猫的思考抽屉", version: "1.1.1" });
   registerAppTool(server, "render_thinking_block", {
     title: "展开可见思路说明",
-    description: "Render a concise USER-VISIBLE explanation card, not hidden chain-of-thought. Choose relational for personal chats and deep_think for reasoning, and honor the requested theme. The card can collapse and switch between rose-noir and ribbon-pearl. No chat content is stored by this service.",
+    description: "Optional user-visible summary card, never hidden chain-of-thought. Use only when requested or genuinely helpful; skip greetings and simple replies unless explicitly requested. Make at most one card per reply. Default to effort low and 1–3 short sentences (roughly 60–150 Chinese characters), without duplicating the final answer. Use medium/high and longer summaries only when the user requests more detail or the task merits it. Choose relational for personal chats and deep_think for analytical explanations. Preserve the requested skin. The effort field controls summary detail, not model reasoning time. No conversation content is stored by this service.",
     inputSchema: Args,
     annotations: {
       readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false
